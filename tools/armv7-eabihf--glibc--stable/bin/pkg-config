@@ -1,0 +1,2 @@
+#!/bin/sh
+PKG_CONFIG_LIBDIR=${PKG_CONFIG_LIBDIR:-/tmp/armv7-eabihf--glibc--stable/usr/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/pkgconfig:/tmp/armv7-eabihf--glibc--stable/usr/arm-buildroot-linux-gnueabihf/sysroot/usr/share/pkgconfig} PKG_CONFIG_SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR:-/tmp/armv7-eabihf--glibc--stable/usr/arm-buildroot-linux-gnueabihf/sysroot} $(dirname $0)/pkgconf  $@
