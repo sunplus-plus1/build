@@ -41,13 +41,6 @@ UBOOT_PATH = ./boot/uboot
 LINUX_PATH = ./linux/kernel
 IPACK_PATH = ./ipack
 
-#Build STAGE 1->2
-STAGE1_TARGETS += xboot
-STAGE1_TARGETS += uboot
-STAGE1_TARGETS += kernel
-STAGE1_TARGETS += dtb
-STAGE2_TARGETS += rom
-
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
 .PHONY: dtb
 
@@ -88,8 +81,11 @@ rom: check
 	@$(MAKE) -C $(IPACK_PATH) all
 
 all: check
-	@$(MAKE) $(STAGE1_TARGETS)
-	@$(MAKE) $(STAGE2_TARGETS)
+	@$(MAKE) xboot
+	@$(MAKE) uboot
+	@$(MAKE) kernel
+	@$(MAKE) dtb
+	@$(MAKE) rom
 
 init:
 	@rm -f $(CONFIG_ROOT)
