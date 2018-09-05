@@ -46,15 +46,15 @@ IPACK_PATH = ./ipack
 
 #xboot build
 xboot: check
-	@$(MAKE) -j -C $(XBOOT_PATH) all 
+	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) all
 
 #uboot build
 uboot: check
-	@$(MAKE) -j -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
 
 #kernel build
 kernel: check
-	@$(MAKE) -j -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean: 
 	@$(MAKE) -C $(XBOOT_PATH) $@
@@ -105,5 +105,4 @@ info:
 	@$(ECHO) "UBOOT =" $(UBOOT_CONFIG)
 	@$(ECHO) "KERNEL =" $(KERNEL_CONFIG)
 	@$(ECHO) "CROSS COMPILER =" $(CROSS_COMPILE)
-
 
