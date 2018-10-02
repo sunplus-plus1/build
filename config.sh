@@ -13,7 +13,7 @@ KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 pentagram_b_chip_config()
 {
 	XBOOT_CONFIG=q628_defconfig
-	UBOOT_CONFIG=pentagram_zebu_emmc_b_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_b_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
@@ -24,7 +24,7 @@ pentagram_b_chip_config()
 pentagram_a_chip_config()
 {
 	XBOOT_CONFIG=q628_defconfig
-	UBOOT_CONFIG=pentagram_zebu_emmc_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
