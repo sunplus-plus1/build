@@ -10,10 +10,23 @@ XBOOT_CONFIG_ROOT=./boot/xboot/configs
 UBOOT_CONFIG_ROOT=./boot/uboot/configs
 KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 
-pentagram_b_chip_config()
+pentagram_b_chip_emmc_config()
 {
 	XBOOT_CONFIG=q628_defconfig
-	UBOOT_CONFIG=pentagram_sc7021_b_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_emmc_b_defconfig
+	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
+	CROSS_COMPILE=$1
+	NEED_ISP=1
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
+	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+}
+pentagram_b_chip_nor_config()
+{
+	XBOOT_CONFIG=q628_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
@@ -21,10 +34,23 @@ pentagram_b_chip_config()
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 }
-pentagram_a_chip_config()
+pentagram_a_chip_emmc_config()
 {
 	XBOOT_CONFIG=q628_defconfig
-	UBOOT_CONFIG=pentagram_sc7021_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_emmc_defconfig
+	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
+	CROSS_COMPILE=$1
+	NEED_ISP=1
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
+	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+}
+pentagram_a_chip_nor_config()
+{
+	XBOOT_CONFIG=q628_defconfig
+	UBOOT_CONFIG=pentagram_sc7021_romter_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
@@ -80,32 +106,79 @@ others_config()
 	fi
 	KERNEL_CONFIG=$(find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
 
-	CROSS_COMPILE=$1
+	$ECHO $COLOR_GREEN"Select compiler config :"$COLOR_ORIGIN
+	$ECHO " ==============================================="
+	$ECHO " [1] v5"
+	$ECHO " [2] v7"
+	$ECHO " ==============================================="
+	read COMPILER_CONFIG_NUM
+	if [ $COMPILER_CONFIG_NUM = '1' ];then
+		CROSS_COMPILE=$1
+	elif [ $COMPILER_CONFIG_NUM = '2' ];then
+		CROSS_COMPILE=$2
+	fi
+
+	$ECHO $COLOR_GREEN"Need isp?"$COLOR_ORIGIN
+	$ECHO " ==============================================="
+	$ECHO " y/n"
+	$ECHO " ==============================================="
+	read NEED_ISP_CONFIG
+	if [ $NEED_ISP_CONFIG = 'y' ];then
+		NEED_ISP=1
+	elif [ $NEED_ISP_CONFIG = 'n' ];then
+		NEED_ISP=0
+	fi
+
+	$ECHO $COLOR_GREEN"Zebu run?"$COLOR_ORIGIN
+	$ECHO " ==============================================="
+	$ECHO " y/n"
+	$ECHO " ==============================================="
+	read NEED_ZEBU_RUN
+	if [ $NEED_ZEBU_RUN = 'y' ];then
+		ZEBU_RUN=1
+	elif [ $NEED_ZEBU_RUN = 'n' ];then
+		ZEBU_RUN=0
+	fi
+
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	if [ $NEED_ISP = '1' ];then
+		echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+	fi
+	if [ $ZEBU_RUN = '1' ];then
+		echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
+	fi
 }
 
 $ECHO $COLOR_GREEN"Q628 configs."$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] Pentagram B chip"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] Pentagram A chip"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[3] 8388 B chip"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[4] others"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] Pentagram B chip (EMMC)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] Pentagram B chip (NOR/romter)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[3] Pentagram A chip (EMMC)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[4] Pentagram A chip (NOR/romter)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[5] 8388 B chip"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[6] others"$COLOR_ORIGIN
 read num
 
 case "$num" in
 	1)
-		pentagram_b_chip_config $1
+		pentagram_b_chip_emmc_config $1
 		;;
 	2)
-		pentagram_a_chip_config $2
+		pentagram_b_chip_nor_config $1
 		;;
 	3)
-		pentagram_8388_b_chip_config $1
+		pentagram_a_chip_emmc_config $2
 		;;
 	4)
-		others_config $1
+		pentagram_a_chip_nor_config $2
+		;;
+	5)
+		pentagram_8388_b_chip_config $1
+		;;
+	6)
+		others_config $1 $2
 		;;
 	*)
 		echo "Error: Unknow config!!"

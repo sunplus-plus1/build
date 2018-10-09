@@ -32,17 +32,30 @@ TOOLCHAIN_V5_PATH = $(TOPDIR)/build/tools/armv5-eabi--glibc--stable/bin
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/armv7hf-glibc-linux-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 
+NEED_ISP ?= 0
+ZEBU_RUN ?= 0
+
 CONFIG_ROOT = ./.config
+ISP_SHELL = isp.sh
+PART_SHELL = part.sh
 
 LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g').dtb
 
-XBOOT_PATH = ./boot/xboot
-UBOOT_PATH = ./boot/uboot
-LINUX_PATH = ./linux/kernel
-IPACK_PATH = ./ipack
+BUILD_PATH = build
+XBOOT_PATH = boot/xboot
+UBOOT_PATH = boot/uboot
+LINUX_PATH = linux/kernel
+IPACK_PATH = ipack
+OUT_PATH = out
+
+XBOOT_BIN = xboot.img
+UBOOT_BIN = u-boot.img
+KERNEL_BIN = uImage
+DTB = dtb
+VMLINUX = vmlinux
 
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
-.PHONY: dtb
+.PHONY: dtb spirom isp
 
 #xboot build
 xboot: check
@@ -65,20 +78,74 @@ distclean: clean
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
-	@rm -f $(CONFIG_ROOT)
+	@$(RM) -f $(CONFIG_ROOT)
+	@$(RM) -f $(OUT_PATH)
 
 config: init
 	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) rootfs
+	@$(MKDIR) -p $(OUT_PATH)
+	@$(CP) -f $(BUILD_PATH)/$(ISP_SHELL) $(OUT_PATH)
+	@$(CP) -f $(BUILD_PATH)/$(PART_SHELL) $(OUT_PATH)
+	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
+	@$(MAKE) info
 
 dtb: check
 	@$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE)
 	@ln -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb
 
+spirom: check
+	@$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN)
+
+isp: check
+	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
+		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)"to out folder."$(COLOR_ORIGIN); \
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(XBOOT_BIN)" is not exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@if [ -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
+		$(CP) -f $(UBOOT_PATH)/u-boot.img $(OUT_PATH); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(UBOOT_BIN)"to out folder."$(COLOR_ORIGIN); \
+	else \
+		$(ECHO) $(COLOR_YELLOW)"u-boot.img is not exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
+		$(CP) -f $(LINUX_PATH)/$(VMLINUX) $(OUT_PATH); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
+		$(CROSS_COMPILE)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
+		cd $(IPACK_PATH); \
+		./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin \
+		$(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
+		cd $(PWD); \
+		if [ -f $(OUT_PATH)/$(KERNEL_BIN) ]; then \
+			$(ECHO) $(COLOR_YELLOW)"Add uhdr in "$(KERNEL_BIN)"."$(COLOR_ORIGIN); \
+		else \
+			$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
+		fi; \
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" is not exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@if [ -f $(LINUX_PATH)/$(DTB) ]; then \
+		$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(DTB)" to out folder."$(COLOR_ORIGIN); \
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(DTB)" is not exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@cd out/; ./$(ISP_SHELL)
+
 rom: check
-	@$(MAKE) -C $(IPACK_PATH) all
+	@if [ "$(NEED_ISP)" = '1' ]; then  \
+		$(MAKE) isp; \
+	else \
+		$(MAKE) spirom; \
+	fi
 
 all: check
 	@$(MAKE) xboot
@@ -88,7 +155,7 @@ all: check
 	@$(MAKE) rom
 
 init:
-	@rm -f $(CONFIG_ROOT)
+	@$(RM) -f $(CONFIG_ROOT)
 	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
 
 check:
@@ -105,4 +172,5 @@ info:
 	@$(ECHO) "UBOOT =" $(UBOOT_CONFIG)
 	@$(ECHO) "KERNEL =" $(KERNEL_CONFIG)
 	@$(ECHO) "CROSS COMPILER =" $(CROSS_COMPILE)
-
+	@$(ECHO) "NEED ISP =" $(NEED_ISP)
+	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)

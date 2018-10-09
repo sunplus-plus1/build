@@ -4,3 +4,7 @@ LOAD_LIMIT	= $(CPU_NUM)
 MAKE_JOBS	= -j $(JOB_LIMIT) -l $(LOAD_LIMIT)
 MAKE = make
 ECHO = echo -e
+CP = cp
+MKDIR = mkdir
+RM = rm
+
