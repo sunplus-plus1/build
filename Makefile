@@ -54,6 +54,9 @@ KERNEL_BIN = uImage
 DTB = dtb
 VMLINUX = vmlinux
 
+SPI_BIN = spi_all.bin
+DOWN_TOOL  = down_32M.exe
+
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
 .PHONY: dtb spirom isp
 
@@ -73,13 +76,14 @@ clean:
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
+	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(RM) -f $(CONFIG_ROOT)
-	@$(RM) -f $(OUT_PATH)
+	@$(RM) -rf $(OUT_PATH)
 
 config: init
 	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
@@ -89,6 +93,7 @@ config: init
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(CP) -f $(BUILD_PATH)/$(ISP_SHELL) $(OUT_PATH)
 	@$(CP) -f $(BUILD_PATH)/$(PART_SHELL) $(OUT_PATH)
+	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
 
@@ -98,18 +103,22 @@ dtb: check
 
 spirom: check
 	@$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN)
+	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
+		$(CP) -f $(IPACK_PATH)/bin/$(SPI_BIN) $(OUT_PATH); \
+	fi
 
 isp: check
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
 		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
-		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)"to out folder."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(XBOOT_BIN)" is not exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@if [ -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 		$(CP) -f $(UBOOT_PATH)/u-boot.img $(OUT_PATH); \
-		$(ECHO) $(COLOR_YELLOW)"Copy "$(UBOOT_BIN)"to out folder."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(UBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
 	else \
 		$(ECHO) $(COLOR_YELLOW)"u-boot.img is not exist."$(COLOR_ORIGIN); \
 		exit 1; \
