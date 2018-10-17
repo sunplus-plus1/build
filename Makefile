@@ -58,7 +58,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL  = down_32M.exe
 
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
-.PHONY: dtb spirom isp
+.PHONY: dtb spirom isp tool_isp
 
 #xboot build
 xboot: check
@@ -108,7 +108,10 @@ spirom: check
 		$(CP) -f $(IPACK_PATH)/bin/$(SPI_BIN) $(OUT_PATH); \
 	fi
 
-isp: check
+tool_isp: $(TOPDIR)/build/tools/isp/isp.c
+	@$(MAKE) -C $(TOPDIR)/build/tools/isp
+
+isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
 		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
