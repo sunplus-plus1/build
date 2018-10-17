@@ -72,7 +72,7 @@ uboot: check
 kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 
-clean: 
+clean:
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
@@ -108,7 +108,7 @@ spirom: check
 		$(CP) -f $(IPACK_PATH)/bin/$(SPI_BIN) $(OUT_PATH); \
 	fi
 
-tool_isp: $(TOPDIR)/build/tools/isp/isp.c
+tool_isp:
 	@$(MAKE) -C $(TOPDIR)/build/tools/isp
 
 isp: check tool_isp

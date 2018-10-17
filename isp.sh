@@ -4,7 +4,7 @@ export PATH=$PATH:$TOP/build/tools/isp/
 
 X=xboot.img
 U=u-boot.img
-K=uImage 
+K=uImage
 
 cp $X xboot0
 cp $U uboot0
@@ -21,8 +21,8 @@ isp pack_image ISPBOOOT.BIN \
 	env 0x80000 \
 	env_redund 0x80000 \
 	dtb 0x10000 \
-	kernel 0xa00000 \
-	
+	kernel 0xf00000 \
+
 rm -rf xboot0
 rm -rf uboot0
 rm -rf xboot1
@@ -31,5 +31,5 @@ rm -rf uboot2
 rm -rf kernel
 rm -rf dtb
 rm -rf env
-rm -rf env_redund 
+rm -rf env_redund
 
