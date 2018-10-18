@@ -61,6 +61,7 @@
 #endif
 
 #define SUPPORT_MAIN_STORAGE_IS_EMMC
+#define XBOOT1_IN_EMMC_BOOTPART
 
 #define REDUCE_MESSAGE
 #define PROGRAM_HEADER_LAST  // Move "programming header" to the last programming step
@@ -430,7 +431,11 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 		for (i = 0; i < NUM_OF_PARTITION; i++) {
 			if (isp_info.file_header.partition_info[i].file_name[0] == 0x00)
 				break;
-
+#ifdef XBOOT1_IN_EMMC_BOOTPART
+			if (i == IDX_PARTITION_XBOOT1) {
+				continue;
+			}
+#endif
 			is_1MB_aligned = ((isp_info.file_header.partition_info[i].partition_size & ((1 << 20) - 1)) == 0) ? 1 : 0;
 
 			fprintf(fd, "name=%s,", isp_info.file_header.partition_info[i].file_name);
@@ -495,9 +500,23 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 			} else if (nand_or_emmc == IDX_EMMC) {
 				// fprintf(fd, "ispsp set_emmc_blk %s 0x0000\n", isp_info.file_header.partition_info[i].file_name);
 				// fprintf(fd, "mmc write $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
+#ifdef XBOOT1_IN_EMMC_BOOTPART
+				if (i == IDX_PARTITION_XBOOT1) {
+					fprintf(fd, "echo XBOOT1: to eMMC boot partition\n");
+					fprintf(fd, "mmc partconf 0 0 7 1\n");
+					fprintf(fd, "mmc write $isp_ram_addr 0x0000 0x%x\n",
+						BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
+					fprintf(fd, "mmc partconf 0 0 0 0\n");
+				} else {
+					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
+							isp_info.file_header.partition_info[i].emmc_partition_start,
+							BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
+				}
+#else
 				fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
 					isp_info.file_header.partition_info[i].emmc_partition_start,
 					BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
+#endif
 			}
 
 			// fprintf(fd, "ispsp progress 0x%x 0x00\n", isp_info.file_header.partition_info[i].file_size);
@@ -721,9 +740,23 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 			} else if (nand_or_emmc == IDX_EMMC) {
 				// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", isp_info.file_header.partition_info[i].file_name, BYTE2BLOCK(size_verified));
 				// fprintf(fd, "mmc read $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(size));
+#ifdef XBOOT1_IN_EMMC_BOOTPART
+				if (i == IDX_PARTITION_XBOOT1) {
+					fprintf(fd, "echo XBOOT1: from eMMC boot partition\n");
+					fprintf(fd, "mmc partconf 0 0 7 1\n");
+					fprintf(fd, "mmc read $isp_ram_addr 0x0000x 0x%x\n",
+							BYTE2BLOCK(size));
+					fprintf(fd, "mmc partconf 0 0 0 0\n");
+				} else {
+					fprintf(fd, "mmc read $isp_ram_addr 0x%x 0x%x\n",
+							isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_verified),
+							BYTE2BLOCK(size));
+				}
+#else
 				fprintf(fd, "mmc read $isp_ram_addr 0x%x 0x%x\n",
 					isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_verified),
 					BYTE2BLOCK(size));
+#endif
 			}
 
 			fprintf(fd, "md5sum $isp_ram_addr 0x%x md5sum_value\n", size);
@@ -917,7 +950,11 @@ int pack_image(int argc, char **argv)
 	}
 
 	for (i = 0; i < idx_partition_info; i++) {
+#ifdef XBOOT1_IN_EMMC_BOOTPART
+		if (i <= IDX_PARTITION_UBOOT1) {
+#else
 		if (i <= IDX_PARTITION_XBOOT1) {
+#endif
 			isp_info.file_header.partition_info[i].emmc_partition_start = BYTE2BLOCK(GPT_HEADER_SIZE);
 		} else {
 			isp_info.file_header.partition_info[i].emmc_partition_start =
