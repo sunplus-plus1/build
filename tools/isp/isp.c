@@ -413,7 +413,13 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 	} else if (nand_or_emmc == IDX_EMMC) {
 		fprintf(fd, "echo Initialize eMMC ...\n");
 		fprintf(fd, "mmc dev 0 && mmc rescan\n\n");
-
+#ifndef XBOOT1_IN_EMMC_BOOTPART
+		fprintf(fd, "echo Destroy data in eMMC boot area.\n");
+		fprintf(fd, "mw.b $isp_ram_addr 0xFF 0x0400\n");
+		fprintf(fd, "mmc partconf 0 0 7 1\n");
+		fprintf(fd, "mmc write $isp_ram_addr 0x0000 0x0002\n");
+		fprintf(fd, "mmc partconf 0 0 0 0\n");
+#endif
 		fprintf(fd, "mw.b $isp_ram_addr 0xFF 0x4400 && mmc write $isp_ram_addr 0x00 0x22\n");  // fill GPT with 0xFF
 		fprintf(fd, "mmc dev 0 && mmc rescan\n\n");
 
@@ -509,8 +515,8 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					fprintf(fd, "mmc partconf 0 0 0 0\n");
 				} else {
 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
-							isp_info.file_header.partition_info[i].emmc_partition_start,
-							BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
+						isp_info.file_header.partition_info[i].emmc_partition_start,
+						BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
 				}
 #else
 				fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
@@ -745,12 +751,12 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					fprintf(fd, "echo XBOOT1: from eMMC boot partition\n");
 					fprintf(fd, "mmc partconf 0 0 7 1\n");
 					fprintf(fd, "mmc read $isp_ram_addr 0x0000x 0x%x\n",
-							BYTE2BLOCK(size));
+						BYTE2BLOCK(size));
 					fprintf(fd, "mmc partconf 0 0 0 0\n");
 				} else {
 					fprintf(fd, "mmc read $isp_ram_addr 0x%x 0x%x\n",
-							isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_verified),
-							BYTE2BLOCK(size));
+						isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_verified),
+						BYTE2BLOCK(size));
 				}
 #else
 				fprintf(fd, "mmc read $isp_ram_addr 0x%x 0x%x\n",
