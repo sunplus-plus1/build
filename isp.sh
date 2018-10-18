@@ -13,6 +13,11 @@ cp $U uboot1
 cp $U uboot2
 cp $K kernel
 
+# Note:
+#     If partitions' sizes listed before "kernel" are changed,
+#     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
+#     are changed accordingly.
+
 isp pack_image ISPBOOOT.BIN \
 	xboot0 uboot0 \
 	xboot1 0x100000 \
