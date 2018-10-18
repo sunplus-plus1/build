@@ -144,7 +144,11 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(DTB) ]; then \
-		$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH); \
+		$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB).raw ; \
+		cd $(IPACK_PATH); \
+		pwd && pwd && pwd; \
+		./add_uhdr.sh dtb-`date +%Y%m%d-%H%M%S` ../$(OUT_PATH)/$(DTB).raw ../$(OUT_PATH)/$(DTB) 0x000000 0x000000; \
+		cd .. \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(DTB)" to out folder."$(COLOR_ORIGIN); \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(DTB)" is not exist."$(COLOR_ORIGIN); \
