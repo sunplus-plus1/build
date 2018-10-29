@@ -54,6 +54,9 @@ KERNEL_BIN = uImage
 DTB = dtb
 VMLINUX = vmlinux
 
+# 0: uImage, 1: qk_boot image (uncompressed)
+USE_QK_BOOT=0
+
 SPI_BIN = spi_all.bin
 DOWN_TOOL  = down_32M.exe
 
@@ -127,28 +130,36 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
-		$(CP) -f $(LINUX_PATH)/$(VMLINUX) $(OUT_PATH); \
-		$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
-		$(CROSS_COMPILE)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
-		cd $(IPACK_PATH); \
-		./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin \
-		$(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
-		cd $(PWD); \
-		if [ -f $(OUT_PATH)/$(KERNEL_BIN) ]; then \
-			$(ECHO) $(COLOR_YELLOW)"Add uhdr in "$(KERNEL_BIN)"."$(COLOR_ORIGIN); \
+		if [ "$(USE_QK_BOOT)" = "1" ];then \
+			$(CP) -f $(LINUX_PATH)/$(VMLINUX) $(OUT_PATH); \
+			$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
+			$(CROSS_COMPILE)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
+			cd $(IPACK_PATH); \
+			./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin \
+			$(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
+			cd $(PWD); \
+			if [ -f $(OUT_PATH)/$(KERNEL_BIN) ]; then \
+				$(ECHO) $(COLOR_YELLOW)"Add uhdr in "$(KERNEL_BIN)"."$(COLOR_ORIGIN); \
+			else \
+				$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
+			fi; \
 		else \
-			$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
-		fi; \
+			$(CP) -vf $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN) $(OUT_PATH); \
+		fi ; \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" is not exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(DTB) ]; then \
-		$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB).raw ; \
-		cd $(IPACK_PATH); \
-		pwd && pwd && pwd; \
-		./add_uhdr.sh dtb-`date +%Y%m%d-%H%M%S` ../$(OUT_PATH)/$(DTB).raw ../$(OUT_PATH)/$(DTB) 0x000000 0x000000; \
-		cd .. \
+		if [ "$(USE_QK_BOOT)" = "1" ];then \
+			$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB).raw ; \
+			cd $(IPACK_PATH); \
+			pwd && pwd && pwd; \
+			./add_uhdr.sh dtb-`date +%Y%m%d-%H%M%S` ../$(OUT_PATH)/$(DTB).raw ../$(OUT_PATH)/$(DTB) 0x000000 0x000000; \
+			cd .. ; \
+		else \
+			$(CP) -vf $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB) ; \
+		fi ; \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(DTB)" to out folder."$(COLOR_ORIGIN); \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(DTB)" is not exist."$(COLOR_ORIGIN); \
