@@ -70,7 +70,7 @@
 #define ALIGN_TO_1K(X)      ( (X + ((1<<10)-1)) & (0xFFFFFFFF - ((1<<10)-1)) )
 #define ALIGN_TO_1M(X)      ( (X + ((1<<20)-1)) & (0xFFFFFFFF - ((1<<20)-1)) )
 
-//  For command "isp pack_image ..."
+// For command "isp pack_image ..."
 #define ARGC_PACK_IMAGE_MAINCMD                      (0)    // isp
 #define ARGC_PACK_IMAGE_SUBCMD                       (1)    // pack_image
 #define ARGC_PACK_IMAGE_OUTPUT                       (2)    // Should be ISPBOOOT.BIN, IBoot expects it.
@@ -87,13 +87,21 @@
 #define ARGC_PACK_IMAGE_BINARY_PARTITION2_FILE      (13)
 #define ARGC_PACK_IMAGE_BINARY_PARTITION2_SIZE      (14)
 
-//  For command "isp extract4update ..."
+// For command "isp extract4update ..."
 #define ARGC_EXTRACT4UPDATE_MAINCMD                  (0)    // isp
 #define ARGC_EXTRACT4UPDATE_SUBCMD                   (1)    // extract4update
 #define ARGC_EXTRACT4UPDATE_INPUT                    (2)    // Should be ISPBOOOT.BIN
-#define ARGC_EXTRACT4UPDATE_OUPUT                    (3)    // ISP_UPDT.BIN, expected by U-Boot's partial update command
+#define ARGC_EXTRACT4UPDATE_OUTPUT                   (3)    // ISP_UPDT.BIN, expected by U-Boot's partial update command
 #define ARGC_EXTRACT4UPDATE_PARTITION0               (4)    // first partition to be updated
 #define ARGC_EXTRACT4UPDATE_PARTITION1               (5)    // second partition to be updated
+
+// For command "isp extract4boot2linux ..."
+#define ARGC_EXTRACT4BOOT2LINUX_MAINCMD              (0)    // isp
+#define ARGC_EXTRACT4BOOT2LINUX_SUMCMD               (1)    // extract4boot2linux
+#define ARGC_EXTRACT4BOOT2LINUX_INPUT                (2)    // Should be ISPBOOOT.BIN
+#define ARGC_EXTRACT4BOOT2LINUX_OUTPUT               (3)    // Should be ISPBOOOT.BIN, but in different folder
+
+
 
 #define FILE_SIZE_IMAGE_XBOOT0                      (64 << 10)
 #define FILE_SIZE_IMAGE_UBOOT0                      ((1 << 20) - FILE_SIZE_IMAGE_XBOOT0)
@@ -198,7 +206,7 @@ void dump_isp_info(void)
 	printf("\n");
 }
 
-int get_partition_info_idx_by_file_name(u08 *file_name_ptr)
+int get_partition_info_idx_by_file_name(const char *file_name_ptr)
 {
 	int i;
 
@@ -1204,6 +1212,7 @@ int pack_image(int argc, char **argv)
 	return 0;
 }
 
+
 #define EXTRACT4UPDATE_FROM_STORAGE (0)
 #define EXTRACT4UPDATE_FROM_TFTP    (1)
 
@@ -1211,7 +1220,6 @@ int extract4update(int argc, char **argv, int extract4update_src)
 {
 	FILE *fd, *fd2;
 	struct file_header_s file_header_extract4update;
-	struct file_header_s file_header_extract4update_written;
 	int i, idx, num_need_update;
 	char tmp_file[32], tmp_file_init_script[32], tmp_file_file_header[32], tmp_file_main_script[32], cmd[1024];
 	u32 offset_of_last_file, isp_script_size, tmp_u32;
@@ -1548,14 +1556,12 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 	sprintf(tmp_file_file_header, "tmp_file_file_header%08x", (u32)(getpid()));
 
-	memcpy(&file_header_extract4update_written, &file_header_extract4update, sizeof(file_header_extract4update_written));
-
 	fd2 = fopen(tmp_file_file_header, "wb");
 	if (fd2 == NULL) {
 		printf("Error: %s: %d\n", __FILE__, __LINE__);
 		exit(-1);
 	}
-	if (fwrite(&file_header_extract4update_written, sizeof(file_header_extract4update_written), 1, fd2) != 1) {
+	if (fwrite(&file_header_extract4update, sizeof(file_header_extract4update), 1, fd2) != 1) {
 		printf("Error: %s: %d\n", __FILE__, __LINE__);
 		exit(-1);
 	}
@@ -1563,11 +1569,11 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 	/* concatenate files */
 	if (extract4update_src == EXTRACT4UPDATE_FROM_STORAGE) {
-		sprintf(cmd, "cat %s > %s", tmp_file_file_header, argv[ARGC_EXTRACT4UPDATE_OUPUT]);
+		sprintf(cmd, "cat %s > %s", tmp_file_file_header, argv[ARGC_EXTRACT4UPDATE_OUTPUT]);
 		// printf("%s\n", cmd);
 		system(cmd);
 	} else if (extract4update_src == EXTRACT4UPDATE_FROM_TFTP) {
-		sprintf(cmd, "rm -rf %s && mkdir -p %s", argv[ARGC_EXTRACT4UPDATE_OUPUT], argv[ARGC_EXTRACT4UPDATE_OUPUT]);
+		sprintf(cmd, "rm -rf %s && mkdir -p %s", argv[ARGC_EXTRACT4UPDATE_OUTPUT], argv[ARGC_EXTRACT4UPDATE_OUTPUT]);
 		// printf("%s\n", cmd);
 		system(cmd);
 	}
@@ -1592,7 +1598,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 		system(cmd);
 
 		if (extract4update_src == EXTRACT4UPDATE_FROM_STORAGE) {
-			sprintf(cmd, "cat %s >> %s", tmp_file, argv[ARGC_EXTRACT4UPDATE_OUPUT]);
+			sprintf(cmd, "cat %s >> %s", tmp_file, argv[ARGC_EXTRACT4UPDATE_OUTPUT]);
 			// printf("%s\n", cmd);
 			system(cmd);
 		} else if (extract4update_src == EXTRACT4UPDATE_FROM_TFTP) {
@@ -1601,7 +1607,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 			while (file_size) {
 				size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
 				sprintf(cmd, "dd if=%s of=%s/TFTP%04X.BIN bs=1024 skip=%u count=%u %s", tmp_file,
-					argv[ARGC_EXTRACT4UPDATE_OUPUT], tftpxxxx,
+					argv[ARGC_EXTRACT4UPDATE_OUTPUT], tftpxxxx,
 					(size_processed >> 10), (size >> 10), MESSAGE_OUT);
 				// printf("%s\n", cmd);
 				system(cmd);
@@ -1618,11 +1624,11 @@ int extract4update(int argc, char **argv, int extract4update_src)
 	}
 
 	if (extract4update_src == EXTRACT4UPDATE_FROM_STORAGE) {
-		sprintf(cmd, "cat %s >> %s", tmp_file_main_script, argv[ARGC_EXTRACT4UPDATE_OUPUT]);
+		sprintf(cmd, "cat %s >> %s", tmp_file_main_script, argv[ARGC_EXTRACT4UPDATE_OUTPUT]);
 		// printf("%s\n", cmd);
 		system(cmd);
 	} else if (extract4update_src == EXTRACT4UPDATE_FROM_TFTP) {
-		sprintf(cmd, "cat %s > %s/TFTP0000.BIN", tmp_file_main_script, argv[ARGC_EXTRACT4UPDATE_OUPUT]);
+		sprintf(cmd, "cat %s > %s/TFTP0000.BIN", tmp_file_main_script, argv[ARGC_EXTRACT4UPDATE_OUTPUT]);
 		// printf("%s\n", cmd);
 		system(cmd);
 	}
@@ -1634,6 +1640,218 @@ int extract4update(int argc, char **argv, int extract4update_src)
 	sprintf(cmd, "rm -f %s", tmp_file_main_script);
 	// printf("%s\n", cmd);
 	system(cmd);
+
+	return 0;
+}
+
+int extract4boot2linux(int argc, char **argv)
+{
+	FILE *fd, *fd2;
+	struct file_header_s file_header_extract4boot2linux;
+	const char *partition_to_be_loaded[] = {"kernel", "dtb", "rootfs", NULL};
+	int i, idx;
+	const char *char_ptr;
+	int num_need_cp;
+	u32 offset_of_last_file;
+	char tmp_file[32], cmd[1024];
+	char tmp_file_init_script[32];
+	struct stat file_stat;
+	char tmp_file_file_header[32];
+
+	fd = fopen(argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], "rb");
+	if (fd == NULL) {
+		printf("Error: Can't open %s\n", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT]);
+		exit(-1);
+	}
+
+	if (fseek(fd, FILE_SIZE_IMAGE_XBOOT0 + FILE_SIZE_IMAGE_UBOOT0, SEEK_SET) != 0) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		exit(-1);
+	}
+
+	if (fread(&isp_info.file_header, sizeof(isp_info.file_header), 1, fd) != 1) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		exit(-1);
+	}
+
+	fclose(fd);
+
+	if (memcmp(isp_info.file_header.signature, file_header_signature, sizeof(file_header_signature)) != 0) {
+		printf("Error: %s doesn't have correct signature.\n", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT]);
+		exit(-1);
+	}
+
+	offset_of_last_file = FILE_SIZE_IMAGE_XBOOT0 + FILE_SIZE_IMAGE_UBOOT0 + sizeof(file_header_extract4boot2linux);
+	memset(&file_header_extract4boot2linux, 0x00, sizeof(file_header_extract4boot2linux));
+	strncpy(file_header_extract4boot2linux.signature, file_header_signature, sizeof(file_header_extract4boot2linux.signature));
+
+	num_need_cp = 0;
+	while (1) {
+		char_ptr = partition_to_be_loaded[num_need_cp];
+		if (char_ptr == NULL) {
+			break;
+		}
+		// printf("%s, %d, %s\n", __FILE__, __LINE__, partition_to_be_loaded[num_need_cp]);
+
+		idx = get_partition_info_idx_by_file_name(partition_to_be_loaded[num_need_cp]);
+		if (idx < 0) {
+			printf("Warning: %s isn't a valid partition.\n", partition_to_be_loaded[num_need_cp]);
+			break;
+		}
+
+		memcpy(&file_header_extract4boot2linux.partition_info[num_need_cp], &isp_info.file_header.partition_info[idx], sizeof(struct partition_info_s));
+		file_header_extract4boot2linux.partition_info[num_need_cp].file_offset = offset_of_last_file;
+		offset_of_last_file += file_header_extract4boot2linux.partition_info[num_need_cp].file_size;
+
+		num_need_cp++;
+	}
+
+	sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
+	fd2 = fopen(tmp_file, "w");
+
+	fprintf(fd2, "if test \"$isp_if\" = usb ; then\n");
+	fprintf(fd2, "    echo Boot from USB storage\n");
+	fprintf(fd2, "elif test \"$isp_if\" = mmc ; then\n");
+	fprintf(fd2, "    echo Boot from SD Card\n");
+	fprintf(fd2, "else\n");
+	fprintf(fd2, "    echo set to USB device 0 and use memory area start from 0x%x\n", ADDRESS_FATLOAD);
+	fprintf(fd2, "    setenv isp_if usb\n");
+	fprintf(fd2, "    setenv isp_dev 0\n");
+	fprintf(fd2, "    setenv isp_ram_addr 0x%x\n", ADDRESS_FATLOAD);
+	fprintf(fd2, "    $isp_if start\n");
+	fprintf(fd2, "fi\n\n");
+	fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
+	fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
+
+	for (i == 0; i < NUM_OF_PARTITION; i++) {
+		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
+			break;
+		}
+
+		fprintf(fd2, "echo Loading %s to $addr_dst_%s\n", partition_to_be_loaded[i], partition_to_be_loaded[i]);
+		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /ISPBOOOT.BIN 0x%x 0x%x\n\n",
+			partition_to_be_loaded[i],
+			file_header_extract4boot2linux.partition_info[i].file_size,
+			file_header_extract4boot2linux.partition_info[i].file_offset);
+	}
+
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
+		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
+			break;
+		}
+
+		fprintf(fd2, "echo verifying %s\n", partition_to_be_loaded[i]);
+		fprintf(fd2, "md5sum $addr_dst_%s 0x%x md5sum_value\n",
+			partition_to_be_loaded[i],
+			file_header_extract4boot2linux.partition_info[i].file_size);
+		fprintf(fd2, "if test \"$md5sum_value\" = %s ; then\n", file_header_extract4boot2linux.partition_info[i].md5sum);
+		fprintf(fd2, "    echo md5sum: OK.\n");
+		fprintf(fd2, "else\n");
+		fprintf(fd2, "    echo md5sum: Error!\n");
+		fprintf(fd2, "    exit -1\n");
+		fprintf(fd2, "fi\n\n");
+	}
+
+	if (file_header_extract4boot2linux.partition_info[2].file_size == 0) {
+		fprintf(fd2, "bootm ${addr_dst_%s} - ${addr_dst_%s}\n",
+			partition_to_be_loaded[0],
+			partition_to_be_loaded[1]);
+	} else {
+		fprintf(fd2, "bootm ${addr_dst_%s} ${addr_dst_%s}  ${addr_dst_%s}\n",
+			partition_to_be_loaded[0],
+			partition_to_be_loaded[2],
+			partition_to_be_loaded[1]);
+	}
+
+	fclose(fd2);
+
+#if !defined(MESSAGE_OUT_NONE)
+	printf("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
+	sprintf(cmd, "cat %s", tmp_file);
+	// printf("%s\n", cmd);
+	system(cmd);
+	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+#endif
+
+	/* file_header.init_script[], there is no main script */
+	sprintf(tmp_file_init_script, "tmp_file_init_script%08x", (u32)(getpid()));
+	sprintf(cmd, "mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n \"Init script\" -d %s %s %s", tmp_file, tmp_file_init_script, MESSAGE_OUT);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	sprintf(cmd, "rm -f %s", tmp_file);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	if (stat(tmp_file_init_script, &file_stat) == 0) {
+		if (file_stat.st_size > SIZE_INIT_SCRIPT) {
+			printf("\n\n\nSIZE_INIT_SCRIPT is too small\n\n");
+			exit(-1);
+		}
+
+		fd2 = fopen(tmp_file_init_script, "rb");
+		if (fread(file_header_extract4boot2linux.init_script, file_stat.st_size, 1, fd2) != 1) {
+			printf("Error: %s: %d\n", __FILE__, __LINE__);
+			exit(-1);
+		}
+		fclose(fd2);
+	}
+
+	sprintf(cmd, "rm -f %s", tmp_file_init_script);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	sprintf(tmp_file_file_header, "tmp_file_file_header%08x", (u32)(getpid()));
+	fd2 = fopen(tmp_file_file_header, "wb");
+	if (fd2 == NULL) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		exit(-1);
+	}
+	if (fwrite(&file_header_extract4boot2linux, sizeof(file_header_extract4boot2linux), 1, fd2) != 1) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		exit(-1);
+	}
+	fclose(fd2);
+
+	/* concatenate files */
+	sprintf(cmd, "dd if=%s of=%s bs=1024 skip=0 count=%u %s",
+		argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT],
+		((FILE_SIZE_IMAGE_XBOOT0 + FILE_SIZE_IMAGE_UBOOT0) >> 10), MESSAGE_OUT);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	sprintf(cmd, "cat %s >> %s", tmp_file_file_header, argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT]);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	sprintf(cmd, "rm -f %s", tmp_file_file_header);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
+		if (file_header_extract4boot2linux.partition_info[i].file_size == 0)
+			continue;
+
+		idx = get_partition_info_idx_by_file_name(file_header_extract4boot2linux.partition_info[i].file_name);
+		if (idx < 0) {
+			printf("Error: %s: %d\n", __FILE__, __LINE__);
+			exit(-1);
+		}
+		sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
+		sprintf(cmd, "dd if=%s of=%s bs=1024 skip=%u count=%u %s", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], tmp_file,
+			(isp_info.file_header.partition_info[idx].file_offset >> 10),
+			(file_header_extract4boot2linux.partition_info[i].file_size >> 10), MESSAGE_OUT);
+		// printf("%s\n", cmd);
+		system(cmd);
+
+		sprintf(cmd, "cat %s >> %s", tmp_file, argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT]);
+		// printf("%s\n", cmd);
+		system(cmd);
+
+		sprintf(cmd, "rm -f %s", tmp_file);
+		// printf("%s\n", cmd);
+		system(cmd);
+	}
 
 	return 0;
 }
@@ -1664,6 +1882,8 @@ int main(int argc, char **argv)
 
 	if (strcmp(sub_cmd, "pack_image") == 0) {
 		return pack_image(argc, argv);
+	} else if (strcmp(sub_cmd, "extract4boot2linux") == 0) {
+		return extract4boot2linux(argc, argv);
 	} else if (strcmp(sub_cmd, "extract4update") == 0) {
 		return extract4update(argc, argv, EXTRACT4UPDATE_FROM_STORAGE);
 	} else if (strcmp(sub_cmd, "extract4tftpupdate") == 0) {
