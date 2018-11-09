@@ -167,6 +167,9 @@ isp: check tool_isp
 	fi
 	@cd out/; ./$(ISP_SHELL)
 
+part:
+	@cd out; ./$(PART_SHELL)
+
 rom: check
 	@if [ "$(NEED_ISP)" = '1' ]; then  \
 		$(MAKE) isp; \
