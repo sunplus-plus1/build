@@ -168,6 +168,7 @@ isp: check tool_isp
 	@cd out/; ./$(ISP_SHELL)
 
 part:
+	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME!!!" $(COLOR_ORIGIN)
 	@cd out; ./$(PART_SHELL)
 
 rom: check
