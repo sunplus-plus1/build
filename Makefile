@@ -73,7 +73,7 @@ uboot: check
 
 #kernel build
 kernel: check
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean:
 	@$(MAKE) -C $(XBOOT_PATH) $@
@@ -184,6 +184,17 @@ all: check
 	@$(MAKE) kernel
 	@$(MAKE) dtb
 	@$(MAKE) rom
+
+ROOTFS = linux/rootfs/initramfs/disk
+mt: check
+	@$(MAKE) kernel
+	cp linux/application/module_test/mt.sh $(ROOTFS)/bin
+	cp $(LINUX_PATH)/drivers/mmc/host/*.ko $(ROOTFS)
+	cp $(LINUX_PATH)/drivers/net/ethernet/sp/*.ko $(ROOTFS)
+	cp $(LINUX_PATH)/drivers/usb/phy/*.ko $(ROOTFS)
+	cp $(LINUX_PATH)/drivers/usb/host/*.ko $(ROOTFS)
+	cp $(LINUX_PATH)/arch/arm/mach-pentagram/display/*.ko $(ROOTFS)
+	@$(MAKE) kernel rom
 
 init:
 	@$(RM) -f $(CONFIG_ROOT)
