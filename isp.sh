@@ -25,7 +25,7 @@ isp pack_image ISPBOOOT.BIN \
 	uboot2 0x100000 \
 	env 0x80000 \
 	env_redund 0x80000 \
-	dtb 0x10000 \
+	dtb 0x20000 \
 	kernel 0xf00000 \
 
 rm -rf xboot0
