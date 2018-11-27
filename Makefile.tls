@@ -7,4 +7,5 @@ ECHO = echo -e
 CP = cp
 MKDIR = mkdir
 RM = rm
+LN = ln
 

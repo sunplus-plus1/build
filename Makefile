@@ -96,7 +96,7 @@ config: init
 	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) rootfs
 	@$(MKDIR) -p $(OUT_PATH)
-	@$(CP) -f $(BUILD_PATH)/$(ISP_SHELL) $(OUT_PATH)
+	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
 	@$(CP) -f $(BUILD_PATH)/$(PART_SHELL) $(OUT_PATH)
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
