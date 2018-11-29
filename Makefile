@@ -45,6 +45,7 @@ BUILD_PATH = build
 XBOOT_PATH = boot/xboot
 UBOOT_PATH = boot/uboot
 LINUX_PATH = linux/kernel
+ROOTFS_PATH = linux/rootfs
 IPACK_PATH = ipack
 OUT_PATH = out
 
@@ -53,7 +54,8 @@ UBOOT_BIN = u-boot.img
 KERNEL_BIN = uImage
 DTB = dtb
 VMLINUX = vmlinux
-ROOTFS = linux/rootfs/initramfs/disk
+ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
+ROOTFS_IMG = rootfs.img
 
 # 0: uImage, 1: qk_boot image (uncompressed)
 USE_QK_BOOT=0
@@ -75,18 +77,21 @@ uboot: check
 #kernel build
 kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS)
+	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR)
 
 clean:
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
+	@$(MAKE) -C $(ROOTFS_PATH) $@
 	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
 	@$(MAKE) -C $(XBOOT_PATH) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
+	@$(MAKE) -C $(ROOTFS_PATH) $@
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -rf $(OUT_PATH)
 
@@ -94,8 +99,9 @@ config: init
 	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
-	@$(MAKE) rootfs
+	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
+	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
@@ -121,14 +127,14 @@ isp: check tool_isp
 		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
 	else \
-		$(ECHO) $(COLOR_YELLOW)$(XBOOT_BIN)" is not exist."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)$(XBOOT_BIN)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@if [ -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 		$(CP) -f $(UBOOT_PATH)/u-boot.img $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(UBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
 	else \
-		$(ECHO) $(COLOR_YELLOW)"u-boot.img is not exist."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)"u-boot.img doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
@@ -149,7 +155,7 @@ isp: check tool_isp
 			$(CP) -vf $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN) $(OUT_PATH); \
 		fi ; \
 	else \
-		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" is not exist."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(DTB) ]; then \
@@ -164,7 +170,14 @@ isp: check tool_isp
 		fi ; \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(DTB)" to out folder."$(COLOR_ORIGIN); \
 	else \
-		$(ECHO) $(COLOR_YELLOW)$(DTB)" is not exist."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)$(DTB)" doesn't exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
+		$(ECHO) $(COLOR_YELLOW)"Copy "$(ROOTFS_IMG)" to out folder."$(COLOR_ORIGIN); \
+		$(CP) -vf $(ROOTFS_PATH)/$(ROOTFS_IMG) $(OUT_PATH)/ ;\
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(ROOTFS_IMG)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 	@cd out/; ./$(ISP_SHELL)
@@ -183,13 +196,14 @@ rom: check
 all: check
 	@$(MAKE) xboot
 	@$(MAKE) uboot
+	@$(MAKE) rootfs
 	@$(MAKE) kernel
 	@$(MAKE) dtb
 	@$(MAKE) rom
 
 mt: check
 	@$(MAKE) kernel
-	cp linux/application/module_test/mt.sh $(ROOTFS)/bin
+	cp linux/application/module_test/mt.sh $(ROOTFS_DIR)/bin
 	@$(MAKE) kernel rom
 
 init:
@@ -202,8 +216,11 @@ check:
 		exit 1; \
 	fi
 
+initramfs:
+	@$(MAKE) -C $(ROOTFS_PATH) initramfs
+
 rootfs:
-	@cd ./linux/rootfs/initramfs/; ls; ./build_disk.sh; cd $(TOPDIR);
+	@$(MAKE) -C $(ROOTFS_PATH) rootfs
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)

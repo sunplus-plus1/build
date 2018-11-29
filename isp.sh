@@ -5,13 +5,16 @@ export PATH=$PATH:$TOP/build/tools/isp/
 X=xboot.img
 U=u-boot.img
 K=uImage
+ROOTFS=rootfs.img
 
+# Partition name = file name
 cp $X xboot0
 cp $U uboot0
 cp $X xboot1
 cp $U uboot1
 cp $U uboot2
 cp $K kernel
+cp $ROOTFS rootfs
 
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
@@ -32,6 +35,7 @@ isp pack_image ISPBOOOT.BIN \
 	env_redund 0x80000 \
 	dtb 0x20000 \
 	kernel 0xf00000 \
+	rootfs 0x1000000 \
 
 rm -rf xboot0
 rm -rf uboot0
@@ -42,6 +46,7 @@ rm -rf kernel
 rm -rf dtb
 rm -rf env
 rm -rf env_redund
+rm -rf rootfs
 
 # Create image for booting from SD card or USB storage.
 mkdir -p boot2linux
