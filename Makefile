@@ -76,9 +76,11 @@ uboot: check
 
 #kernel build
 kernel: check
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
+		CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean:
 	@$(MAKE) -C $(XBOOT_PATH) $@
