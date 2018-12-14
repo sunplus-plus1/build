@@ -14,7 +14,7 @@ pentagram_b_chip_nand_config()
 {
 	XBOOT_CONFIG=q628_defconfig
 	UBOOT_CONFIG=pentagram_sc7021_nand_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
+	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
@@ -40,7 +40,7 @@ pentagram_b_chip_nor_config()
 {
 	XBOOT_CONFIG=q628_defconfig
 	UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
+	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
@@ -51,7 +51,7 @@ pentagram_a_chip_nand_config()
 {
 	XBOOT_CONFIG=q628_defconfig
 	UBOOT_CONFIG=pentagram_sc7021_nand_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
+	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
