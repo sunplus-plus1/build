@@ -195,11 +195,16 @@ rom: check
 		$(MAKE) spirom; \
 	fi
 
+# rootfs image is created by :
+# make initramfs -> re-create initial disk/
+# make kernel    -> install kernel modules to disk/lib/modules/
+# make rootfs    -> create rootfs image from disk/
+
 all: check
 	@$(MAKE) xboot
 	@$(MAKE) uboot
-	@$(MAKE) rootfs
 	@$(MAKE) kernel
+	@$(MAKE) rootfs
 	@$(MAKE) dtb
 	@$(MAKE) rom
 
