@@ -26,10 +26,10 @@ include ./build/Makefile.tls
 include ./build/color.mak
 sinclude ./.config
 
-TOOLCHAIN_V7_PATH = $(TOPDIR)/build/tools/armv7-eabihf--glibc--stable/bin
+TOOLCHAIN_V7_PATH = $(TOPDIR)/build/tools//arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/build/tools/armv5-eabi--glibc--stable/bin
 
-CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/armv7hf-glibc-linux-
+CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 
 NEED_ISP ?= 0
@@ -100,7 +100,7 @@ distclean: clean
 config: init
 	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
+	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(MAKE) -C $(LINUX_PATH) clean
 	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
@@ -225,10 +225,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) initramfs
+	@$(MAKE) -C $(ROOTFS_PATH) initramfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) rootfs
+	@$(MAKE) -C $(ROOTFS_PATH) rootfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)

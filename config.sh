@@ -20,6 +20,7 @@ pentagram_b_chip_nand_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
@@ -33,6 +34,7 @@ pentagram_b_chip_emmc_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
@@ -45,6 +47,7 @@ pentagram_b_chip_nor_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 }
 pentagram_a_chip_nand_config()
@@ -57,6 +60,7 @@ pentagram_a_chip_nand_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
@@ -70,6 +74,7 @@ pentagram_a_chip_emmc_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
@@ -82,6 +87,7 @@ pentagram_a_chip_nor_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 }
 pentagram_8388_b_chip_config()
@@ -93,6 +99,7 @@ pentagram_8388_b_chip_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 }
 others_config()
@@ -132,6 +139,18 @@ others_config()
 	fi
 	KERNEL_CONFIG=$(find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
 
+	$ECHO $COLOR_GREEN"Select rootfs config :"$COLOR_ORIGIN
+	$ECHO " ==============================================="
+	$ECHO " [1] v5"
+	$ECHO " [2] v7"
+	$ECHO " ==============================================="
+	read ROOTFS_CONFIG_NUM
+	if [ $ROOTFS_CONFIG_NUM = '1' ];then
+		ROOTFS_CONFIG=v5
+	elif [ $ROOTFS_CONFIG_NUM = '2' ];then
+		ROOTFS_CONFIG=v7
+	fi
+
 	$ECHO $COLOR_GREEN"Select compiler config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
 	$ECHO " [1] v5"
@@ -169,6 +188,7 @@ others_config()
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=${ROOTFS_CONFIG}" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	if [ $NEED_ISP = '1' ];then
 		echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
