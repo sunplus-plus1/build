@@ -508,7 +508,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 
 				fprintf(fd, "setenv isp_nand_addr_write_bblk_%d $isp_nand_addr\n", idx_nand_write_bblk);
 
-				snprintf(cmd, sizeof(cmd), "nand write.bblk $isp_ram_addr $isp_nand_addr 0x%x", isp_info.file_header.partition_info[i].file_size);
+				snprintf(cmd, sizeof(cmd), "bblk write bblk $isp_ram_addr $isp_nand_addr 0x%x", isp_info.file_header.partition_info[i].file_size);
 				fprintf(fd, "echo %s\n", cmd);
 				fprintf(fd, "%s\n", cmd);
 			} else if (nand_or_emmc == IDX_EMMC) {
@@ -600,6 +600,8 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 
 					// "nand erase.chip" already,
 					// fprintf(fd, "nand erase $isp_nand_addr 0x%x\n", isp_info.file_header.partition_info[i].file_size);
+					// fprintf(fd, "setexpr isp_addr_nand_write_next $isp_nand_addr + 0x%x && setenv isp_addr_nand_write_next 0x${isp_addr_nand_write_next}\n",size_programmed);
+					fprintf(fd, "echo isp_addr_nand_write_next: ${isp_addr_nand_write_next}\n");
 
 					if (flag_first) {
 						flag_first = 0;
@@ -685,7 +687,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 		}
 
 		// note: $isp_addr_next is changed after "nand write.bhdr"
-		fprintf(fd, "nand write.bhdr auto 0 0x%x\n", isp_info.file_header.partition_info[idx].file_size);
+		fprintf(fd, "bblk write bhdr auto 0 0x%x\n", isp_info.file_header.partition_info[idx].file_size);
 	}
 #endif
 
@@ -730,9 +732,9 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					}
 
 #if !defined(NAND_READ_BY_PARTITION_NAME)
-					snprintf(cmd, sizeof(cmd), "nand read.bblk $isp_ram_addr $isp_nand_addr_write_bblk_%d 0x%x", idx_nand_write_bblk, size);
+					snprintf(cmd, sizeof(cmd), "bblk read bblk $isp_ram_addr $isp_nand_addr_write_bblk_%d 0x%x", idx_nand_write_bblk, size);
 #else
-					snprintf(cmd, sizeof(cmd), "nand read.bblk $isp_ram_addr %s 0x%x", isp_info.file_header.partition_info[i].file_name, size);
+					snprintf(cmd, sizeof(cmd), "bblk read bblk $isp_ram_addr %s 0x%x", isp_info.file_header.partition_info[i].file_name, size);
 #endif
 				} else {
 					if (flag_first) {
@@ -742,9 +744,12 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 						fprintf(fd, "setexpr isp_nand_addr $isp_nand_addr_1st_part + 0x%x && setenv isp_nand_addr 0x${isp_nand_addr}\n", isp_info.file_header.partition_info[i].partition_start_addr);
 						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr $isp_nand_addr 0x%x", size);
 #else
+						fprintf(fd, "setexpr isp_nand_addr $isp_nand_addr_1st_part + 0x%x && setenv isp_nand_addr 0x${isp_nand_addr}\n", isp_info.file_header.partition_info[i].partition_start_addr);
 						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr %s 0x%x", isp_info.file_header.partition_info[i].file_name, size);
 #endif
 					} else {
+						// fprintf(fd, "setexpr isp_addr_nand_read_next $isp_nand_addr + 0x%x && setenv isp_addr_nand_read_next 0x${isp_addr_nand_read_next}\n", size_verified);
+						fprintf(fd, "echo isp_addr_nand_read_next: ${isp_addr_nand_read_next}\n", size_verified);
 						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr $isp_addr_nand_read_next 0x%x", size);  // isp_addr_nand_read_next is set in nand_write() (uboot/drivers/mtd/nand/nand_base.c)
 					}
 				}
