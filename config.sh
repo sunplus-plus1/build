@@ -15,7 +15,7 @@ pentagram_b_chip_nand_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_nand_b_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
@@ -33,7 +33,7 @@ pentagram_b_chip_emmc_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_emmc_b_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
@@ -51,7 +51,7 @@ pentagram_b_chip_nor_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
@@ -67,7 +67,7 @@ pentagram_a_chip_nand_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_nand_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
@@ -85,7 +85,7 @@ pentagram_a_chip_emmc_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_emmc_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
@@ -103,7 +103,7 @@ pentagram_a_chip_nor_config()
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
-		XBOOT_CONFIG=q628_Rev2_defconfig
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sc7021_romter_defconfig
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
