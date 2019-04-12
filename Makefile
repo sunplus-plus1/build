@@ -21,12 +21,13 @@
 #                                                                        #
 ##########################################################################
 TOPDIR = $(PWD)
-SHELL := /bin/bash
+SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
 sinclude ./.config
+sinclude ./.hwconfig
 
-TOOLCHAIN_V7_PATH = $(TOPDIR)/build/tools//arm-linux-gnueabihf/bin
+TOOLCHAIN_V7_PATH = $(TOPDIR)/build/tools/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/build/tools/armv5-eabi--glibc--stable/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
@@ -34,8 +35,10 @@ CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
+IS_ASSIGN_DTB ?= 0
 
 CONFIG_ROOT = ./.config
+HW_CONFIG_ROOT = ./.hwconfig
 ISP_SHELL = isp.sh
 PART_SHELL = part.sh
 
@@ -88,6 +91,7 @@ clean:
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
 	@$(RM) -rf $(OUT_PATH)
+	@$(RM) -f $(HW_CONFIG_ROOT)
 
 distclean: clean
 	@$(MAKE) -C $(XBOOT_PATH) $@
@@ -98,6 +102,9 @@ distclean: clean
 	@$(RM) -rf $(OUT_PATH)
 
 config: init
+	@if [ -z $(HCONFIG) ]; then \
+		$(RM) -f $(HW_CONFIG_ROOT); \
+	fi
 	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') CROSS_COMPILE=$(CROSS_COMPILE)
@@ -111,9 +118,18 @@ config: init
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
 
+hconfig:  
+	@./build/hconfig.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
+	$(MAKE) config HCONFIG="1"
+
 dtb: check
-	@$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE)
-	@ln -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb
+	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
+		$(MAKE) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
+		$(LN) -fs arch/arm/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
+	else \
+		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
+		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
+	fi
 
 spirom: check
 	@$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN)
