@@ -33,7 +33,7 @@ isp pack_image ISPBOOOT.BIN \
 	uboot2 0x100000 \
 	env 0x80000 \
 	env_redund 0x80000 \
-	dtb 0x40000 \
+	dtb 0x20000 \
 	kernel 0xf00000 \
 	rootfs 0x1000000 \
 	overlay 0x1000000 \
