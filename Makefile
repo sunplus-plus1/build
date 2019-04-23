@@ -204,6 +204,27 @@ isp: check tool_isp
 part:
 	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME!!!" $(COLOR_ORIGIN)
 	@cd out; ./$(PART_SHELL)
+	
+secure: check
+	@$(ECHO) $(COLOR_YELLOW) "###xboot add sign data ####!!!" $(COLOR_ORIGIN)
+	@if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
+		exit 1; \
+	fi 
+	@$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 
+	@cd $(XBOOT_PATH); \
+	/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1
+
+	@$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN)
+	@if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
+		exit 1; \
+	fi
+	@$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1
+
+	@$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN)
+	@if [ ! -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN) ]; then \
+		exit 1;\
+	fi
+	@$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/arm/boot $(KERNEL_BIN) 1
 
 rom: check
 	@if [ "$(NEED_ISP)" = '1' ]; then  \
@@ -221,6 +242,7 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) uboot
 	@$(MAKE) kernel
+	@$(MAKE) secure
 	@$(MAKE) rootfs
 	@$(MAKE) dtb
 	@$(MAKE) rom
