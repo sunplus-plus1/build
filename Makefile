@@ -27,8 +27,8 @@ include ./build/color.mak
 sinclude ./.config
 sinclude ./.hwconfig
 
-TOOLCHAIN_V7_PATH = $(TOPDIR)/build/tools/arm-linux-gnueabihf/bin
-TOOLCHAIN_V5_PATH = $(TOPDIR)/build/tools/armv5-eabi--glibc--stable/bin
+TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
+TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
@@ -71,7 +71,7 @@ DOWN_TOOL  = down_32M.exe
 
 #xboot build
 xboot: check
-	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) all
+	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- all
 
 #uboot build
 uboot: check
@@ -86,7 +86,7 @@ kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean:
-	@$(MAKE) -C $(XBOOT_PATH) $@
+	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
@@ -105,11 +105,11 @@ config: init
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
-	@$(MAKE) -C $(XBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
-	@$(MAKE) -C $(UBOOT_PATH) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
+	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
+	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) clean
-	@$(MAKE) initramfs
+	@$(MAKE) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -266,10 +266,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) initramfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- initramfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) rootfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- rootfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)

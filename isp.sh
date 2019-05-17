@@ -35,7 +35,7 @@ isp pack_image ISPBOOOT.BIN \
 	env_redund 0x80000 \
 	dtb 0x40000 \
 	kernel 0xf00000 \
-	rootfs 0x1000000 \
+	rootfs 0x5000000 \
 	overlay 0x1000000 \
 
 rm -rf xboot0
