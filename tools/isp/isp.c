@@ -52,7 +52,7 @@
 #include <stddef.h>
 #include <time.h>
 
-// #define DEBUG_ISP
+#define DEBUG_ISP
 #if defined(DEBUG_ISP)
 #define MESSAGE_OUT  ""
 #else
@@ -108,6 +108,11 @@
 
 #define NAND_READ_BY_PARTITION_NAME                         // if not defined, it's by NAND address
 // #define PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT
+
+// NAND 1st partition address will affect env and env_redund partition address.
+// If it is changed, env address (CONFIG_ENV_OFFSET) and env_redund (CONFIG_ENV_OFFSET_REDUND)
+// in pentagram_common.h also need to be changed.
+#define ADDRESS_NAND_1ST_PARTITION                  0x400000
 
 #define MAX_MEM_SIZE_FOR_ISP                        (2 << 20)       // Must be N*(block size), where N=1, 2, ...
 #define GPT_HEADER_SIZE                             (17 << 10)      // GUID Partition header size: (512-byte MBR) + (512-byte header) + (128 bytes * 128 partitions)
@@ -551,9 +556,12 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				} else {
 					// Should keep some space after argv[ARGC_PACK_IMAGE_UBOOT2_FILE],
 					// becaues argv[ARGC_PACK_IMAGE_XBOOT1_FILE] argv[ARGC_PACK_IMAGE_UBOOT1_FILE] won't be updated.
+#ifdef ADDRESS_NAND_1ST_PARTITION
+					fprintf(fd, "setenv isp_nand_addr_1st_part 0x%x\n\n", ADDRESS_NAND_1ST_PARTITION);
+#else
 					fprintf(fd, "setexpr isp_nand_addr_1st_part $isp_addr_next + 0x%x && setenv isp_nand_addr_1st_part 0x${isp_nand_addr_1st_part}\n\n",
 						isp_info.file_header.partition_info[i].partition_size);
-
+#endif
 					fprintf(fd, "setexpr isp_mtdpart_size ${isp_nand_addr_1st_part} - ${isp_nand_addr} && ");
 					fprintf(fd, "setenv isp_mtdpart_size 0x${isp_mtdpart_size}\n");
 
