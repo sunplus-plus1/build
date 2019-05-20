@@ -19,8 +19,8 @@ RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 REPLAY_STR=PART_EXT_STARTSECTOR=
 RC_SDCARDBOOTFILE=rc.sdcardboot
 # part1 and part2 size unit:M
-FAT_IMG_SIZE_M=10
-ROOT_IMG_SIZE_M=20
+FAT_IMG_SIZE_M=50
+ROOT_IMG_SIZE_M=1024
 
 # block size is 512byte for sfdisk set and FAT sector is 1024 default
 BLOCK_SIZE=512
@@ -30,7 +30,7 @@ FAT_SECTOR=1024
 seek_offset=1024
 seek_bs=1024
 
-
+# check file 
 if [ -f $OUT_FILE ];then
 	rm -rf $OUT_FILE
 fi
@@ -51,15 +51,14 @@ mega="$(echo '2^20' | bc)"
 partition_size_1=$(($FAT_IMG_SIZE_M * $mega))
 partition_size_2=$(($ROOT_IMG_SIZE_M * $mega))
 
-#create fat img
+#create fat img and copy ISPBOOOT to fat.img
 rm -f "$FAT_IMG_OUT"
 
-sz=`du -sb $FAT_FILE_IN | cut -f1` ; \
-echo "$FAT_FILE_IN size = %d (hex %x)\n" $$sz $$sz ; \
- if [ $$sz -gt $(FAT_FILE_IN) ];then \
-	echo "$FAT_FILE_IN size($$sz) is too larger. Please increase the FAT_IMG_SIZE_M size($FAT_IMG_SIZE_M M).\n" ; \
-	exit 1; \
- fi
+sz=`du -sb $FAT_FILE_IN | cut -f1` 
+if [ $sz -gt $partition_size_1 ];then 
+	echo "$FAT_FILE_IN size(${sz}byte) is too larger. Please modify the FAT_IMG_SIZE_M size(${partition_size_1}byte).\n" ; 
+	exit 1; 
+fi
 
 
 
@@ -71,11 +70,18 @@ mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN" ::
 dd if="$FAT_IMG_OUT" of="$OUT_FILE" bs="$seek_bs" seek="$seek_offset"
 rm -f "$FAT_IMG_OUT"
 #create and offset ext2.img 
-#modify the ext partition's first sector 
+#modify the ext partition's first sector in etc/init.d/rc.sdcardboot use to resize2fs root partition.
 firstSector=$((($partition_size_1+$seek_bs*$seek_offset)/$BLOCK_SIZE))
-echo "EXT partition first sector = $firstSector"
+echo "EXT3 partition first sector = $firstSector"
+
 sed -ri "/$REPLAY_STR/s/($REPLAY_STR)[0-9a-zA-Z ]+/\1$firstSector/" $RC_SDCARDBOOTFILE
 cp -rf "$RC_SDCARDBOOTFILE" $RC_SDCARDBOOTDIR
+
+sz=`du -sb $ROOT_DIR_IN | cut -f1` 
+if [ $sz -gt $partition_size_2 ];then 
+	echo "$ROOT_DIR_IN size(${sz}byte) is too larger. Please modify the ROOT_IMG_SIZE_M size(${partition_size_2}byte).\n" ; 
+	exit 1; 
+fi
 
 ./mke2fs -j -d "$ROOT_DIR_IN" \
   -r 1 \

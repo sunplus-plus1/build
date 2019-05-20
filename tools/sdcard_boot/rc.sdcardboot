@@ -1,5 +1,5 @@
 #modify in build/sdcard_boo.sh by "PART_EXT_STARTSECTOR"
-PART_EXT_STARTSECTOR=22528
+PART_EXT_STARTSECTOR=104448
 RESIZE_PART=/dev/mmcblk1p2
 PART_FLAG=/etc/init.d/partflag
 RESIZE_FLAG=/etc/init.d/resizeflag

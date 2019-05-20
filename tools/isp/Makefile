@@ -4,12 +4,11 @@ all: isp
 
 isp: isp.o
 	gcc -o $@ $^
-	ls -lF
 
 isp.o: isp.c
 	gcc -c -o $@ $^
 
-.PHONY: clean
+.PHONY: clean install
+
 clean:
 	@rm -rf *.o isp
-	ls -lF
