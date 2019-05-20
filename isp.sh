@@ -53,6 +53,9 @@ rm -rf rootfs
 mkdir -p boot2linux
 isp extract4boot2linux ISPBOOOT.BIN boot2linux/ISPBOOOT.BIN
 
+mkdir -p boot2linux_SDcard
+isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
+
 # Create image for partial update:
 #     isp extract4update ISPBOOOT.BIN ISP_UPDT.BIN [list of partitions ...]
 #   Example:

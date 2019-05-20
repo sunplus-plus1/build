@@ -52,7 +52,7 @@
 #include <stddef.h>
 #include <time.h>
 
-#define DEBUG_ISP
+//#define DEBUG_ISP
 #if defined(DEBUG_ISP)
 #define MESSAGE_OUT  ""
 #else
@@ -1656,8 +1656,10 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 	return 0;
 }
+#define EXTRACT4BOOT2LINUX_FOR_SDCARD	(0)
+#define EXTRACT4BOOT2LINUX_FOR_OTHER	(1)
 
-int extract4boot2linux(int argc, char **argv)
+int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 {
 	FILE *fd, *fd2;
 	struct file_header_s file_header_extract4boot2linux;
@@ -1704,6 +1706,11 @@ int extract4boot2linux(int argc, char **argv)
 		if (char_ptr == NULL) {
 			break;
 		}
+		if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD && (strcmp(char_ptr, "rootfs") == 0)){
+			num_need_cp++;
+			continue; // sdcard boot no need to loader rootfs
+		}		
+		
 		// printf("%s, %d, %s\n", __FILE__, __LINE__, partition_to_be_loaded[num_need_cp]);
 
 		idx = get_partition_info_idx_by_file_name(partition_to_be_loaded[num_need_cp]);
@@ -1735,6 +1742,10 @@ int extract4boot2linux(int argc, char **argv)
 	fprintf(fd2, "fi\n\n");
 	fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
 	fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
+
+	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD){
+		fprintf(fd2, "setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk1p2 rw rootwait \n");
+	}
 
 	for (i == 0; i < NUM_OF_PARTITION; i++) {
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
@@ -1895,8 +1906,10 @@ int main(int argc, char **argv)
 
 	if (strcmp(sub_cmd, "pack_image") == 0) {
 		return pack_image(argc, argv);
+	} else if (strcmp(sub_cmd, "extract4boot2linux_sdcardboot") == 0) {
+		return extract4boot2linux(argc, argv,EXTRACT4BOOT2LINUX_FOR_SDCARD);
 	} else if (strcmp(sub_cmd, "extract4boot2linux") == 0) {
-		return extract4boot2linux(argc, argv);
+		return extract4boot2linux(argc, argv,EXTRACT4BOOT2LINUX_FOR_OTHER);
 	} else if (strcmp(sub_cmd, "extract4update") == 0) {
 		return extract4update(argc, argv, EXTRACT4UPDATE_FROM_STORAGE);
 	} else if (strcmp(sub_cmd, "extract4tftpupdate") == 0) {

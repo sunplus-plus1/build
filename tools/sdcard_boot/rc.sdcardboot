@@ -1,0 +1,43 @@
+#modify in build/sdcard_boo.sh by "PART_EXT_STARTSECTOR"
+PART_EXT_STARTSECTOR=22528
+RESIZE_PART=/dev/mmcblk1p2
+PART_FLAG=/etc/init.d/partflag
+RESIZE_FLAG=/etc/init.d/resizeflag
+echo "sdcard boot set..."
+if [ ! -b $RESIZE_PART ];then
+	echo "no partiton $RESIZE_PART"
+	exit 1
+fi
+
+if [ -f $PART_FLAG ];then
+	if [ ! -f $RESIZE_FLAG ];then
+		echo "resize2fs partition"
+		
+		fdisk -lu
+		
+		resize2fs /dev/mmcblk1p2
+		
+		df -h
+		
+		touch $RESIZE_FLAG
+	fi
+	
+else
+	echo "partition set"
+	
+	echo "p
+	u
+	d
+	2
+	n
+	p
+	2
+	$PART_EXT_STARTSECTOR
+
+	p
+	w"|fdisk /dev/mmcblk1
+
+	touch $PART_FLAG
+	
+	reboot
+fi

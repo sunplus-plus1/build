@@ -35,12 +35,14 @@ CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
+SDCARD_BOOT ?= 0
 IS_ASSIGN_DTB ?= 0
 
 CONFIG_ROOT = ./.config
 HW_CONFIG_ROOT = ./.hwconfig
 ISP_SHELL = isp.sh
 PART_SHELL = part.sh
+SDCARD_BOOT_SHELL = sdcard_boot.sh
 
 LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g').dtb
 
@@ -200,7 +202,14 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@cd out/; ./$(ISP_SHELL)
-
+	
+	@if [ "$(SDCARD_BOOT)" = '1' ]; then  \
+		cd build/tools/sdcard_boot; \
+		echo "sdcard gen disk image" ; \
+		./$(SDCARD_BOOT_SHELL) ; \
+		cd ../../.. ;\
+	fi
+	
 part:
 	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME!!!" $(COLOR_ORIGIN)
 	@cd out; ./$(PART_SHELL)
@@ -278,3 +287,4 @@ info:
 	@$(ECHO) "CROSS COMPILER =" $(CROSS_COMPILE)
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
+	@$(ECHO) "SDCARD BOOT =" $(SDCARD_BOOT)
