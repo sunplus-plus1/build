@@ -99,7 +99,7 @@ type=b, size=$(($partition_size_1/$BLOCK_SIZE))
 type=83, size=$(($partition_size_2/$BLOCK_SIZE))
 " | sfdisk "$OUT_FILE"
 
-rm -rf $FAT_FILE_IN
+#rm -rf $FAT_FILE_IN
 #to avoid switch to emmc and init from rc.sdcard
 rm -rf $RC_SDCARDBOOTDIR/$RC_SDCARDBOOTFILE
 
