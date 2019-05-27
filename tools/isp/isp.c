@@ -1331,6 +1331,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 		if (file_header_extract4update.partition_info[i].partition_size == 0)
 			continue;
 
+		fprintf(fd2, "echo\n");
 		fprintf(fd2, "echo Updating %s ...\n\n", file_header_extract4update.partition_info[i].file_name);
 		fprintf(fd2, "if test \"$isp_main_storage\" = nand ; then\n");
 		fprintf(fd2, "    nand erase.part %s\n", file_header_extract4update.partition_info[i].file_name);
@@ -1358,8 +1359,8 @@ int extract4update(int argc, char **argv, int extract4update_src)
 #endif
 			if (flag_first) {
 				flag_first = 0;
-				snprintf(cmd, sizeof(cmd), "nand %s $isp_ram_addr %s 0x%x",
-					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "write.bblk" : "write",
+				snprintf(cmd, sizeof(cmd), "%s $isp_ram_addr %s 0x%x",
+					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "bblk write bblk" : "nand write",
 					 file_header_extract4update.partition_info[i].file_name, size);
 			} else {
 				if (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) {
@@ -1397,6 +1398,8 @@ int extract4update(int argc, char **argv, int extract4update_src)
 		}
 
 		fprintf(fd2, "\nmw.b $isp_ram_addr 0x00 0x%x\n\n", MAX_MEM_SIZE_FOR_ISP);
+		fprintf(fd2, "echo\n");
+		fprintf(fd2, "echo Verifying %s ...\n\n", file_header_extract4update.partition_info[i].file_name);
 
 		file_size = file_header_extract4update.partition_info[i].file_size;
 		flag_first = 1;     // first MAX_MEM_SIZE_FOR_ISP bytes of the programmed file.
@@ -1406,8 +1409,8 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 			if (flag_first) {
 				flag_first = 0;
-				snprintf(cmd, sizeof(cmd), "nand %s $isp_ram_addr %s 0x%x",
-					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "read.bblk" : "read",
+				snprintf(cmd, sizeof(cmd), "%s $isp_ram_addr %s 0x%x",
+					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "bblk read bblk" : "nand read",
 					 file_header_extract4update.partition_info[i].file_name, size);
 			} else {
 				snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr $isp_addr_nand_read_next 0x%x", size);  // isp_addr_nand_read_next is set in nand_write() (uboot/drivers/mtd/nand/nand_base.c)
@@ -1656,6 +1659,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 	return 0;
 }
+
 #define EXTRACT4BOOT2LINUX_FOR_SDCARD	(0)
 #define EXTRACT4BOOT2LINUX_FOR_OTHER	(1)
 
