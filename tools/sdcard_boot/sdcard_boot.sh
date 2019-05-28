@@ -60,10 +60,26 @@ if [ $sz -gt $partition_size_1 ];then
 	exit 1; 
 fi
 
+if [ -x "$(command -v mkfs.fat)" ]; then 
+  echo '######do mkfs.fat cmd ########' 
+  mkfs.fat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))" 
+else 
+	if [ -x "$(command -v mkfs.vfat)" ]; then 
+	  echo '######do mkfs.vfat cmd ########' 
+	  mkfs.vfat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))" 
+	else 
+	  echo "no mkfs.fat and mkfs.vfat cmd ,please install it" 
+	  exit 
+	fi
+fi
 
-
-mkfs.fat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))"
-mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN" ::
+if [ -x "$(command -v mcopy)" ]; then 
+  echo '######do the mcopy cmd ########' 
+  mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN" ::
+else 
+  echo "no mcopy cmd ,please install it" 
+  exit 
+fi
 
 # offset fat.img
 
@@ -82,7 +98,8 @@ if [ $sz -gt $partition_size_2 ];then
 	echo "$ROOT_DIR_IN size(${sz}byte) is too larger. Please modify the ROOT_IMG_SIZE_M size(${partition_size_2}byte).\n" ; 
 	exit 1; 
 fi
-
+echo '######do mke2fs cmd ,mke2fs version need to bigger than 1.45.1########' 
+chmod 777 $ROOT_DIR_IN/bin/busybox
 ./mke2fs -j -d "$ROOT_DIR_IN" \
   -r 1 \
   -N 0 \
@@ -93,11 +110,18 @@ fi
   -E offset="$(($partition_size_1+$seek_bs*$seek_offset))" \
   "$OUT_FILE" "${ROOT_IMG_SIZE_M}M" \
 ;
-
-printf "
-type=b, size=$(($partition_size_1/$BLOCK_SIZE))
-type=83, size=$(($partition_size_2/$BLOCK_SIZE))
-" | sfdisk "$OUT_FILE"
+# create the partition info
+echo '######do sfdisk cmd ,sfdisk version need to bigger than 2.27.1########' 
+if [ -x "$(command -v sfdisk)" ]; then 
+  sfdisk -v
+  printf "
+  type=b, size=$(($partition_size_1/$BLOCK_SIZE))
+  type=83, size=$(($partition_size_2/$BLOCK_SIZE))
+  " | sfdisk "$OUT_FILE"
+else 
+  echo "no sfdisk cmd ,please install it" 
+  exit 
+fi
 
 #rm -rf $FAT_FILE_IN
 #to avoid switch to emmc and init from rc.sdcard
