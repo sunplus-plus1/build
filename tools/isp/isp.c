@@ -1351,7 +1351,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 				fprintf(fd2, "fatload $isp_if $isp_dev $isp_ram_addr $isp_update_file_name 0x%x $isp_update_file_offset\n", size);
 			} else if (extract4update_src == EXTRACT4UPDATE_FROM_TFTP) {
 				tftpxxxx++; // TFTP0000.BIN is script
-				fprintf(fd2, "tftpboot $isp_ram_addr $serverip:TFTP%04X.BIN\n", tftpxxxx);
+				fprintf(fd2, "dhcp $isp_ram_addr $serverip:TFTP%04X.BIN\n", tftpxxxx);
 			}
 
 #if !defined(REDUCE_MESSAGE)
