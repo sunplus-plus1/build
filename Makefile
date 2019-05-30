@@ -62,6 +62,11 @@ VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
 ROOTFS_IMG = rootfs.img
 
+ROOTFS_CROSS = $(CROSS_V7_COMPILE)
+ifeq ($(ROOTFS_CONFIG),v5)
+ROOTFS_CROSS = $(CROSS_V5_COMPILE)
+endif
+
 # 0: uImage, 1: qk_boot image (uncompressed)
 USE_QK_BOOT=0
 
@@ -275,10 +280,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- initramfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- rootfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
