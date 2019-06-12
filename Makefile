@@ -38,6 +38,11 @@ ZEBU_RUN ?= 0
 SDCARD_BOOT ?= 0
 IS_ASSIGN_DTB ?= 0
 
+BOOT_KERNEL_FROM_TFTP ?= 0
+TFTP_SERVER_IP ?=
+BOARD_MAC_ADDR ?=
+USER_NAME ?= 
+
 CONFIG_ROOT = ./.config
 HW_CONFIG_ROOT = ./.hwconfig
 ISP_SHELL = isp.sh
@@ -82,8 +87,13 @@ xboot: check
 
 #uboot build
 uboot: check
-	@$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
-
+	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
+		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) \
+			BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) TFTP_SERVER_IP=$(TFTP_SERVER_IP) \
+			BOARD_MAC_ADDR=$(BOARD_MAC_ADDR) USER_NAME=$(USER_NAME); \
+	else \
+		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE); \
+	fi
 #kernel build
 kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE)
@@ -139,7 +149,11 @@ dtb: check
 	fi
 
 spirom: check
-	@$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN)
+	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
+		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP); \
+	else \
+		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN); \
+	fi
 	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
 		$(CP) -f $(IPACK_PATH)/bin/$(SPI_BIN) $(OUT_PATH); \
