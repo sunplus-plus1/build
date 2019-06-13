@@ -101,8 +101,18 @@ pentagram_b_chip_tftp_config()
 	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
-	echo "Please enter TFTP server IP address:"
+	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
 	read TFTP_SERVER_IP
+	if [ "${TFTP_SERVER_IP}" == "" ]; then
+		TFTP_SERVER_IP=172.18.12.62
+	fi
+	echo "TFTP server IP address is ${TFTP_SERVER_IP}"
+	echo "Please enter TFTP server path: (Default is /home/scftp)"
+	read TFTP_SERVER_PATH
+	if [ "${TFTP_SERVER_PATH}" == "" ]; then
+		TFTP_SERVER_PATH=/home/scftp
+	fi
+	echo "TFTP server path is ${TFTP_SERVER_PATH}"
 	echo "Please enter board MAC address:"
 	read BOARD_MAC_ADDR
 	USER_NAME=$(whoami)
@@ -116,6 +126,7 @@ pentagram_b_chip_tftp_config()
 	echo "USER_NAME=_"${USER_NAME} >> ${BUILD_CONFIG}
 	echo "BOARD_MAC_ADDR="${BOARD_MAC_ADDR} >> ${BUILD_CONFIG}
 	echo "TFTP_SERVER_IP="${TFTP_SERVER_IP} >> ${BUILD_CONFIG}
+	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
 
 pentagram_a_chip_nand_config()
@@ -209,8 +220,18 @@ pentagram_a_chip_tftp_config()
 	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
-	echo "Please enter TFTP server IP address:"
+	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
 	read TFTP_SERVER_IP
+	if [ "${TFTP_SERVER_IP}" == "" ]; then
+		TFTP_SERVER_IP=172.18.12.62
+	fi
+	echo "TFTP server IP address is ${TFTP_SERVER_IP}"
+	echo "Please enter TFTP server path: (Default is /home/scftp)"
+	read TFTP_SERVER_PATH
+	if [ "${TFTP_SERVER_PATH}" == "" ]; then
+		TFTP_SERVER_PATH=/home/scftp
+	fi
+	echo "TFTP server path is ${TFTP_SERVER_PATH}"
 	echo "Please enter board MAC address:"
 	read BOARD_MAC_ADDR
 	USER_NAME=$(whoami)
@@ -224,6 +245,7 @@ pentagram_a_chip_tftp_config()
 	echo "USER_NAME=_"${USER_NAME} >> ${BUILD_CONFIG}
 	echo "BOARD_MAC_ADDR="${BOARD_MAC_ADDR} >> ${BUILD_CONFIG}
 	echo "TFTP_SERVER_IP="${TFTP_SERVER_IP} >> ${BUILD_CONFIG}
+	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
 
 pentagram_8388_b_chip_config()
