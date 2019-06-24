@@ -232,8 +232,12 @@ pentagram_a_chip_tftp_config()
 		TFTP_SERVER_PATH=/home/scftp
 	fi
 	echo "TFTP server path is ${TFTP_SERVER_PATH}"
-	echo "Please enter board MAC address:"
+	echo "Please enter MAC address of target board (ex: 00:22:60:00:88:20):"
+	echo "(Press Enter directly if you want to use board's default MAC address.)"
 	read BOARD_MAC_ADDR
+	if [ "${BOARD_MAC_ADDR}" != "" ]; then
+		echo "MAC address of target board is ${BOARD_MAC_ADDR}"
+	fi
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
