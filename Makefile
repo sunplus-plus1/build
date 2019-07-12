@@ -279,8 +279,8 @@ all: check
 
 mt: check
 	@$(MAKE) kernel
-	cp linux/application/module_test/mt.sh $(ROOTFS_DIR)/bin
-	@$(MAKE) kernel rom
+	cp linux/application/module_test/mt2.sh $(ROOTFS_DIR)/bin
+	@$(MAKE) rootfs rom
 	
 test: check
 	@$(MAKE) $(MAKE_JOBS) -C linux/application/module_test/i2ctea5767 CROSS_COMPILE=$(CROSS_COMPILE)
