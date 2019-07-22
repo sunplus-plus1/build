@@ -9,18 +9,17 @@ TOP=../../..
 
 
 OUTPATH=$TOP/out/boot2linux_SDcard
-FAT_FILE_IN=$OUTPATH/ISPBOOOT.BIN
+FAT_FILE_IN=$OUTPATH
 ROOT_DIR_IN=$TOP/linux/rootfs/initramfs/disk
 OUT_FILE=$OUTPATH/ISP_SD_BOOOT.img
 FAT_IMG_OUT=fat.img
 
 #modify the rc.sdcardroot(EXT3 partition's first sector)
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
-REPLAY_STR=PART_EXT_STARTSECTOR=
 RC_SDCARDBOOTFILE=rc.sdcardboot
 # part1 and part2 size unit:M
 FAT_IMG_SIZE_M=50
-ROOT_IMG_SIZE_M=1024
+ROOT_IMG_SIZE_M=100
 
 # block size is 512byte for sfdisk set and FAT sector is 1024 default
 BLOCK_SIZE=512
@@ -35,7 +34,7 @@ if [ -f $OUT_FILE ];then
 	rm -rf $OUT_FILE
 fi
 
-if [ ! -f $FAT_FILE_IN ];then
+if [ ! -d $FAT_FILE_IN ];then
 	echo "Error: $FAT_FILE_IN doesn't exist!"
 	exit 1
 fi
@@ -67,6 +66,9 @@ else
 	if [ -x "$(command -v mkfs.vfat)" ]; then 
 	  echo '######do mkfs.vfat cmd ########' 
 	  mkfs.vfat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))" 
+		if [ $? -ne 0 ];then
+			exit
+		fi
 	else 
 	  echo "no mkfs.fat and mkfs.vfat cmd ,please install it" 
 	  exit 
@@ -75,7 +77,10 @@ fi
 
 if [ -x "$(command -v mcopy)" ]; then 
   echo '######do the mcopy cmd ########' 
-  mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN" ::
+  mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$FAT_FILE_IN/dtb" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+  if [ $? -ne 0 ];then
+    exit
+  fi
 else 
   echo "no mcopy cmd ,please install it" 
   exit 
@@ -87,10 +92,6 @@ dd if="$FAT_IMG_OUT" of="$OUT_FILE" bs="$seek_bs" seek="$seek_offset"
 rm -f "$FAT_IMG_OUT"
 #create and offset ext2.img 
 #modify the ext partition's first sector in etc/init.d/rc.sdcardboot use to resize2fs root partition.
-firstSector=$((($partition_size_1+$seek_bs*$seek_offset)/$BLOCK_SIZE))
-echo "EXT3 partition first sector = $firstSector"
-
-sed -ri "/$REPLAY_STR/s/($REPLAY_STR)[0-9a-zA-Z ]+/\1$firstSector/" $RC_SDCARDBOOTFILE
 cp -rf "$RC_SDCARDBOOTFILE" $RC_SDCARDBOOTDIR
 
 sz=`du -sb $ROOT_DIR_IN | cut -f1` 
@@ -110,6 +111,9 @@ chmod 777 $ROOT_DIR_IN/bin/busybox
   -E offset="$(($partition_size_1+$seek_bs*$seek_offset))" \
   "$OUT_FILE" "${ROOT_IMG_SIZE_M}M" \
 ;
+if [ $? -ne 0 ];then
+ 	exit
+fi
 # create the partition info
 echo '######do sfdisk cmd ,sfdisk version need to bigger than 2.27.1########' 
 if [ -x "$(command -v sfdisk)" ]; then 
@@ -125,5 +129,5 @@ fi
 
 #rm -rf $FAT_FILE_IN
 #to avoid switch to emmc and init from rc.sdcard
-rm -rf $RC_SDCARDBOOTDIR/$RC_SDCARDBOOTFILE
+#rm -rf $RC_SDCARDBOOTDIR/$RC_SDCARDBOOTFILE
 

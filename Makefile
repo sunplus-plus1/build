@@ -99,6 +99,7 @@ uboot: check
 kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
+	@$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN)
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
 		CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)

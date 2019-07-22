@@ -6,7 +6,7 @@ X=xboot.img
 U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
-
+D=dtb
 # Partition name = file name
 cp $X xboot0
 cp $U uboot0
@@ -15,7 +15,7 @@ cp $U uboot1
 cp $U uboot2
 cp $K kernel
 cp $ROOTFS rootfs
-
+cp $D DTB
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
 #     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
@@ -44,7 +44,7 @@ rm -rf xboot1
 rm -rf uboot1
 rm -rf uboot2
 rm -rf kernel
-rm -rf dtb
+rm -rf DTB
 rm -rf env
 rm -rf env_redund
 rm -rf rootfs
@@ -54,6 +54,7 @@ mkdir -p boot2linux
 isp extract4boot2linux ISPBOOOT.BIN boot2linux/ISPBOOOT.BIN
 
 mkdir -p boot2linux_SDcard
+cp -rf $U $K $D ./boot2linux_SDcard
 isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
 
 # Create image for partial update:

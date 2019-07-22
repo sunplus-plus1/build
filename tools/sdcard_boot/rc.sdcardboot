@@ -1,8 +1,37 @@
-#modify in build/sdcard_boo.sh by "PART_EXT_STARTSECTOR"
-PART_EXT_STARTSECTOR=104448
+DEV_BLK=/dev/mmcblk1
 RESIZE_PART=/dev/mmcblk1p2
 PART_FLAG=/etc/init.d/partflag
 RESIZE_FLAG=/etc/init.d/resizeflag
+
+fdisk_func()
+{
+	echo "p
+	u
+	d
+	2
+	n
+	p
+	2
+	$1
+	$2
+	p
+	w"|fdisk /dev/mmcblk1
+}
+
+extend_rootpartiton()
+{
+	totalsize=$(fdisk -lu $DEV_BLK | grep "Disk $DEV_BLK:"|awk '{print $5}'|tr -cd "[0-9]")
+	echo "totalsize=$totalsize"
+	
+	totalsize=$(awk -v x=$totalsize -v y=512 -v z=8 'BEGIN{printf "%d\n",(x/y)-z}')
+	rootpartstartsector=$(fdisk -lu $DEV_BLK | grep "$RESIZE_PART"|awk '{print $2}'|tr -cd "[0-9]")
+	echo "totalsize=$totalsize startsector=$rootpartstartsector"
+	
+	fdisk_func $rootpartstartsector $totalsize
+	touch $PART_FLAG
+}
+
+
 echo "sdcard boot set..."
 if [ ! -b $RESIZE_PART ];then
 	echo "no partiton $RESIZE_PART"
@@ -12,33 +41,16 @@ fi
 if [ -f $PART_FLAG ];then
 	if [ ! -f $RESIZE_FLAG ];then
 		echo "resize2fs partition"
-		
-		fdisk -lu
-		
-		resize2fs /dev/mmcblk1p2
-		
+		resize2fs $RESIZE_PART 2>/dev/null
+		if [ $? -eq 0 ];then
+			touch $RESIZE_FLAG
+		fi
 		df -h
-		
-		touch $RESIZE_FLAG
 	fi
 	
 else
 	echo "partition set"
-	
-	echo "p
-	u
-	d
-	2
-	n
-	p
-	2
-	$PART_EXT_STARTSECTOR
-
-	p
-	w"|fdisk /dev/mmcblk1
-
-	touch $PART_FLAG
-	
+	extend_rootpartiton
 	reboot
 fi
 
