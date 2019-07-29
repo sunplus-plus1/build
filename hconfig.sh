@@ -15,19 +15,19 @@ UBOOT_CONFIG_ROOT=./boot/uboot/configs
 KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 DTB_CONFIG_ROOT=./linux/kernel/arch/arm/boot/dts
 
-CHIPA_NAND_KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
-CHIPB_NAND_KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
-CHIPA_EMMC_KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
-CHIPB_EMMC_KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
-CHIPA_NOR_KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
-CHIPB_NOR_KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
+CHIPA_NAND_KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+CHIPB_NAND_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+CHIPA_EMMC_KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
+CHIPB_EMMC_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
+CHIPA_NOR_KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+CHIPB_NOR_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
 
 BOOT_TYPE=
 
 save_hwconfig()
 {
 	echo "IC_PROJ=pentagram" > $HARDWARE_CONFIG
-	echo "IC_NAME=sc7021" >> $HARDWARE_CONFIG
+	echo "IC_NAME=sp7021" >> $HARDWARE_CONFIG
 	echo "IC_VER=${IC_VER}" >> $HARDWARE_CONFIG
 	echo "CHIP_TYPE=${CHIP_TYPE}" >> $HARDWARE_CONFIG
 	echo "HW_DTB=${HW_DTB}.dtb" >> $HARDWARE_CONFIG
@@ -48,10 +48,10 @@ save_config()
 chip_nand_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sc7021_nand_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_nand_defconfig
 		KERNEL_CONFIG=$CHIPA_NAND_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sc7021_nand_b_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_nand_b_defconfig
 		KERNEL_CONFIG=$CHIPB_NAND_KERNEL_CONFIG
 	fi
 }
@@ -59,10 +59,10 @@ chip_nand_config()
 chip_emmc_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sc7021_emmc_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
 		KERNEL_CONFIG=$CHIPA_EMMC_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sc7021_emmc_b_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
 		KERNEL_CONFIG=$CHIPB_EMMC_KERNEL_CONFIG
 	fi
 }
@@ -70,10 +70,10 @@ chip_emmc_config()
 chip_nor_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sc7021_romter_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
 		KERNEL_CONFIG=$CHIPA_NOR_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
+		UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
 		KERNEL_CONFIG=$CHIPB_NOR_KERNEL_CONFIG
 	fi
 	NEED_ISP=0
@@ -125,13 +125,13 @@ assign_dtb()
 {
 	$ECHO $COLOR_GREEN"Select dtb :"$COLOR_ORIGIN
 	$ECHO "================================================"
-	find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sc*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g" | sed "s/.dts//g"
+	find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sp*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g" | sed "s/.dts//g"
 	$ECHO ""
 	read -p "current dtb ["$HW_DTB"]: " DTB_NUM
 
 	if [ ! -z $DTB_NUM ];then
 		if [ $DTB_NUM -gt 0 ]; then		
-			HW_DTB=$(find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sc*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed "s/.dts//g" | sed -n $DTB_NUM"p" | sed -r "s, +[0-9]* ,,g")
+			HW_DTB=$(find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sp*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed "s/.dts//g" | sed -n $DTB_NUM"p" | sed -r "s, +[0-9]* ,,g")
 			IS_ASSIGN_DTB=1
 		fi
 	fi
@@ -146,7 +146,7 @@ CUR_SELECT=1
 
 if [ -z $IC_NAME ]; then
 	NEW_HW_CONFIG=1
-	IC_NAME=sc7021
+	IC_NAME=sp7021
 fi
 
 # while [ $BREAK -eq 0 ]
