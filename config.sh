@@ -17,8 +17,8 @@ pentagram_b_chip_nand_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_nand_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_nand_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=0
@@ -38,8 +38,8 @@ pentagram_b_chip_emmc_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_emmc_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=0
@@ -59,8 +59,8 @@ pentagram_b_chip_nor_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
@@ -76,8 +76,8 @@ pentagram_b_chip_sdcard_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_emmc_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=1
@@ -97,8 +97,8 @@ pentagram_b_chip_tftp_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
@@ -136,8 +136,8 @@ pentagram_a_chip_nand_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_nand_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_nand_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=0
@@ -157,8 +157,8 @@ pentagram_a_chip_emmc_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_emmc_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=0
@@ -178,8 +178,8 @@ pentagram_a_chip_nor_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_romter_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
@@ -195,8 +195,8 @@ pentagram_a_chip_sdcard_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_emmc_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	SDCARD_BOOT=1
@@ -216,8 +216,8 @@ pentagram_a_chip_tftp_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sc7021_romter_defconfig
-	KERNEL_CONFIG=pentagram_sc7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
