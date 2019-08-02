@@ -362,80 +362,56 @@ others_config()
 }
 
 $ECHO $COLOR_GREEN"Q628 configs."$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] Pentagram B chip (EMMC), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] Pentagram B chip (SPI-NAND), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[3] Pentagram B chip (NOR/romter), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[4] Pentagram A chip (EMMC), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[5] Pentagram A chip (SPI-NAND), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[6] Pentagram A chip (NOR/romter), revA IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[7] 8388 B chip"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[8] others"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[9]  Pentagram B chip (EMMC), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[10] Pentagram B chip (SPI-NAND), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[11] Pentagram B chip (NOR/romter), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[12] Pentagram B chip (SDCARD), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[13] Pentagram B chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[14] Pentagram A chip (EMMC), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[15] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[16] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[17] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[18] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] Pentagram B chip (EMMC), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] Pentagram B chip (SPI-NAND), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[3] Pentagram B chip (NOR/romter), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[4] Pentagram B chip (SDCARD), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[5] Pentagram B chip (TFTP), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[6] Pentagram A chip (EMMC), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[7] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[8] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[9] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[10] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[11] 8388 B chip"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[12] others"$COLOR_ORIGIN
 read num
 
 case "$num" in
 	1)
-		pentagram_b_chip_emmc_config $1 revA
-		;;
-	2)
-		pentagram_b_chip_nand_config $1 revA
-		;;
-	3)
-		pentagram_b_chip_nor_config $1 revA
-		;;
-	4)
-		pentagram_a_chip_emmc_config $2 revA
-		;;
-	5)
-		pentagram_a_chip_nand_config $2 revA
-		;;
-	6)
-		pentagram_a_chip_nor_config $2 revA
-		;;
-	7)
-		pentagram_8388_b_chip_config $1
-		;;
-	8)
-		others_config $1 $2
-		;;
-	9)
 		pentagram_b_chip_emmc_config $1 revB
 		;;
-	10)
+	2)
 		pentagram_b_chip_nand_config $1 revB
 		;;
-	11)
+	3)
 		pentagram_b_chip_nor_config $1 revB
 		;;
-	12)
+	4)
 		pentagram_b_chip_sdcard_config $1 revB
 		;;
-	13)
+	5)
 		pentagram_b_chip_tftp_config $1 revB
 		;;
-	14)
+	6)
 		pentagram_a_chip_emmc_config $2 revB
 		;;
-	15)
+	7)
 		pentagram_a_chip_nand_config $2 revB
 		;;
-	16)
+	8)
 		pentagram_a_chip_nor_config $2 revB
 		;;
-	17)
+	9)
 		pentagram_a_chip_sdcard_config $2 revB
 		;;
-	18)
+	10)
 		pentagram_a_chip_tftp_config $2 revB
+		;;
+	11)
+		pentagram_8388_b_chip_config $1
+		;;
+	12)
+		others_config $1 $2
 		;;
 	*)
 		echo "Error: Unknow config!!"
