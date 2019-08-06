@@ -456,16 +456,23 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				continue;
 			}
 #endif
-			is_1MB_aligned = ((isp_info.file_header.partition_info[i].partition_size & ((1 << 20) - 1)) == 0) ? 1 : 0;
-
 			fprintf(fd, "name=%s,", basename( isp_info.file_header.partition_info[i].file_name));
-			fprintf(fd, "size=%u%s,", (is_1MB_aligned ? (isp_info.file_header.partition_info[i].partition_size >> 20) :
-						   (isp_info.file_header.partition_info[i].partition_size >> 10)),
-				(is_1MB_aligned ? "MiB" : "KiB"));
-			fprintf(fd, "uuid=${uuid_gpt_%s};", basename( isp_info.file_header.partition_info[i].file_name));
+			fprintf(fd, "uuid=${uuid_gpt_%s},", basename( isp_info.file_header.partition_info[i].file_name));
+			if (strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+			{
+				// The emmc rootfs partition is set to EXT2 fs, and the partition size is all remaining space.
+				fprintf(fd, "size=-;");
+				break;
+			}
+			else
+			{
+				is_1MB_aligned = ((isp_info.file_header.partition_info[i].partition_size & ((1 << 20) - 1)) == 0) ? 1 : 0;
+				fprintf(fd, "size=%u%s;", (is_1MB_aligned ? (isp_info.file_header.partition_info[i].partition_size >> 20) :
+							   (isp_info.file_header.partition_info[i].partition_size >> 10)),(is_1MB_aligned ? "MiB" : "KiB"));
+			}
 		}
-		fprintf(fd, "name=userdata,size=-,uuid=${uuid_gpt_userdata}\"\n\n");
-
+		fprintf(fd, "\"\n\n");
+		//fprintf(fd, "name=userdata,size=-,uuid=${uuid_gpt_userdata}\"\n\n");
 		fprintf(fd, "printenv partitions\n");
 		fprintf(fd, "echo Writing GPT ...\n");
 		fprintf(fd, "gpt write mmc 0 $partitions\n");
