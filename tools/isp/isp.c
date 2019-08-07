@@ -942,7 +942,7 @@ int pack_image(int argc, char **argv)
 				}
 				strcpy(isp_info.full_file_name_xboot0, argv[i]);
 			} else {
-				printf("Error: %s: %d\n", __FILE__, __LINE__);
+				printf("Error for '%s': %s: %d\n", argv[i], __FILE__, __LINE__);
 				exit(-1);
 			}
 		} else if (i == ARGC_PACK_IMAGE_UBOOT0_FILE) {
@@ -961,7 +961,7 @@ int pack_image(int argc, char **argv)
 				}
 				strcpy(isp_info.full_file_name_uboot0, argv[i]);
 			} else {
-				printf("Error: %s: %d\n", __FILE__, __LINE__);
+				printf("Error for '%s': %s: %d\n", argv[i], __FILE__, __LINE__);
 				exit(-1);
 			}
 		} else if ((i >= ARGC_PACK_IMAGE_XBOOT1_FILE) && (i <= idx_last_info_of_binary_partition)) {
@@ -1049,7 +1049,7 @@ int pack_image(int argc, char **argv)
 					next_partition_start_address += isp_info.file_header.partition_info[i].partition_size;
 				}
 			} else {
-				printf("Error: %s: %d\n", __FILE__, __LINE__);  // isp_info.full_file_name[i] doesn't exist or can't be created
+				printf("Error for '%s': %s: %d\n", isp_info.full_file_name[i],__FILE__, __LINE__);  // isp_info.full_file_name[i] doesn't exist or can't be created
 				exit(-1);
 			}
 		}
@@ -1069,7 +1069,7 @@ int pack_image(int argc, char **argv)
 		file_offset_isp_script[IDX_NAND] = offset_of_last_file;
 		offset_of_last_file += tmp_u32;
 	} else {
-		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		printf("Error for '%s': %s: %d\n", file_name_isp_script[IDX_NAND], __FILE__, __LINE__);
 		exit(-1);
 	}
 
@@ -1084,7 +1084,7 @@ int pack_image(int argc, char **argv)
 		file_offset_isp_script[IDX_EMMC] = offset_of_last_file;
 		offset_of_last_file += tmp_u32;
 	} else {
-		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		printf("Error for '%s': %s: %d\n", file_name_isp_script[IDX_EMMC], __FILE__, __LINE__);
 		exit(-1);
 	}
 #endif  /* SUPPORT_MAIN_STORAGE_IS_EMMC */
@@ -1185,7 +1185,7 @@ int pack_image(int argc, char **argv)
 
 	fd = fopen(tmp_file2, "wb");
 	if (fd == NULL) {
-		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		printf("Error for '%s': %s: %d\n", tmp_file2, __FILE__, __LINE__);
 		exit(-1);
 	}
 	if (fwrite(&isp_info.file_header, sizeof(isp_info.file_header), 1, fd) != 1) {
