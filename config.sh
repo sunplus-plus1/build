@@ -252,19 +252,6 @@ pentagram_a_chip_tftp_config()
 	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
 
-pentagram_8388_b_chip_config()
-{
-	XBOOT_CONFIG=8388_defconfig
-	UBOOT_CONFIG=pentagram_8388_b_defconfig
-	KERNEL_CONFIG=pentagram_8388_bchip_defconfig
-	CROSS_COMPILE=$1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-}
-
 others_config()
 {
 	$ECHO $COLOR_GREEN"Initial all configs."$COLOR_ORIGIN
@@ -372,8 +359,7 @@ $ECHO $COLOR_YELLOW"[7] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[8] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[9] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[10] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[11] 8388 B chip"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[12] others"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[11] others"$COLOR_ORIGIN
 read num
 
 case "$num" in
@@ -408,9 +394,6 @@ case "$num" in
 		pentagram_a_chip_tftp_config $2 revB
 		;;
 	11)
-		pentagram_8388_b_chip_config $1
-		;;
-	12)
 		others_config $1 $2
 		;;
 	*)
