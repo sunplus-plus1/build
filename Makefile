@@ -35,7 +35,7 @@ CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
-SDCARD_BOOT ?= 0
+BOOT_FROM ?= EMMC
 IS_ASSIGN_DTB ?= 0
 
 BOOT_KERNEL_FROM_TFTP ?= 0
@@ -50,7 +50,7 @@ ISP_SHELL = isp.sh
 PART_SHELL = part.sh
 SDCARD_BOOT_SHELL = sdcard_boot.sh
 
-LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g').dtb
+LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g').dtb
 
 BUILD_PATH = build
 XBOOT_PATH = boot/xboot
@@ -225,11 +225,9 @@ isp: check tool_isp
 	fi
 	@cd out/; ./$(ISP_SHELL)
 	
-	@if [ "$(SDCARD_BOOT)" = '1' ]; then  \
-		cd build/tools/sdcard_boot; \
-		echo "sdcard gen disk image" ; \
-		./$(SDCARD_BOOT_SHELL) ; \
-		cd ../../.. ;\
+	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
+		@$(ECHO) $(COLOR_YELLOW) "sdcard gen disk image" $(COLOR_ORIGIN); \
+		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) ; \
 	fi
 	
 part:
@@ -297,10 +295,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG)
+	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
@@ -309,4 +307,4 @@ info:
 	@$(ECHO) "CROSS COMPILER =" $(CROSS_COMPILE)
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
-	@$(ECHO) "SDCARD BOOT =" $(SDCARD_BOOT)
+	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)

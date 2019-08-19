@@ -118,6 +118,8 @@
 #define MAX_MEM_SIZE_FOR_ISP                        (2 << 20)       // Must be N*(block size), where N=1, 2, ...
 #define GPT_HEADER_SIZE                             (17 << 10)      // GUID Partition header size: (512-byte MBR) + (512-byte header) + (128 bytes * 128 partitions)
 
+#define NAND_UBI_VID_HEAD_OFFSET					2048
+
 typedef unsigned char u08;
 typedef uint32_t      u32;
 const u08 file_header_signature[] = "Pentagram_ISP_image";
@@ -602,39 +604,16 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					isp_info.file_header.partition_info[i].file_size);
 #endif /* PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT */
 
-				file_size = isp_info.file_header.partition_info[i].file_size;
-				flag_first = 1;     // first MAX_MEM_SIZE_FOR_ISP bytes of the programmed file.
-				size_programmed = 0;
-				while (file_size) {
-					size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
-					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), size,
-						(size_programmed + (isp_info.file_header.partition_info[i].file_offset)));
-
-#if !defined(REDUCE_MESSAGE)
-					fprintf(fd, "md.b $isp_ram_addr 0x0100\n");
-#endif
-
-					// "nand erase.chip" already,
-					// fprintf(fd, "nand erase $isp_nand_addr 0x%x\n", isp_info.file_header.partition_info[i].file_size);
-					// fprintf(fd, "setexpr isp_addr_nand_write_next $isp_nand_addr + 0x%x && setenv isp_addr_nand_write_next 0x${isp_addr_nand_write_next}\n",size_programmed);
-					fprintf(fd, "echo isp_addr_nand_write_next: ${isp_addr_nand_write_next}\n");
-
-					if (flag_first) {
-						flag_first = 0;
-						snprintf(cmd, sizeof(cmd), "nand write $isp_ram_addr $isp_nand_addr 0x%x", size);
-					} else
-						snprintf(cmd, sizeof(cmd), "nand write $isp_ram_addr $isp_addr_nand_write_next 0x%x",
-							 size);    // isp_addr_nand_write_next is set in nand_write() (uboot/drivers/mtd/nand/nand_base.c)
-
-					fprintf(fd, "echo %s\n", cmd);
-					fprintf(fd, "%s\n", cmd);
-					// fprintf(fd, "ispsp progress 0x%x 0x00\n", size);
-					size_programmed += size;
-					file_size       -= size;
-				}
-
+				// set partition fisrt for ubifs. ubi write data base on the partition info.
 #if !defined(PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT)
-				fprintf(fd, "setenv isp_mtdpart_size 0x%x\n", isp_info.file_header.partition_info[i].partition_size);
+				if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+				{
+					fprintf(fd, "setenv isp_mtdpart_size -\n"); //set rootfs part size to remaining space
+				}
+				else
+				{
+					fprintf(fd, "setenv isp_mtdpart_size 0x%x\n", isp_info.file_header.partition_info[i].partition_size);
+				}
 				snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s", basename( isp_info.file_header.partition_info[i].file_name));
 #else /* defined(PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT) */
 				fprintf(fd, "setenv isp_mtdpart_size 0x${isp_find_area_new_size}\n");
@@ -654,6 +633,61 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				fprintf(fd, "else\n");
 				fprintf(fd, "    exit -1\n");
 				fprintf(fd, "fi\n\n");
+
+				file_size = isp_info.file_header.partition_info[i].file_size;
+				flag_first = 1;     // first MAX_MEM_SIZE_FOR_ISP bytes of the programmed file.
+				size_programmed = 0;
+
+				while (file_size) {
+					size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
+					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), size,
+						(size_programmed + (isp_info.file_header.partition_info[i].file_offset)));
+
+#if !defined(REDUCE_MESSAGE)
+					fprintf(fd, "md.b $isp_ram_addr 0x0100\n");
+#endif
+
+					// "nand erase.chip" already,
+					// fprintf(fd, "nand erase $isp_nand_addr 0x%x\n", isp_info.file_header.partition_info[i].file_size);
+					// fprintf(fd, "setexpr isp_addr_nand_write_next $isp_nand_addr + 0x%x && setenv isp_addr_nand_write_next 0x${isp_addr_nand_write_next}\n",size_programmed);
+					fprintf(fd, "echo isp_addr_nand_write_next: ${isp_addr_nand_write_next}\n");
+
+					if (flag_first) {
+						flag_first = 0;
+						if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+						{
+							fprintf(fd, "ubi part rootfs %d\n",NAND_UBI_VID_HEAD_OFFSET);
+							fprintf(fd, "ubi create rootfs - \n");
+							snprintf(cmd, sizeof(cmd), "ubi write.part $isp_ram_addr %s 0x%x 0x%x",isp_info.file_header.partition_info[i].file_name, size,file_size);
+						}
+						else
+						{
+							snprintf(cmd, sizeof(cmd), "nand write $isp_ram_addr $isp_nand_addr 0x%x", size);
+						}
+						
+					} 
+					else
+					{
+						if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+						{
+							snprintf(cmd, sizeof(cmd), "ubi write.part $isp_ram_addr %s 0x%x",isp_info.file_header.partition_info[i].file_name, size);
+						}
+						else
+						{
+							snprintf(cmd, sizeof(cmd), "nand write $isp_ram_addr $isp_addr_nand_write_next 0x%x",
+								 size);    // isp_addr_nand_write_next is set in nand_write() (uboot/drivers/mtd/nand/nand_base.c)
+						}
+					}
+					fprintf(fd, "echo %s\n", cmd);
+					fprintf(fd, "%s\n", cmd);
+					// fprintf(fd, "ispsp progress 0x%x 0x00\n", size);
+					size_programmed += size;
+					file_size       -= size;
+				 }
+				if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+				{
+					break;
+				}
 			} else if (nand_or_emmc == IDX_EMMC) {
 				file_size = isp_info.file_header.partition_info[i].file_size;
 				size_programmed = 0;
@@ -687,9 +721,10 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 	}
 	if ((isp_info.file_header.flags & FLAGS_MTD_ONLY) && (nand_or_emmc == IDX_NAND)) {
 #if !defined(REDUCE_MESSAGE)
-		fprintf(fd, "mtdparts add nand0 - userdata && mtdparts && printenv mtdparts\n\n");      // Assign unused area to "userdata"
+		//for nand and emmc ,the rootfs is the last partition,no overlay and userdata partition
+		//fprintf(fd, "mtdparts add nand0 - userdata && mtdparts && printenv mtdparts\n\n");      // Assign unused area to "userdata"
 #else
-		fprintf(fd, "mtdparts add nand0 - userdata && printenv mtdparts\n\n");                  // Assign unused area to "userdata"
+		//fprintf(fd, "mtdparts add nand0 - userdata && printenv mtdparts\n\n");                  // Assign unused area to "userdata"
 #endif
 	}
 
@@ -710,6 +745,11 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 	for (i = 0; i < NUM_OF_PARTITION; i++) {
 		if (isp_info.file_header.partition_info[i].partition_size == 0)
 			continue;
+		if(nand_or_emmc == IDX_NAND && strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
+		{
+			// nand of ubifs, no read cmd to read part of imgdata ,for ubifs nand ,not do verify.
+			continue;
+		}
 
 		file_size = isp_info.file_header.partition_info[i].file_size;
 		flag_first = 1;     // first MAX_MEM_SIZE_FOR_ISP bytes of the verified file.
@@ -986,10 +1026,11 @@ int pack_image(int argc, char **argv)
 
 	for (i = 0; i < idx_partition_info; i++) {
 #ifdef XBOOT1_IN_EMMC_BOOTPART
-		if (i <= IDX_PARTITION_UBOOT1) {
+		if (i <= IDX_PARTITION_UBOOT1) 
 #else
-		if (i <= IDX_PARTITION_XBOOT1) {
+		if (i <= IDX_PARTITION_XBOOT1) 
 #endif
+		{
 			isp_info.file_header.partition_info[i].emmc_partition_start = BYTE2BLOCK(GPT_HEADER_SIZE);
 		} else {
 			isp_info.file_header.partition_info[i].emmc_partition_start =

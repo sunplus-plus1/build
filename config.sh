@@ -18,17 +18,16 @@ pentagram_b_chip_nand_config()
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sp7021_nand_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_nand_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=0
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
 pentagram_b_chip_emmc_config()
@@ -42,14 +41,13 @@ pentagram_b_chip_emmc_config()
 	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=0
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
 pentagram_b_chip_nor_config()
@@ -67,6 +65,7 @@ pentagram_b_chip_nor_config()
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
 }
 
 pentagram_b_chip_sdcard_config()
@@ -80,14 +79,13 @@ pentagram_b_chip_sdcard_config()
 	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
 }
 
 pentagram_b_chip_tftp_config()
@@ -137,17 +135,16 @@ pentagram_a_chip_nand_config()
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
 	UBOOT_CONFIG=pentagram_sp7021_nand_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_nand_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=0
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
 pentagram_a_chip_emmc_config()
@@ -161,14 +158,13 @@ pentagram_a_chip_emmc_config()
 	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=0
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
 pentagram_a_chip_nor_config()
@@ -186,6 +182,7 @@ pentagram_a_chip_nor_config()
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
 }
 
 pentagram_a_chip_sdcard_config()
@@ -199,14 +196,13 @@ pentagram_a_chip_sdcard_config()
 	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	SDCARD_BOOT=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "SDCARD_BOOT="$SDCARD_BOOT >> $BUILD_CONFIG
+	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
 }
 
 pentagram_a_chip_tftp_config()
