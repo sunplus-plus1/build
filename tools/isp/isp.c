@@ -684,10 +684,6 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					size_programmed += size;
 					file_size       -= size;
 				 }
-				if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
-				{
-					break;
-				}
 			} else if (nand_or_emmc == IDX_EMMC) {
 				file_size = isp_info.file_header.partition_info[i].file_size;
 				size_programmed = 0;
