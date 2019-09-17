@@ -424,7 +424,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 #else
 		snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@0x00000000 nand_header && printenv mtdparts");
 #endif
-		fprintf(fd, "echo %s\n", cmd);
+		fprintf(fd, "echo \"%s\"\n", cmd);
 		fprintf(fd, "%s\n\n", cmd);
 	} else if (nand_or_emmc == IDX_EMMC) {
 		fprintf(fd, "echo Initialize eMMC ...\n");
