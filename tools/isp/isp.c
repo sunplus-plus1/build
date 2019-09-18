@@ -1755,9 +1755,8 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		if (char_ptr == NULL) {
 			break;
 		}
-		if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD && (strcmp(char_ptr, "rootfs") == 0)){
-			num_need_cp++;
-			continue; // sdcard boot no need to loader rootfs
+		if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD ){
+			break; // sdcard boot no need to loader uimage,dtb,rootfs
 		}		
 		
 		// printf("%s, %d, %s\n", __FILE__, __LINE__, partition_to_be_loaded[num_need_cp]);
@@ -1792,41 +1791,31 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
 	fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
 
+	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD)
+	{
+		fprintf(fd2, "echo Loading kernel to $addr_dst_kernel\n");
+		fprintf(fd2, "fatsize $isp_if $isp_dev /uImage \n\n");
+		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_kernel /uImage $filesize 0\n\n");
+		fprintf(fd2, "echo Loading dtb to $addr_dst_dtb\n");
+		fprintf(fd2, "fatsize $isp_if $isp_dev /dtb \n\n");
+		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_dtb /dtb $filesize 0\n\n");
+	}
 	for (i == 0; i < NUM_OF_PARTITION; i++) {
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
 			break;
 		}
 
 		fprintf(fd2, "echo Loading %s to $addr_dst_%s\n", partition_to_be_loaded[i], partition_to_be_loaded[i]);
-		if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD && strcmp(file_header_extract4boot2linux.partition_info[i].file_name,"kernel")==0)
-		{
 			
-			fprintf(fd2, "fatsize $isp_if $isp_dev /uImage \n\n");
-			fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /uImage $filesize 0\n\n",partition_to_be_loaded[i]);
-		}
-		else if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD && strcmp(file_header_extract4boot2linux.partition_info[i].file_name,"dtb")==0)
-		{
-			fprintf(fd2, "fatsize $isp_if $isp_dev /dtb \n\n");
-			fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /dtb $filesize 0\n\n",partition_to_be_loaded[i]);
-		}
-		else
-		{
 		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /ISPBOOOT.BIN 0x%x 0x%x\n\n",
 			partition_to_be_loaded[i],
 			file_header_extract4boot2linux.partition_info[i].file_size,
 			file_header_extract4boot2linux.partition_info[i].file_offset);
-		}
 	}
 
 	for (i = 0; i < NUM_OF_PARTITION; i++) {
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
 			break;
-		}
-		if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD && (strcmp(file_header_extract4boot2linux.partition_info[i].file_name,"kernel")==0 ||\
-			strcmp(file_header_extract4boot2linux.partition_info[i].file_name,"dtb")==0))
-		{
-			fprintf(fd2,"echo sdcard %s no need do md5 check!!!\n",file_header_extract4boot2linux.partition_info[i].file_name);
-			continue;
 		}
 		fprintf(fd2, "echo verifying %s\n", partition_to_be_loaded[i]);
 		fprintf(fd2, "md5sum $addr_dst_%s 0x%x md5sum_value\n",
