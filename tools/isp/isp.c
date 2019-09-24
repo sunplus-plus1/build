@@ -561,7 +561,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
 #endif
 
-					fprintf(fd, "echo %s\n", cmd);
+					fprintf(fd, "echo \"%s\"\n", cmd);
 					fprintf(fd, "%s\n\n", cmd);
 				} else {
 					// Should keep some space after argv[ARGC_PACK_IMAGE_UBOOT2_FILE],
@@ -581,7 +581,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
 #endif
 
-					fprintf(fd, "echo %s\n", cmd);
+					fprintf(fd, "echo \"%s\"\n", cmd);
 					fprintf(fd, "%s\n\n", cmd);
 
 					fprintf(fd, "printenv isp_nand_addr_1st_part\n\n");
