@@ -127,6 +127,26 @@ pentagram_b_chip_tftp_config()
 	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
 
+pentagram_b_chip_usb_config()
+{
+	if [ "$2" = "revA" ];then
+		XBOOT_CONFIG=q628_defconfig
+	else
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
+	fi
+	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_usb_defconfig
+	CROSS_COMPILE=$1
+	NEED_ISP=1
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
+	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+	echo "BOOT_FROM=USB" >> $BUILD_CONFIG
+}
+
 pentagram_a_chip_nand_config()
 {
 	if [ "$2" = "revA" ];then
@@ -247,6 +267,25 @@ pentagram_a_chip_tftp_config()
 	echo "TFTP_SERVER_IP="${TFTP_SERVER_IP} >> ${BUILD_CONFIG}
 	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
+pentagram_a_chip_usb_config()
+{
+	if [ "$2" = "revA" ];then
+		XBOOT_CONFIG=q628_defconfig
+	else
+		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
+	fi
+	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_usb_defconfig
+	CROSS_COMPILE=$1
+	NEED_ISP=1
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
+	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+	echo "BOOT_FROM=USB" >> $BUILD_CONFIG
+}
 
 others_config()
 {
@@ -350,12 +389,14 @@ $ECHO $COLOR_YELLOW"[2] Pentagram B chip (SPI-NAND), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] Pentagram B chip (NOR/romter), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] Pentagram B chip (SDCARD), revB IC"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] Pentagram B chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[6] Pentagram A chip (EMMC), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[7] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[8] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[9] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[10] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[11] others"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[6] Pentagram B chip (USB), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[7] Pentagram A chip (EMMC), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[8] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[9] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[10] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[11] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[12] Pentagram A chip (USB), revB IC"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[13] others"$COLOR_ORIGIN
 read num
 
 case "$num" in
@@ -375,21 +416,27 @@ case "$num" in
 		pentagram_b_chip_tftp_config $1 revB
 		;;
 	6)
-		pentagram_a_chip_emmc_config $2 revB
+		pentagram_b_chip_usb_config $1 revB
 		;;
 	7)
-		pentagram_a_chip_nand_config $2 revB
+		pentagram_a_chip_emmc_config $2 revB
 		;;
 	8)
-		pentagram_a_chip_nor_config $2 revB
+		pentagram_a_chip_nand_config $2 revB
 		;;
 	9)
-		pentagram_a_chip_sdcard_config $2 revB
+		pentagram_a_chip_nor_config $2 revB
 		;;
 	10)
-		pentagram_a_chip_tftp_config $2 revB
+		pentagram_a_chip_sdcard_config $2 revB
 		;;
 	11)
+		pentagram_a_chip_tftp_config $2 revB
+		;;
+	12)
+		pentagram_a_chip_usb_config $2 revB
+		;;
+	13)
 		others_config $1 $2
 		;;
 	*)

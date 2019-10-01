@@ -1706,7 +1706,8 @@ int extract4update(int argc, char **argv, int extract4update_src)
 }
 
 #define EXTRACT4BOOT2LINUX_FOR_SDCARD	(0)
-#define EXTRACT4BOOT2LINUX_FOR_OTHER	(1)
+#define EXTRACT4BOOT2LINUX_FOR_USB	(1)
+#define EXTRACT4BOOT2LINUX_FOR_OTHER	(2)
 
 int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 {
@@ -1721,6 +1722,8 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	char tmp_file_init_script[32];
 	struct stat file_stat;
 	char tmp_file_file_header[32];
+	char tmp_file_ramdisk[32];
+	u32  ramdisk_file_size;
 
 	fd = fopen(argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], "rb");
 	if (fd == NULL) {
@@ -1774,6 +1777,58 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		num_need_cp++;
 	}
 
+	// Added u-boot (mkimage) header to rootfs partition for USB boot.
+	if (extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_USB) {
+		// Find rootfs partition
+		for (i = 0; i < NUM_OF_PARTITION; i++) {
+			if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "rootfs") == 0)
+				break;
+		}
+		if (i < NUM_OF_PARTITION) {
+			// rootfs partition was found! Find index by name.
+			idx = get_partition_info_idx_by_file_name(file_header_extract4boot2linux.partition_info[i].file_name);
+			if (idx < 0) {
+				printf("Error: %s: %d\n", __FILE__, __LINE__);
+				exit(-1);
+			}
+
+			// Duplicate rootfs partition from "ISPBOOOT.BIN" to a temporary file, "tmp0000xxxx".
+			sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
+			sprintf(cmd, "dd if=%s of=%s bs=1024 skip=%u count=%u %s", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], tmp_file,
+				(isp_info.file_header.partition_info[idx].file_offset >> 10),
+				(file_header_extract4boot2linux.partition_info[i].file_size >> 10), MESSAGE_OUT);
+			// printf("%s\n", cmd);
+			system(cmd);
+
+			// Add u-boot (mkimage) header and save to another temporary file, "tmp_file_ramdisk0000xxxx".
+			sprintf(tmp_file_ramdisk, "tmp_file_ramdisk%08x", (u32)(getpid()));
+			sprintf(cmd, "mkimage -A arm -O linux -T ramdisk -C none -a 0x1400000 -e 0x1400000 -n 'Ramdisk rootfs' -d %s %s %s",
+				tmp_file, tmp_file_ramdisk, MESSAGE_OUT);
+			// printf("%s\n", cmd);
+			system(cmd);
+
+			// Align file size to 1k bytes.
+			if (stat(tmp_file_ramdisk, &file_stat) == 0) {
+				ramdisk_file_size = (u32)(file_stat.st_size);
+				ramdisk_file_size = ALIGN_TO_1K(ramdisk_file_size);
+				truncate(tmp_file_ramdisk, ramdisk_file_size);
+			} else {
+				printf("Error for '%s': %s: %d\n", tmp_file_ramdisk, __FILE__, __LINE__);
+				exit(-1);
+			}
+
+			// Update md5checksum of rootfs partition.
+			md5sum(tmp_file_ramdisk, 0, 0, file_header_extract4boot2linux.partition_info[i].md5sum);
+
+			// Update size of rootfs partition.
+			file_header_extract4boot2linux.partition_info[i].file_size = ramdisk_file_size;
+
+			sprintf(cmd, "rm -f %s", tmp_file);
+			// printf("%s\n", cmd);
+			system(cmd);
+		}
+	}
+
 	sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
 	fd2 = fopen(tmp_file, "w");
 
@@ -1800,7 +1855,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		fprintf(fd2, "fatsize $isp_if $isp_dev /dtb \n\n");
 		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_dtb /dtb $filesize 0\n\n");
 	}
-	for (i == 0; i < NUM_OF_PARTITION; i++) {
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
 			break;
 		}
@@ -1909,25 +1964,35 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0)
 			continue;
 
-		idx = get_partition_info_idx_by_file_name(file_header_extract4boot2linux.partition_info[i].file_name);
-		if (idx < 0) {
-			printf("Error: %s: %d\n", __FILE__, __LINE__);
-			exit(-1);
+		if ((extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_USB)&&(strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "rootfs") == 0)) {
+			sprintf(cmd, "cat %s >> %s", tmp_file_ramdisk, argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT]);
+			// printf("%s\n", cmd);
+			system(cmd);
+
+			sprintf(cmd, "rm -f %s", tmp_file_ramdisk);
+			// printf("%s\n", cmd);
+			system(cmd);
+		} else {
+			idx = get_partition_info_idx_by_file_name(file_header_extract4boot2linux.partition_info[i].file_name);
+			if (idx < 0) {
+				printf("Error: %s: %d\n", __FILE__, __LINE__);
+				exit(-1);
+			}
+			sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
+			sprintf(cmd, "dd if=%s of=%s bs=1024 skip=%u count=%u %s", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], tmp_file,
+				(isp_info.file_header.partition_info[idx].file_offset >> 10),
+				(file_header_extract4boot2linux.partition_info[i].file_size >> 10), MESSAGE_OUT);
+			// printf("%s\n", cmd);
+			system(cmd);
+
+			sprintf(cmd, "cat %s >> %s", tmp_file, argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT]);
+			// printf("%s\n", cmd);
+			system(cmd);
+
+			sprintf(cmd, "rm -f %s", tmp_file);
+			// printf("%s\n", cmd);
+			system(cmd);
 		}
-		sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
-		sprintf(cmd, "dd if=%s of=%s bs=1024 skip=%u count=%u %s", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], tmp_file,
-			(isp_info.file_header.partition_info[idx].file_offset >> 10),
-			(file_header_extract4boot2linux.partition_info[i].file_size >> 10), MESSAGE_OUT);
-		// printf("%s\n", cmd);
-		system(cmd);
-
-		sprintf(cmd, "cat %s >> %s", tmp_file, argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT]);
-		// printf("%s\n", cmd);
-		system(cmd);
-
-		sprintf(cmd, "rm -f %s", tmp_file);
-		// printf("%s\n", cmd);
-		system(cmd);
 	}
 
 	return 0;
@@ -1961,6 +2026,8 @@ int main(int argc, char **argv)
 		return pack_image(argc, argv);
 	} else if (strcmp(sub_cmd, "extract4boot2linux_sdcardboot") == 0) {
 		return extract4boot2linux(argc, argv,EXTRACT4BOOT2LINUX_FOR_SDCARD);
+	} else if (strcmp(sub_cmd, "extract4boot2linux_usbboot") == 0) {
+		return extract4boot2linux(argc, argv,EXTRACT4BOOT2LINUX_FOR_USB);
 	} else if (strcmp(sub_cmd, "extract4boot2linux") == 0) {
 		return extract4boot2linux(argc, argv,EXTRACT4BOOT2LINUX_FOR_OTHER);
 	} else if (strcmp(sub_cmd, "extract4update") == 0) {

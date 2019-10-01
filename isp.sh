@@ -49,12 +49,17 @@ rm -rf env_redund
 rm -rf rootfs
 
 # Create image for booting from SD card or USB storage.
-mkdir -p boot2linux
-isp extract4boot2linux ISPBOOOT.BIN boot2linux/ISPBOOOT.BIN
-
-mkdir -p boot2linux_SDcard
-cp -rf $U $K $D ./boot2linux_SDcard
-isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
+if [ "$1" = "SDCARD" ]; then
+	mkdir -p boot2linux_SDcard
+	cp -rf $U $K $D ./boot2linux_SDcard
+	isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
+	rm -rf ISPBOOOT.BIN
+fi
+if [ "$1" = "USB" ]; then
+	mkdir -p boot2linux_usb
+	isp extract4boot2linux_usbboot ISPBOOOT.BIN boot2linux_usb/ISPBOOOT.BIN
+	rm -rf ISPBOOOT.BIN
+fi
 
 # Create image for partial update:
 #     isp extract4update ISPBOOOT.BIN ISP_UPDT.BIN [list of partitions ...]
