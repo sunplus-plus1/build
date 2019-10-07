@@ -1,4 +1,5 @@
-#/bin/bash
+#!/bin/bash
+
 TOP=../../..
 
 #Generate a virtual image containing FAT and EXT3 partitions,
