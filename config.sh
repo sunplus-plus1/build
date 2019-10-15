@@ -134,8 +134,8 @@ pentagram_b_chip_usb_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_usb_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
@@ -274,8 +274,8 @@ pentagram_a_chip_usb_config()
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_usb_defconfig
+	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
+	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG

@@ -50,7 +50,7 @@ ISP_SHELL = isp.sh
 PART_SHELL = part.sh
 SDCARD_BOOT_SHELL = sdcard_boot.sh
 
-LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g' | sed 's/emu-usb/emu-initramfs/g').dtb
+LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g').dtb
 
 BUILD_PATH = build
 XBOOT_PATH = boot/xboot
