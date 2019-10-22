@@ -228,7 +228,7 @@ isp: check tool_isp
 	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
 	
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
-		@$(ECHO) $(COLOR_YELLOW) "sdcard gen disk image" $(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
 		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) ; \
 	fi
 	
