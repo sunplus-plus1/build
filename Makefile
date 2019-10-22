@@ -216,12 +216,14 @@ isp: check tool_isp
 		$(ECHO) $(COLOR_YELLOW)$(DTB)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	@if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
-		$(ECHO) $(COLOR_YELLOW)"Copy "$(ROOTFS_IMG)" to out folder."$(COLOR_ORIGIN); \
-		$(CP) -vf $(ROOTFS_PATH)/$(ROOTFS_IMG) $(OUT_PATH)/ ;\
-	else \
-		$(ECHO) $(COLOR_YELLOW)$(ROOTFS_IMG)" doesn't exist."$(COLOR_ORIGIN); \
-		exit 1; \
+	@if [ "$(BOOT_FROM)" != "SDCARD" ]; then  \
+		if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
+			$(ECHO) $(COLOR_YELLOW)"Copy "$(ROOTFS_IMG)" to out folder."$(COLOR_ORIGIN); \
+			$(CP) -vf $(ROOTFS_PATH)/$(ROOTFS_IMG) $(OUT_PATH)/ ;\
+		else \
+			$(ECHO) $(COLOR_YELLOW)$(ROOTFS_IMG)" doesn't exist."$(COLOR_ORIGIN); \
+			exit 1; \
+		fi \
 	fi
 	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
 	

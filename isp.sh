@@ -14,7 +14,9 @@ cp $X xboot1
 cp $U uboot1
 cp $U uboot2
 cp $K kernel
-cp $ROOTFS rootfs
+if [ "$1" != "SDCARD" ]; then
+	cp $ROOTFS rootfs
+fi
 cp $D DTB
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
