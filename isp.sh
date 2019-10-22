@@ -26,16 +26,39 @@ do
 	cat ${TOP}boot/uboot/.config | grep --color -e ${ADDR}
 done
 
-isp pack_image ISPBOOOT.BIN \
-	xboot0 uboot0 \
-	xboot1 0x100000 \
-	uboot1 0x100000 \
-	uboot2 0x100000 \
-	env 0x80000 \
-	env_redund 0x80000 \
-	dtb 0x40000 \
-	kernel 0xf00000 \
-	rootfs 0x5000000 \
+if [ "$1" = "SDCARD" ]; then
+	isp pack_image ISPBOOOT.BIN \
+		xboot0 uboot0 \
+		xboot1 0x100000 \
+		uboot1 0x100000 \
+		uboot2 0x100000 \
+		env 0x80000 \
+		env_redund 0x80000 \
+		dtb 0x40000 \
+		kernel 0xf00000
+elif [ "$1" = "EMMC" ]; then
+	isp pack_image ISPBOOOT.BIN \
+		xboot0 uboot0 \
+		xboot1 0x100000 \
+		uboot1 0x100000 \
+		uboot2 0x100000 \
+		env 0x80000 \
+		env_redund 0x80000 \
+		dtb 0x40000 \
+		kernel 0xf00000 \
+		rootfs 0x7c000000
+else
+	isp pack_image ISPBOOOT.BIN \
+		xboot0 uboot0 \
+		xboot1 0x100000 \
+		uboot1 0x100000 \
+		uboot2 0x100000 \
+		env 0x80000 \
+		env_redund 0x80000 \
+		dtb 0x40000 \
+		kernel 0xf00000 \
+		rootfs 0x6000000
+fi
 
 rm -rf xboot0
 rm -rf uboot0
