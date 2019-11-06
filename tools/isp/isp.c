@@ -1574,8 +1574,6 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 #if !defined(REDUCE_MESSAGE)
 	fprintf(fd2, "md.b $isp_ram_addr 0x0200 && source $isp_ram_addr\n");
-#else
-	fprintf(fd2, "md.b $isp_ram_addr 0x0080 && source $isp_ram_addr\n");
 #endif
 
 	fclose(fd2);
@@ -1789,8 +1787,8 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	fprintf(fd2, "    setenv isp_ram_addr 0x%x\n", ADDRESS_FATLOAD);
 	fprintf(fd2, "    $isp_if start\n");
 	fprintf(fd2, "fi\n\n");
-	fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
-	fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
+	//fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
+	//fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
 
 	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD)
 	{
