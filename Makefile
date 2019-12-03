@@ -27,22 +27,29 @@ include ./build/color.mak
 sinclude ./.config
 sinclude ./.hwconfig
 
+MAKE_WITH_ARCH = make ARCH=$(ARCH)
+
 TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
+TOOLCHAIN_RISCV_PATH = $(TOPDIR)/crossgcc/riscv64-sifive-linux-gnu/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
+CROSS_FREERTOS_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
 BOOT_FROM ?= EMMC
 IS_ASSIGN_DTB ?= 0
 
+ARCH_IS_RISCV ?= 0
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
 TFTP_SERVER_PATH ?=
 BOARD_MAC_ADDR ?=
 USER_NAME ?= 
+ARCH ?=arm
 
 CONFIG_ROOT = ./.config
 HW_CONFIG_ROOT = ./.hwconfig
@@ -59,6 +66,8 @@ LINUX_PATH = linux/kernel
 ROOTFS_PATH = linux/rootfs
 IPACK_PATH = ipack
 OUT_PATH = out
+OPENSBI_PATH = boot/opensbi
+FREERTOS_PATH = freertos
 
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
@@ -84,51 +93,82 @@ DOWN_TOOL  = down_32M.exe
 
 #xboot build
 xboot: check
-	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- all
-
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_COMPILE) all ;\
+	else \
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- all ;\
+	fi
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
-		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) \
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) \
 			BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) TFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			BOARD_MAC_ADDR=$(BOARD_MAC_ADDR) USER_NAME=$(USER_NAME); \
 	else \
-		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE); \
-	fi
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE); \
+	fi 
 #kernel build
 kernel: check
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
-	@$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN)
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
-		CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) all ;\
+	else \
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE) ;\
+		$(RM) -rf $(ROOTFS_DIR)/lib/modules/ ;\
+		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN);\
+		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
+			CROSS_COMPILE=$(CROSS_COMPILE) ;\
+		$(MAKE_WITH_ARCH)  $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE);\
+	fi
+#freertos build	
+freertos: check
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE) -C $(FREERTOS_PATH) CROSS_COMPILE=$(CROSS_FREERTOS_COMPILE)  ;\
+	fi
+
 
 clean:
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_COMPILE) $@;\
+		$(MAKE) -C $(OPENSBI_PATH) $@ ;\
+		$(MAKE) -C $(FREERTOS_PATH) $@ ;\
+	else \
+		$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@;\
+	fi
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
+	
 	@$(RM) -rf $(OUT_PATH)
 	@$(RM) -f $(HW_CONFIG_ROOT)
 
 distclean: clean
-	@$(MAKE) -C $(XBOOT_PATH) $@
+
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE) -C $(OPENSBI_PATH) $@ ;\
+		$(MAKE) -C $(FREERTOS_PATH) $@ ;\
+	fi
+	@$(MAKE) -C $(XBOOT_PATH) $@ 
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
+
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -rf $(OUT_PATH)
 
 config: init
+
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
-	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		$(MAKE_WITH_ARCH) -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g') ;\
+	else \
+		$(MAKE_WITH_ARCH) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g') ;\
+	fi
+	@$(MAKE_WITH_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g') 
+	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') 
+
 	@$(MAKE) -C $(LINUX_PATH) clean
-	@$(MAKE) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -146,8 +186,13 @@ dtb: check
 		$(MAKE) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(LN) -fs arch/arm/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
 	else \
-		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
-		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
+		if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+			$(MAKE_WITH_ARCH) -C $(LINUX_PATH) dtbs CROSS_COMPILE=$(CROSS_COMPILE); \
+			$(LN) -fs arch/riscv/boot/dts/sifive/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
+		else \
+			$(MAKE_WITH_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
+			$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
+		fi ;\
 	fi
 
 spirom: check
@@ -155,7 +200,7 @@ spirom: check
 		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
 		TFTP_SERVER_PATH=$(TFTP_SERVER_PATH); \
 	else \
-		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN); \
+		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) ARCH_IS_RISCV=$(ARCH_IS_RISCV); \
 	fi
 	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
@@ -216,17 +261,19 @@ isp: check tool_isp
 		$(ECHO) $(COLOR_YELLOW)$(DTB)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	@if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
+	@if [ "$(BOOT_FROM)" != "SDCARD" ]; then  \
+		if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(ROOTFS_IMG)" to out folder."$(COLOR_ORIGIN); \
 		$(CP) -vf $(ROOTFS_PATH)/$(ROOTFS_IMG) $(OUT_PATH)/ ;\
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(ROOTFS_IMG)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
+		fi \
 	fi
-	@cd out/; ./$(ISP_SHELL)
+	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
 	
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
-		@$(ECHO) $(COLOR_YELLOW) "sdcard gen disk image" $(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
 		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) ; \
 	fi
 	
@@ -270,9 +317,10 @@ rom: check
 all: check
 	@$(MAKE) xboot
 	@$(MAKE) uboot
+	@$(MAKE) freertos
 	@$(MAKE) kernel
-	@$(MAKE) secure
-	@$(MAKE) rootfs
+#	@$(MAKE) secure
+#	@$(MAKE) rootfs
 	@$(MAKE) dtb
 	@$(MAKE) rom
 
@@ -286,7 +334,7 @@ test: check
 
 init:
 	@$(RM) -f $(CONFIG_ROOT)
-	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
+	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
 
 check:
 	@if ! [ -f $(CONFIG_ROOT) ]; then \
@@ -308,3 +356,4 @@ info:
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
+	@$(ECHO) "ARCH IS RISCV=" $(ARCH_IS_RISCV)
