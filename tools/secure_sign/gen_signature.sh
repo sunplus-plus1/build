@@ -47,31 +47,30 @@ fi
 if [ "$3" != "" ];then
 	SIGN_FLAG=$3
 fi
-echo " input $IN_IMG"
+#echo " input $IN_IMG"
 if [ ! -f $IN_IMG ];then
 	echo "input file is not exist"
 	exit 1
 fi
 
 OUT_SIG=$CUR_PATH/sign.sig
-echo "OUT_SIG: $OUT_SIG"
+#echo "OUT_SIG: $OUT_SIG"
 rm -f $OUT_SIG
 
 #sign
-echo "Sign: $IN_IMG"
+#echo "Sign: $IN_IMG"
 $SIGN_BIN -p "$PRIV_K" -b "$PUB_K" -s $IN_IMG -o $OUT_SIG
 if [ $? -ne 0 ];then
 	echo "sign program failed"
 	exit 1
 fi
 
-echo "Output signature: $OUT_SIG"
+#echo "Output signature: $OUT_SIG"
 echo 7369676e00000000 | xxd -r -ps >> $TEMPFILE   #sign_data flag 
 if [ "$SIGN_FLAG" = "1" ];then
-	echo "add sign flag (uboot kernel)"
+	echo "add sign flag for (uboot/kernel)"
 	cat $OUT_SIG>>$TEMPFILE
 	cat $TEMPFILE>>$IN_IMG
-	echo "add end"
 else
 	echo "no need to add sign flag (xboot)"
 	echo "OUT_SIG: $OUT_SIG"
