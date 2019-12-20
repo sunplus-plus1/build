@@ -7,6 +7,7 @@ U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
 D=dtb
+F=freertos.img
 # Partition name = file name
 cp $X xboot0
 cp $U uboot0
@@ -16,6 +17,7 @@ cp $U uboot2
 cp $K kernel
 cp $ROOTFS rootfs
 cp $D DTB
+cp $F rtos
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
 #     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
@@ -31,7 +33,7 @@ isp pack_image ISPBOOOT.BIN \
 	xboot1 0x100000 \
 	uboot1 0x100000 \
 	uboot2 0x100000 \
-	env 0x80000 \
+	rtos 0x80000 \
 	env_redund 0x80000 \
 	dtb 0x40000 \
 	kernel 0xf00000 \
@@ -47,7 +49,7 @@ rm -rf DTB
 rm -rf env
 rm -rf env_redund
 rm -rf rootfs
-
+rm -rf rtos
 # Create image for booting from SD card or USB storage.
 mkdir -p boot2linux
 isp extract4boot2linux ISPBOOOT.BIN boot2linux/ISPBOOOT.BIN

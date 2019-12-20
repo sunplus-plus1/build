@@ -283,6 +283,13 @@ isp: check tool_isp
 			fi \
 		fi \
 	fi
+	@if [ "$(ARCH_IS_RISCV)" = "1" ]; then \
+		$(CP) -f freertos/build/FreeRTOS-simple.elf $(OUT_PATH)/freertos.raw ; \
+		$(CROSS_COMPILE)objcopy -O binary -S $(OUT_PATH)/freertos.raw $(OUT_PATH)/freertos.bin; \
+		cd $(IPACK_PATH); \
+		./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` ../$(OUT_PATH)/freertos.bin ../$(OUT_PATH)/freertos.img riscv ;\
+		rm -rf ../$(OUT_PATH)/freertos.raw ../$(OUT_PATH)/freertos.bin ;\
+	fi
 	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
 	
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
