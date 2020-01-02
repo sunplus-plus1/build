@@ -81,6 +81,9 @@ ROOTFS_CROSS = $(CROSS_V7_COMPILE)
 ifeq ($(ROOTFS_CONFIG),v5)
 ROOTFS_CROSS = $(CROSS_V5_COMPILE)
 endif
+ifeq ($(ARCH_IS_RISCV),1)
+ROOTFS_CROSS = $(CROSS_RISCV_COMPILE)
+endif
 
 # 0: uImage, 1: qk_boot image (uncompressed)
 USE_QK_BOOT=1
@@ -169,6 +172,7 @@ config: init switch_branch
 	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') 
 
 	@$(MAKE) -C $(LINUX_PATH) clean
+	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -340,7 +344,7 @@ all: check
 	@$(MAKE) freertos
 	@$(MAKE) kernel
 #	@$(MAKE) secure
-#	@$(MAKE) rootfs
+	@$(MAKE) rootfs
 	@$(MAKE) dtb
 	@$(MAKE) rom
 
@@ -370,10 +374,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
+	@$(MAKE) -C $(ROOTFS_PATH) ARCH=$(ARCH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
+	@$(MAKE) -C $(ROOTFS_PATH) ARCH=$(ARCH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
