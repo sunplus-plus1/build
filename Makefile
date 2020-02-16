@@ -24,6 +24,7 @@ TOPDIR = $(PWD)
 SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
+include ./build/qemu.mak
 sinclude ./.config
 sinclude ./.hwconfig
 
@@ -37,9 +38,6 @@ CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
 CROSS_FREERTOS_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf
-
-QEMU_PATH = $(TOPDIR)/build/tools/qemu
-QEMU = $(QEMU_PATH)/qemu-system-riscv64 -nographic -machine virt
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
@@ -382,18 +380,6 @@ initramfs:
 
 rootfs:
 	@$(MAKE) -C $(ROOTFS_PATH) ARCH=$(ARCH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
-
-sim:
-	@$(QEMU) -bios freertos/build/FreeRTOS-simple.elf -kernel linux/kernel/vmlinux -smp 5
-
-sim-freertos:
-	@$(QEMU) -bios freertos/build/FreeRTOS-simple.elf
-
-sim-linux:
-	@$(QEMU) -kernel linux/kernel/vmlinux -smp 5
-
-sim2:
-	@$(QEMU_PATH)/sim2.sh
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
