@@ -94,7 +94,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL  = down_32M.exe
 
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
-.PHONY: dtb spirom isp tool_isp
+.PHONY: dtb spirom isp tool_isp kconfig
 
 #xboot build
 xboot: check
@@ -175,8 +175,8 @@ init:
 	else \
 		$(MAKE_WITH_ARCH) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g') ;\
 	fi
-	@$(MAKE_WITH_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g') 
-	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') 
+	@$(MAKE_WITH_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
+	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 
 	@$(MAKE) -C $(UBOOT_PATH) clean
 	@$(MAKE) -C $(LINUX_PATH) clean
@@ -188,6 +188,9 @@ init:
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
+
+kconfig:
+	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 
 config:
 	@$(RM) -f $(CONFIG_ROOT)

@@ -15,7 +15,7 @@ P2 = 2$(P0)
 # $(1): elf-file
 # $(2): 1st breakpoint
 define debug
-	@#adg32 "-ex 'set style enabled off' -ex 'target remote localhost:$(P0)' -ex 'symbol $(1)' -ex 'b *$(2)' -ex 'c'" &
+	@#adg32 --debugger $(CROSS_FREERTOS_COMPILE)-gdb -nx "-ex 'set style enabled off' -ex 'target remote localhost:$(P0)' -ex 'symbol $(1)' -ex 'b *$(2)' -ex 'c'" &
 	@gnome-terminal --geometry=132x43+0+0 -x $(CROSS_FREERTOS_COMPILE)-gdb -ex 'target remote localhost:$(P0)' -ex 'symbol $(1)' -ex 'b *$(2)' -ex 'c' &
 endef
 
