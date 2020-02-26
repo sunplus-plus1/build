@@ -160,8 +160,13 @@ distclean: clean
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -rf $(OUT_PATH)
 
-config: init switch_branch
-
+init:
+	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
+		repo forall -r boot ipack -p -v -c git checkout riscv; \
+		repo forall linux/kernel -p -v -c git checkout kernel_5.4; \
+	else \
+		repo forall -r boot ipack linux/kernel -p -v -c git checkout master; \
+	fi
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
@@ -173,6 +178,7 @@ config: init switch_branch
 	@$(MAKE_WITH_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g') 
 	@$(MAKE_WITH_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g') 
 
+	@$(MAKE) -C $(UBOOT_PATH) clean
 	@$(MAKE) -C $(LINUX_PATH) clean
 	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
@@ -182,6 +188,11 @@ config: init switch_branch
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
+
+config:
+	@$(RM) -f $(CONFIG_ROOT)
+	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
+	@$(MAKE) init
 
 hconfig:  
 	@./build/hconfig.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
@@ -357,17 +368,6 @@ mt: check
 	
 test: check
 	@$(MAKE) $(MAKE_JOBS) -C linux/application/module_test/i2ctea5767 CROSS_COMPILE=$(CROSS_COMPILE)
-
-switch_branch:
-	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
-		if [ -a ./build/check_riscv_branch.sh ]; then \
-			./build/check_riscv_branch.sh ;\
-		fi;\
-	fi
-
-init: 
-	@$(RM) -f $(CONFIG_ROOT)
-	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
 
 check:
 	@if ! [ -f $(CONFIG_ROOT) ]; then \
