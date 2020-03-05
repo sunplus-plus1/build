@@ -127,6 +127,7 @@ config: init
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
+	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
 	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
