@@ -62,33 +62,26 @@ sim2:
 	@killall gnome-terminal-server -9 2> /dev/null; sleep 0
 
 
-# tmux(tmuxinator) support
-TC = .tmuxinator.yml
-CLS = echo -e "\033[H\033[J\033[3J"
+# tmux support
 
 # $(1): debug
+# $(2): elf-file
+# $(3): 1st breakpoint
 define qemu
-	@echo '      panes:' >> $(TC)
-	@echo '        - bash -c "while ! nc -z 127.0.0.1 $(P2); do sleep 0; done"; $(CLS) && $(QEMU) $(FREERTOS) $(LINUX) -serial tcp:localhost:$(P2) $(1)' >> $(TC)
-	@echo '        - $(CLS) && build/tools/qemu/soc_term $(P2)' >> $(TC)
-endef
-
-# $(1): elf-file
-# $(2): 1st breakpoint
-define debug1
-	@echo -e 'name: gdb\nstartup_pane: 2\nwindows:\n  - gdb:\n      layout: af75,269x54,0,0{111x54,0,0[111x35,0,0,0,111x18,0,36,1],157x54,112,0,2}' > $(TC)
-	$(call qemu,$(DBG))
-	@echo '        - $(CROSS_FREERTOS_COMPILE)-gdb -ex "target remote localhost:$(P0)" -ex "symbol $(1)" -ex "b *$(2)" -ex "c"' >> $(TC)
-	@tmuxinator local; sleep 0
+	@tmux new -d build/tools/qemu/soc_term $(P2)
+	@tmux splitw -bh $(QEMU) $(FREERTOS) $(LINUX) -serial tcp:localhost:$(P2) $(1)
+	@if [ -n "$(1)" ]; then \
+		tmux splitw $(CROSS_FREERTOS_COMPILE)-gdb -ex "target remote localhost:$(P0)" -ex "symbol $(2)" -ex "b *$(3)" -ex "c"; \
+		tmux selectl 'af75,269x54,0,0{111x54,0,0[111x35,0,0,0,111x18,0,36,1],157x54,112,0,2}'; tmux swapp -d -s 1 -t 0; \
+	fi
+	@tmux attach; sleep 0
 endef
 
 dbg-freertos1:
-	$(call debug1,$(_FREERTOS),main)
+	$(call qemu,$(DBG),$(_FREERTOS),main)
 
 dbg-linux1:
-	$(call debug1,$(_LINUX),start_kernel)
+	$(call qemu,$(DBG),$(_LINUX),start_kernel)
 
 sim1:
-	@echo -e 'name: qemu\nwindows:\n  - qemu:\n      layout: even-horizontal' > $(TC)
 	$(call qemu)
-	@tmuxinator local; sleep 0
