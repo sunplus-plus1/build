@@ -57,6 +57,7 @@ XBOOT_PATH = boot/xboot
 UBOOT_PATH = boot/uboot
 LINUX_PATH = linux/kernel
 ROOTFS_PATH = linux/rootfs
+NONOS_B_PATH = nonos/Bchip-non-os
 IPACK_PATH = ipack
 OUT_PATH = out
 
@@ -67,6 +68,7 @@ DTB = dtb
 VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
 ROOTFS_IMG = rootfs.img
+NONOS_B_IMG = rom.img
 
 ROOTFS_CROSS = $(CROSS_V7_COMPILE)
 ifeq ($(ROOTFS_CONFIG),v5)
@@ -80,7 +82,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL  = down_32M.exe
 SECURE_PATH ?=
 
-.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
+.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos
 .PHONY: dtb spirom isp tool_isp
 
 #xboot build
@@ -107,7 +109,11 @@ kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(MAKE) secure SECURE_PATH=kernel
 
+nonos:
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+
 clean:
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
 	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
@@ -183,6 +189,10 @@ isp: check tool_isp
 	else \
 		$(ECHO) $(COLOR_YELLOW)"u-boot.img doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
+	fi
+	@if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
+		$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH); \
+		$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
 		if [ "$(USE_QK_BOOT)" = "1" ];then \
@@ -276,6 +286,7 @@ rom: check
 # make rootfs    -> create rootfs image from disk/
 
 all: check
+	@$(MAKE) nonos
 	@$(MAKE) xboot
 	@$(MAKE) uboot
 	@$(MAKE) kernel
