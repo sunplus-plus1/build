@@ -1722,6 +1722,16 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	struct stat file_stat;
 	char tmp_file_file_header[32];
 
+	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD){
+		//for sdcard boot,ISPBOOOT.BIN contains only xboot.img. 
+		//sdcard executes ISP or boot, which is determined by judging the size of ISPBOOOT.BIN in xboot and uboot
+		sprintf(cmd, "dd if=%s of=%s bs=1024 skip=0 count=%u %s",
+			argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT],(FILE_SIZE_IMAGE_XBOOT0 >> 10), MESSAGE_OUT);
+		system(cmd);
+		return 0;
+	}
+
+
 	fd = fopen(argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], "rb");
 	if (fd == NULL) {
 		printf("Error: Can't open %s\n", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT]);
@@ -1739,12 +1749,10 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	}
 
 	fclose(fd);
-
 	if (memcmp(isp_info.file_header.signature, file_header_signature, sizeof(file_header_signature)) != 0) {
 		printf("Error: %s doesn't have correct signature.\n", argv[ARGC_EXTRACT4BOOT2LINUX_INPUT]);
 		exit(-1);
 	}
-
 	offset_of_last_file = FILE_SIZE_IMAGE_XBOOT0 + FILE_SIZE_IMAGE_UBOOT0 + sizeof(file_header_extract4boot2linux);
 	memset(&file_header_extract4boot2linux, 0x00, sizeof(file_header_extract4boot2linux));
 	strncpy(file_header_extract4boot2linux.signature, file_header_signature, sizeof(file_header_extract4boot2linux.signature));
@@ -1755,7 +1763,6 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		if (char_ptr == NULL) {
 			break;
 		}
-
 		idx = get_partition_info_idx_by_file_name(partition_to_be_loaded[num_need_cp]);
 		if (idx < 0) {
 			printf("Warning: %s isn't a valid partition.\n", partition_to_be_loaded[num_need_cp]);
@@ -1784,23 +1791,9 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	//fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
 	//fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
 
-	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD)
-	{
-		fprintf(fd2, "echo Loading kernel to $addr_dst_kernel\n");
-		fprintf(fd2, "fatsize $isp_if $isp_dev /uImage \n\n");
-		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_kernel /uImage $filesize 0\n\n");
-		fprintf(fd2, "echo Loading dtb to $addr_dst_dtb\n");
-		fprintf(fd2, "fatsize $isp_if $isp_dev /dtb \n\n");
-		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_dtb /dtb $filesize 0\n\n");
-	}
 	for (i = 0; i < NUM_OF_PARTITION; i++) {
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
 			break;
-		}
-		if((extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD)&&\
-			((strcmp("kernel",partition_to_be_loaded[i]) == 0)||(strcmp("dtb",partition_to_be_loaded[i]) == 0)))
-		{
-			continue; 
 		}
 		fprintf(fd2, "echo Loading %s to $addr_dst_%s\n", partition_to_be_loaded[i], partition_to_be_loaded[i]);
 		fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /ISPBOOOT.BIN 0x%x 0x%x\n\n",
@@ -1813,11 +1806,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
 			break;
 		}
-		if((extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD)&&\
-			((strcmp("kernel",partition_to_be_loaded[i]) == 0)||(strcmp("dtb",partition_to_be_loaded[i]) == 0)))
-		{
-			continue; 
-		}
+
 		fprintf(fd2, "echo verifying %s\n", partition_to_be_loaded[i]);
 		fprintf(fd2, "md5sum $addr_dst_%s 0x%x md5sum_value\n",
 			partition_to_be_loaded[i],
@@ -1829,7 +1818,6 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		fprintf(fd2, "    exit -1\n");
 		fprintf(fd2, "fi\n\n");
 	}
-	fprintf(fd2, "sp_nonos_go ${addr_dst_nonos}\n"); // start nonos in B chip
 	fprintf(fd2, "bootm ${addr_dst_%s} - ${addr_dst_%s}\n",
 		partition_to_be_loaded[0],
 		partition_to_be_loaded[1]);

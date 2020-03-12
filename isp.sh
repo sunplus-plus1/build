@@ -7,7 +7,7 @@ U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
 D=dtb
-N=rom.img
+N=nonos.img
 # Partition name = file name
 cp $X xboot0
 cp $U uboot0
@@ -80,7 +80,7 @@ rm -rf nonos
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
-	cp -rf $U $K $D ./boot2linux_SDcard
+	cp -rf $U $K $D $N ./boot2linux_SDcard
 	isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
 	rm -rf ISPBOOOT.BIN
 fi
