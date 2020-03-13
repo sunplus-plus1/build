@@ -93,6 +93,12 @@ USE_QK_BOOT=1
 SPI_BIN = spi_all.bin
 DOWN_TOOL  = down_32M.exe
 
+# $(1): branch
+# $(2): dirs
+define switch_branch
+	repo --no-pager forall $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) -pvrc git checkout $(1)
+endef
+
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info
 .PHONY: dtb spirom isp tool_isp kconfig
 
@@ -122,7 +128,7 @@ kernel: check
 		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN);\
 		$(MAKE_WITH_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
 			CROSS_COMPILE=$(CROSS_COMPILE) ;\
-		$(MAKE_WITH_ARCH)  $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE);\
+		$(MAKE_WITH_ARCH)  $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE) UIMAGE_LOADADDR=0x00308000;\
 	fi
 #freertos build	
 freertos: check
@@ -162,10 +168,10 @@ distclean: clean
 
 init:
 	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
-		repo forall -r boot ipack -p -v -c git checkout riscv; \
-		repo forall linux/kernel -p -v -c git checkout kernel_5.4; \
+		$(call switch_branch,riscv,boot,ipack); \
+		$(call switch_branch,kernel_5.4,linux/kernel); \
 	else \
-		repo forall -r boot ipack linux/kernel -p -v -c git checkout master; \
+		$(call switch_branch,master,boot,ipack,linux/kernel); \
 	fi
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
