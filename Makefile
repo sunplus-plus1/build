@@ -191,7 +191,7 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
-		$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/nonos.img; \
+		$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
 		$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \

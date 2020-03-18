@@ -20,7 +20,8 @@ ROOT_DIR_IN=$TOP/linux/rootfs/initramfs/disk
 ROOT_IMG=$OUTPATH/../rootfs.img
 OUT_FILE=$OUTPATH/ISP_SD_BOOOT.img
 FAT_IMG_OUT=fat.img
-
+EXT_ENV=uEnv.txt
+NONOS_IMG=a926.img
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
 
@@ -49,6 +50,9 @@ if [ ! -d $ROOT_DIR_IN ]; then
 	echo "Error: $WORK_DIR doesn't exist!"
 	exit 1
 fi
+
+# cp uEnv to out/sdcardboot 
+cp $EXT_ENV $OUTPATH
 
 # Calculate parameter.
 partition_size_1=$(($FAT_IMG_SIZE_M*1024*1024))
@@ -84,7 +88,10 @@ fi
 
 if [ -x "$(command -v mcopy)" ]; then
 	echo '###### do the mcopy cmd ########'
-	mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$FAT_FILE_IN/dtb" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+	mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$OUTPATH/$EXT_ENV" "$FAT_FILE_IN/dtb" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+	if [ -f $FAT_FILE_IN/$NONOS_IMG ]; then
+		mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/$NONOS_IMG" ::
+	fi
 	if [ $? -ne 0 ]; then
 		exit
 	fi

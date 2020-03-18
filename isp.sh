@@ -7,7 +7,7 @@ U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
 D=dtb
-N=nonos.img
+N=a926.img
 # Partition name = file name
 cp $X xboot0
 cp $U uboot0
