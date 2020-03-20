@@ -39,7 +39,8 @@ if [ "$1" = "SDCARD" ]; then
 		uboot1 0x100000 \
 		uboot2 0x100000 \
 		env 0x80000 \
-		nonos 0x80000 \
+		env_redund 0x80000 \
+		nonos 0x100000 \
 		dtb 0x40000 \
 		kernel 0xf00000
 elif [ "$1" = "EMMC" ]; then
@@ -49,7 +50,8 @@ elif [ "$1" = "EMMC" ]; then
 		uboot1 0x100000 \
 		uboot2 0x100000 \
 		env 0x80000 \
-		nonos 0x80000 \
+		env_redund 0x80000 \
+		nonos 0x100000 \
 		dtb 0x40000 \
 		kernel 0xf00000 \
 		rootfs 0x7c000000
@@ -60,7 +62,8 @@ else
 		uboot1 0x100000 \
 		uboot2 0x100000 \
 		env 0x80000 \
-		nonos 0x80000 \
+		env_redund 0x80000 \
+		nonos 0x100000 \
 		dtb 0x40000 \
 		kernel 0xf00000 \
 		rootfs 0x6000000
