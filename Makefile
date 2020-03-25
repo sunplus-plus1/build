@@ -21,7 +21,7 @@
 #                                                                        #
 ##########################################################################
 TOPDIR = $(PWD)
-SHELL := sh
+SHELL := sh -x
 include ./build/Makefile.tls
 include ./build/color.mak
 sinclude ./.config
@@ -49,8 +49,6 @@ HW_CONFIG_ROOT = ./.hwconfig
 ISP_SHELL = isp.sh
 PART_SHELL = part.sh
 SDCARD_BOOT_SHELL = sdcard_boot.sh
-
-LINUX_DTB = $(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g').dtb
 
 BUILD_PATH = build
 XBOOT_PATH = boot/xboot
@@ -129,11 +127,12 @@ distclean: clean
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -rf $(OUT_PATH)
 
-config: init
+_config:
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
 	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
+
 	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
@@ -147,11 +146,16 @@ config: init
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
 
+config: init
+	$(MAKE) _config
+
 hconfig:  
 	@./build/hconfig.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
 	$(MAKE) config HCONFIG="1"
 
 dtb: check
+	$(eval LINUX_DTB=$(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g').dtb)
+
 	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
 		$(MAKE) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(LN) -fs arch/arm/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
@@ -159,6 +163,11 @@ dtb: check
 		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
+
+bpi-f2s: init
+	@./build/config.bpi-f2s.sh $(CROSS_V7_COMPILE)
+	$(MAKE) _config
+	$(MAKE) all
 
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
