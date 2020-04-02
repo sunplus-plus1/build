@@ -220,6 +220,7 @@ dtb: check
 			$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 		fi ;\
 	fi
+	$(MAKE) uboot ;
 
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -362,12 +363,13 @@ rom: check
 
 all: check
 	@$(MAKE) xboot
-	@$(MAKE) uboot
+#	@$(MAKE) uboot
+	@$(MAKE) dtb
 	@$(MAKE) freertos
 	@$(MAKE) kernel
 #	@$(MAKE) secure
 	@$(MAKE) rootfs
-	@$(MAKE) dtb
+
 	@$(MAKE) rom
 
 mt: check
