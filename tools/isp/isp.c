@@ -1711,7 +1711,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 {
 	FILE *fd, *fd2;
 	struct file_header_s file_header_extract4boot2linux;
-	const char *partition_to_be_loaded[] = {"kernel", "dtb","nonos", NULL};
+	const char *partition_to_be_loaded[] = {"kernel", "nonos", NULL};
 	int i, idx;
 	const char *char_ptr;
 	char bSD_not_load;

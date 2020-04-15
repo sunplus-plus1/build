@@ -94,7 +94,7 @@ uboot: check
 			BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) TFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			BOARD_MAC_ADDR=$(BOARD_MAC_ADDR) USER_NAME=$(USER_NAME); \
 	else \
-			$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all BOOT_FROM=$(BOOT_FROM) CROSS_COMPILE=$(CROSS_COMPILE); \
+			$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE); \
 	fi
 	@$(MAKE) secure SECURE_PATH=uboot
 #kernel build
@@ -163,9 +163,8 @@ dtb: check
 		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
-	@if [ "$(BOOT_FROM)" != "SDCARD" ]; then  \
-		$(MAKE) uboot ;\
-	fi
+
+	$(MAKE) uboot
 
 bpi-f2s: init
 	@./build/config.bpi-f2s.sh $(CROSS_V7_COMPILE)
@@ -300,9 +299,6 @@ rom: check
 all: check
 	@$(MAKE) nonos
 	@$(MAKE) xboot
-	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
-		$(MAKE) uboot ;\
-	fi
 	@$(MAKE) dtb
 	@$(MAKE) kernel
 	@$(MAKE) secure
