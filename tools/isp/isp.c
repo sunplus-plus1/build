@@ -664,8 +664,8 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 						{
 							snprintf(cmd, sizeof(cmd), "nand write $isp_ram_addr $isp_nand_addr 0x%x", size);
 						}
-						
-					} 
+
+					}
 					else
 					{
 						if(strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
@@ -1022,9 +1022,9 @@ int pack_image(int argc, char **argv)
 
 	for (i = 0; i < idx_partition_info; i++) {
 #ifdef XBOOT1_IN_EMMC_BOOTPART
-		if (i <= IDX_PARTITION_UBOOT1) 
+		if (i <= IDX_PARTITION_UBOOT1)
 #else
-		if (i <= IDX_PARTITION_XBOOT1) 
+		if (i <= IDX_PARTITION_XBOOT1)
 #endif
 		{
 			isp_info.file_header.partition_info[i].emmc_partition_start = BYTE2BLOCK(GPT_HEADER_SIZE);
@@ -1723,7 +1723,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	char tmp_file_file_header[32];
 
 	if(extrac4boot2linux_src == EXTRACT4BOOT2LINUX_FOR_SDCARD){
-		//for sdcard boot,ISPBOOOT.BIN contains only xboot.img. 
+		//for sdcard boot,ISPBOOOT.BIN contains only xboot.img.
 		//sdcard executes ISP or boot, which is determined by judging the size of ISPBOOOT.BIN in xboot and uboot
 		sprintf(cmd, "dd if=%s of=%s bs=1024 skip=0 count=%u %s",
 			argv[ARGC_EXTRACT4BOOT2LINUX_INPUT], argv[ARGC_EXTRACT4BOOT2LINUX_OUTPUT],(FILE_SIZE_IMAGE_XBOOT0 >> 10), MESSAGE_OUT);
@@ -1818,9 +1818,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		fprintf(fd2, "    exit -1\n");
 		fprintf(fd2, "fi\n\n");
 	}
-	fprintf(fd2, "bootm ${addr_dst_%s} - ${addr_dst_%s}\n",
-		partition_to_be_loaded[0],
-		partition_to_be_loaded[1]);
+	fprintf(fd2, "bootm ${addr_dst_%s} - ${fdtcontroladdr}\n", partition_to_be_loaded[0]);
 
 	fclose(fd2);
 
