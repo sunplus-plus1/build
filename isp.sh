@@ -6,6 +6,7 @@ X=xboot.img
 U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
+D=dtb
 N=a926.img
 # Partition name = file name
 cp $X xboot0
@@ -20,6 +21,8 @@ fi
 if [ "$1" != "SDCARD" ]; then
 	cp $ROOTFS rootfs
 fi
+cp $D DTB
+
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
 #     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
@@ -39,6 +42,7 @@ if [ "$1" = "SDCARD" ]; then
 		env 0x80000 \
 		env_redund 0x80000 \
 		nonos 0x100000 \
+		dtb 0x40000 \
 		kernel 0xf00000
 elif [ "$1" = "EMMC" ]; then
 	isp pack_image ISPBOOOT.BIN \
@@ -49,6 +53,7 @@ elif [ "$1" = "EMMC" ]; then
 		env 0x80000 \
 		env_redund 0x80000 \
 		nonos 0x100000 \
+		dtb 0x40000 \
 		kernel 0xf00000 \
 		rootfs 0x7c000000
 else
@@ -60,6 +65,7 @@ else
 		env 0x80000 \
 		env_redund 0x80000 \
 		nonos 0x100000 \
+		dtb 0x40000 \
 		kernel 0xf00000 \
 		rootfs 0x6000000
 fi
@@ -69,6 +75,7 @@ rm -rf xboot1
 rm -rf uboot1
 rm -rf uboot2
 rm -rf kernel
+rm -rf DTB
 rm -rf env
 rm -rf env_redund
 rm -rf rootfs
@@ -77,7 +84,7 @@ rm -rf nonos
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
-	cp -rf $U $K $N ./boot2linux_SDcard
+	cp -rf $U $K $D $N ./boot2linux_SDcard
 	isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
 	rm -rf ISPBOOOT.BIN
 fi

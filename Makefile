@@ -164,6 +164,7 @@ dtb: check
 		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
 
+	@$(CP) -vf $(LINUX_PATH)/dtb boot/uboot/ext_dtb 
 	$(MAKE) uboot
 	
 # bpi-f2s: init
