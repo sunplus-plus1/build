@@ -16,7 +16,7 @@ bananapi_fs2_config()
     # echo "NEED_ISP="$NEED_ISP >> $CONFIG
     # echo "BOOT_FROM=EMMC" >> $CONFIG
     sed -i 's/UBOOT_CONFIG=.*/UBOOT_CONFIG=bananapi_f2s_defconfig/g' $CONFIG; \
-    sed -i 's/KERNEL_CONFIG=.*/KERNEL_CONFIG=pentagram_sp7021_achip_bpi-f2s_defconfig/g' $CONFIG; \
+    sed -i 's/KERNEL_CONFIG=.*/KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig/g' $CONFIG; \
 }
 
-bananapi_fs2_config
+bananapi_fs2_config 

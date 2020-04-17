@@ -21,7 +21,7 @@
 #                                                                        #
 ##########################################################################
 TOPDIR = $(PWD)
-SHELL := sh -x
+SHELL := sh 
 include ./build/Makefile.tls
 include ./build/color.mak
 sinclude ./.config
@@ -154,7 +154,7 @@ hconfig:
 	$(MAKE) config HCONFIG="1"
 
 dtb: check
-	$(eval LINUX_DTB=$(shell echo $(KERNEL_CONFIG) | sed 's/_defconfig//g' | sed 's/_/-/g' | sed 's/emu-nand/emu-initramfs/g').dtb)
+	$(eval LINUX_DTB=$(shell cat $(CONFIG_ROOT) | grep 'LINUX_DTB=' | sed 's/LINUX_DTB=//g').dtb)
 
 	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
 		$(MAKE) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
@@ -165,11 +165,11 @@ dtb: check
 	fi
 
 	$(MAKE) uboot
-
-bpi-f2s: init
-	@./build/config.bpi-f2s.sh $(CROSS_V7_COMPILE)
-	$(MAKE) _config
-	$(MAKE) all
+	
+# bpi-f2s: init
+# 	@./build/config.bpi-f2s.sh $(CROSS_V7_COMPILE)
+# 	$(MAKE) _config
+# 	$(MAKE) all
 
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -333,6 +333,7 @@ info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
 	@$(ECHO) "UBOOT =" $(UBOOT_CONFIG)
 	@$(ECHO) "KERNEL =" $(KERNEL_CONFIG)
+	@$(ECHO) "LINUX_DTB =" $(LINUX_DTB)
 	@$(ECHO) "CROSS COMPILER =" $(CROSS_COMPILE)
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)

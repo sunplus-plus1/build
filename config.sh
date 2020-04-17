@@ -10,18 +10,18 @@ XBOOT_CONFIG_ROOT=./boot/xboot/configs
 UBOOT_CONFIG_ROOT=./boot/uboot/configs
 KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 
-pentagram_b_chip_nand_config()
+p_chip_nand_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_nand_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_nand_defconfig
+	UBOOT_CONFIG=sp7021_nand_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_nand_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -30,18 +30,18 @@ pentagram_b_chip_nand_config()
 	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
-pentagram_b_chip_emmc_config()
+p_chip_emmc_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
+	UBOOT_CONFIG=sp7021_emmc_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -50,17 +50,17 @@ pentagram_b_chip_emmc_config()
 	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
-pentagram_b_chip_nor_config()
+p_chip_nor_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -68,18 +68,18 @@ pentagram_b_chip_nor_config()
 	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
 }
 
-pentagram_b_chip_sdcard_config()
+p_chip_sdcard_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
+	UBOOT_CONFIG=sp7021_emmc_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -88,15 +88,15 @@ pentagram_b_chip_sdcard_config()
 	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
 }
 
-pentagram_b_chip_tftp_config()
+p_chip_tftp_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
@@ -115,7 +115,7 @@ pentagram_b_chip_tftp_config()
 	read BOARD_MAC_ADDR
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -127,18 +127,18 @@ pentagram_b_chip_tftp_config()
 	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
 
-pentagram_b_chip_usb_config()
+p_chip_usb_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_p_defconfig
+	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -147,18 +147,18 @@ pentagram_b_chip_usb_config()
 	echo "BOOT_FROM=USB" >> $BUILD_CONFIG
 }
 
-pentagram_a_chip_nand_config()
+c_chip_nand_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_nand_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_nand_defconfig
+	UBOOT_CONFIG=sp7021_nand_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_nand_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -167,18 +167,18 @@ pentagram_a_chip_nand_config()
 	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
-pentagram_a_chip_emmc_config()
+c_chip_emmc_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
+	UBOOT_CONFIG=sp7021_emmc_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -187,17 +187,17 @@ pentagram_a_chip_emmc_config()
 	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
-pentagram_a_chip_nor_config()
+c_chip_nor_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -205,18 +205,18 @@ pentagram_a_chip_nor_config()
 	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
 }
 
-pentagram_a_chip_sdcard_config()
+c_chip_sdcard_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
+	UBOOT_CONFIG=sp7021_emmc_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -225,15 +225,15 @@ pentagram_a_chip_sdcard_config()
 	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
 }
 
-pentagram_a_chip_tftp_config()
+c_chip_tftp_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
@@ -256,7 +256,7 @@ pentagram_a_chip_tftp_config()
 	fi
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -267,18 +267,19 @@ pentagram_a_chip_tftp_config()
 	echo "TFTP_SERVER_IP="${TFTP_SERVER_IP} >> ${BUILD_CONFIG}
 	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
 }
-pentagram_a_chip_usb_config()
+
+c_chip_usb_config()
 {
 	if [ "$2" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	else
 		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
-	KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
+	UBOOT_CONFIG=sp7021_romter_c_defconfig
+	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -304,25 +305,25 @@ others_config()
 
 	$ECHO $COLOR_GREEN"Select uboot config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
-	find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
+	find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read UBOOT_CONFIG_NUM
 	if [ -z $UBOOT_CONFIG_NUM ];then
 		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
 		exit 1;
 	fi
-	UBOOT_CONFIG=$(find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $UBOOT_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
+	UBOOT_CONFIG=$(find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $UBOOT_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
 
 	$ECHO $COLOR_GREEN"Select kernel config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
-	find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
+	find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read KERNEL_CONFIG_NUM
 	if [ -z $KERNEL_CONFIG_NUM ];then
 		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
 		exit 1;
 	fi
-	KERNEL_CONFIG=$(find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram_*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
+	KERNEL_CONFIG=$(find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
 
 	$ECHO $COLOR_GREEN"Select rootfs config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
@@ -370,7 +371,7 @@ others_config()
 		ZEBU_RUN=0
 	fi
 
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
+	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=${ROOTFS_CONFIG}" >> $BUILD_CONFIG
@@ -383,58 +384,95 @@ others_config()
 	fi
 }
 
-$ECHO $COLOR_GREEN"Q628 configs."$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] Pentagram B chip (EMMC), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] Pentagram B chip (SPI-NAND), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[3] Pentagram B chip (NOR/romter), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[4] Pentagram B chip (SDCARD), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[5] Pentagram B chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[6] Pentagram B chip (USB), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[7] Pentagram A chip (EMMC), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[8] Pentagram A chip (SPI-NAND), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[9] Pentagram A chip (NOR/romter), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[10] Pentagram A chip (SDCARD), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[11] Pentagram A chip (TFTP), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[12] Pentagram A chip (USB), revB IC"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[13] others"$COLOR_ORIGIN
-read num
+$ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V3)"$COLOR_ORIGIN
+read board
 
+if [ "$board" = "1" ];then
+	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
+elif [ "$board" = "2" ];then
+	echo "LINUX_DTB=sp7021-demov2" > $BUILD_CONFIG
+elif [ "$board" = "3" ];then
+	echo "LINUX_DTB=sp7021-demov3" > $BUILD_CONFIG
+else
+	echo "Error: Unknow board!!"
+	exit 1
+fi
+
+chip=0
+
+$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
+read chip
+
+num1=0
+num2=6
+
+if [ "$chip" = "2" ];then
+	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+	read num2
+elif [ "$chip" = "1" ];then
+	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
+	read num1
+else
+	echo "Error: Unknow chip!!"
+	exit 1
+fi
+
+num=`expr $num1 + $num2`
+echo "select "$num
 case "$num" in
 	1)
-		pentagram_b_chip_emmc_config $1 revB
+		p_chip_emmc_config $1 revB
 		;;
 	2)
-		pentagram_b_chip_nand_config $1 revB
+		p_chip_nand_config $1 revB
 		;;
 	3)
-		pentagram_b_chip_nor_config $1 revB
+		p_chip_nor_config $1 revB
 		;;
 	4)
-		pentagram_b_chip_sdcard_config $1 revB
+		p_chip_sdcard_config $1 revB
 		;;
 	5)
-		pentagram_b_chip_tftp_config $1 revB
+		p_chip_tftp_config $1 revB
 		;;
 	6)
-		pentagram_b_chip_usb_config $1 revB
+		p_chip_usb_config $1 revB
 		;;
 	7)
-		pentagram_a_chip_emmc_config $2 revB
+		c_chip_emmc_config $2 revB
 		;;
 	8)
-		pentagram_a_chip_nand_config $2 revB
+		c_chip_nand_config $2 revB
 		;;
 	9)
-		pentagram_a_chip_nor_config $2 revB
+		c_chip_nor_config $2 revB
 		;;
 	10)
-		pentagram_a_chip_sdcard_config $2 revB
+		c_chip_sdcard_config $2 revB
 		;;
 	11)
-		pentagram_a_chip_tftp_config $2 revB
+		c_chip_tftp_config $2 revB
 		;;
 	12)
-		pentagram_a_chip_usb_config $2 revB
+		c_chip_usb_config $2 revB
 		;;
 	13)
 		others_config $1 $2

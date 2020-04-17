@@ -15,12 +15,12 @@ UBOOT_CONFIG_ROOT=./boot/uboot/configs
 KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 DTB_CONFIG_ROOT=./linux/kernel/arch/arm/boot/dts
 
-CHIPA_NAND_KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
-CHIPB_NAND_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
-CHIPA_EMMC_KERNEL_CONFIG=pentagram_sp7021_achip_emu_defconfig
-CHIPB_EMMC_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_defconfig
-CHIPA_NOR_KERNEL_CONFIG=pentagram_sp7021_achip_emu_initramfs_defconfig
-CHIPB_NOR_KERNEL_CONFIG=pentagram_sp7021_bchip_emu_initramfs_defconfig
+CHIPC_NAND_KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
+CHIPP_NAND_KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
+CHIPC_EMMC_KERNEL_CONFIG=sp7021_chipC_emu_defconfig
+CHIPP_EMMC_KERNEL_CONFIG=sp7021_chipP_emu_defconfig
+CHIPC_NOR_KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
+CHIPP_NOR_KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
 
 BOOT_TYPE=
 
@@ -48,33 +48,33 @@ save_config()
 chip_nand_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sp7021_nand_defconfig
-		KERNEL_CONFIG=$CHIPA_NAND_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_nand_c_defconfig
+		KERNEL_CONFIG=$CHIPC_NAND_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sp7021_nand_b_defconfig
-		KERNEL_CONFIG=$CHIPB_NAND_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_nand_p_defconfig
+		KERNEL_CONFIG=$CHIPP_NAND_KERNEL_CONFIG
 	fi
 }
 
 chip_emmc_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sp7021_emmc_defconfig
-		KERNEL_CONFIG=$CHIPA_EMMC_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_emmc_c_defconfig
+		KERNEL_CONFIG=$CHIPC_EMMC_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sp7021_emmc_b_defconfig
-		KERNEL_CONFIG=$CHIPB_EMMC_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_emmc_p_defconfig
+		KERNEL_CONFIG=$CHIPP_EMMC_KERNEL_CONFIG
 	fi
 }
 
 chip_nor_config()
 {
 	if [ "$CHIP_TYPE" = "A" ];then
-		UBOOT_CONFIG=pentagram_sp7021_romter_defconfig
-		KERNEL_CONFIG=$CHIPA_NOR_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_romter_c_defconfig
+		KERNEL_CONFIG=$CHIPC_NOR_KERNEL_CONFIG
 	else
-		UBOOT_CONFIG=pentagram_sp7021_romter_b_defconfig
-		KERNEL_CONFIG=$CHIPB_NOR_KERNEL_CONFIG
+		UBOOT_CONFIG=sp7021_romter_p_defconfig
+		KERNEL_CONFIG=$CHIPP_NOR_KERNEL_CONFIG
 	fi
 	NEED_ISP=0
 }
