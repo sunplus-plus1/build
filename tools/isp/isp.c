@@ -1808,11 +1808,14 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		}
 
 		fprintf(fd2, "echo verifying %s\n", partition_to_be_loaded[i]);
-		fprintf(fd2, "md5sum $addr_dst_%s 0x%x md5sum_value\n",
-			partition_to_be_loaded[i],
+		fprintf(fd2, "md5sum $addr_dst_%s 0x%x md5sum_value\n",	partition_to_be_loaded[i],
 			file_header_extract4boot2linux.partition_info[i].file_size);
 		fprintf(fd2, "if test \"$md5sum_value\" = %s ; then\n", file_header_extract4boot2linux.partition_info[i].md5sum);
 		fprintf(fd2, "    echo md5sum: OK.\n");
+		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "nonos") == 0) {
+			fprintf(fd2, "    echo \"## Booting A926 from image at ${addr_dst_nonos}\"\n");
+			fprintf(fd2, "    sp_nonos_go ${addr_dst_nonos}\n");
+		}
 		fprintf(fd2, "else\n");
 		fprintf(fd2, "    echo md5sum: Error!\n");
 		fprintf(fd2, "    exit -1\n");
