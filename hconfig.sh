@@ -125,13 +125,13 @@ assign_dtb()
 {
 	$ECHO $COLOR_GREEN"Select dtb :"$COLOR_ORIGIN
 	$ECHO "================================================"
-	find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sp*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g" | sed "s/.dts//g"
+	find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*sp7021*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g" | sed "s/.dts//g"
 	$ECHO ""
 	read -p "current dtb ["$HW_DTB"]: " DTB_NUM
 
 	if [ ! -z $DTB_NUM ];then
 		if [ $DTB_NUM -gt 0 ]; then		
-			HW_DTB=$(find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "pentagram-sp*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed "s/.dts//g" | sed -n $DTB_NUM"p" | sed -r "s, +[0-9]* ,,g")
+			HW_DTB=$(find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*sp7021*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed "s/.dts//g" | sed -n $DTB_NUM"p" | sed -r "s, +[0-9]* ,,g")
 			IS_ASSIGN_DTB=1
 		fi
 	fi
