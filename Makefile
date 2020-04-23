@@ -127,7 +127,7 @@ distclean: clean
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -rf $(OUT_PATH)
 
-_config:
+config: init
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
@@ -145,9 +145,6 @@ _config:
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
-
-config: init
-	$(MAKE) _config
 
 hconfig:  
 	@./build/hconfig.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
@@ -167,11 +164,6 @@ dtb: check
 	@$(CP) -vf $(LINUX_PATH)/dtb boot/uboot/ext_dtb 
 	$(MAKE) uboot
 	
-# bpi-f2s: init
-# 	@./build/config.bpi-f2s.sh $(CROSS_V7_COMPILE)
-# 	$(MAKE) _config
-# 	$(MAKE) all
-
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
 		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \

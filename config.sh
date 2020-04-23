@@ -10,94 +10,95 @@ XBOOT_CONFIG_ROOT=./boot/xboot/configs
 UBOOT_CONFIG_ROOT=./boot/uboot/configs
 KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
 
+UBOOT_CONFIG=
+KERNEL_CONFIG=
+BOOT_FROM=
+XBOOT_CONFIG=
+
+set_uboot_config()
+{
+	if [ "$UBOOT_CONFIG" = "" ];then
+		UBOOT_CONFIG=$1
+	fi
+	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
+}
+
+set_kernel_config()
+{
+	if [ "$KERNEL_CONFIG" = "" ];then
+		KERNEL_CONFIG=$1
+	fi
+	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
+}
+
+set_bootfrom_config()
+{
+	if [ "$BOOT_FROM" = "" ];then
+		BOOT_FROM=$1
+	fi
+	echo "BOOT_FROM="$BOOT_FROM >> $BUILD_CONFIG
+}
+
+set_xboot_config()
+{
+	if [ "$XBOOT_CONFIG" = "" ];then
+		XBOOT_CONFIG=$1
+	fi
+	echo "XBOOT_CONFIG="$XBOOT_CONFIG >> $BUILD_CONFIG
+}
+
 p_chip_nand_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_nand_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_nand_defconfig
-	CROSS_COMPILE=$1
+	
+	set_xboot_config q628_Rev2_SPINAND_defconfig
+	set_uboot_config sp7021_nand_p_defconfig
+	set_kernel_config sp7021_chipP_emu_nand_defconfig
+	set_bootfrom_config NAND
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
 p_chip_emmc_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_emmc_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_defconfig
-	CROSS_COMPILE=$1
+
+	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_uboot_config sp7021_emmc_p_defconfig
+	set_kernel_config sp7021_chipP_emu_defconfig
+	set_bootfrom_config EMMC
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
 p_chip_nor_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
-}
 
-p_chip_sdcard_config()
-{
-	if [ "$2" = "revA" ];then
-		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
-	fi
-	UBOOT_CONFIG=sp7021_emmc_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_defconfig
-	CROSS_COMPILE=$1
-	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
+	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_uboot_config sp7021_romter_p_defconfig
+	set_kernel_config sp7021_chipP_emu_initramfs_defconfig
+	set_bootfrom_config SPINOR
 }
 
 p_chip_tftp_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
+
+	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_uboot_config sp7021_romter_p_defconfig
+	set_kernel_config sp7021_chipP_emu_initramfs_defconfig
+
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
 	read TFTP_SERVER_IP
@@ -113,13 +114,11 @@ p_chip_tftp_config()
 	echo "TFTP server path is ${TFTP_SERVER_PATH}"
 	echo "Please enter board MAC address:"
 	read BOARD_MAC_ADDR
+	set_uboot_config sp7021_romter_c_defconfig
+	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "BOOT_KERNEL_FROM_TFTP="${BOOT_KERNEL_FROM_TFTP} >> ${BUILD_CONFIG}
 	echo "USER_NAME=_"${USER_NAME} >> ${BUILD_CONFIG}
 	echo "BOARD_MAC_ADDR="${BOARD_MAC_ADDR} >> ${BUILD_CONFIG}
@@ -129,112 +128,71 @@ p_chip_tftp_config()
 
 p_chip_usb_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_p_defconfig
-	KERNEL_CONFIG=sp7021_chipP_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
+
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_romter_p_defconfig
+	set_kernel_config sp7021_chipP_emu_initramfs_defconfig
+	set_bootfrom_config USB
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=USB" >> $BUILD_CONFIG
 }
 
 c_chip_nand_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_SPINAND_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_nand_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_nand_defconfig
-	CROSS_COMPILE=$1
+
+	set_xboot_config q628_Rev2_SPINAND_defconfig
+	set_uboot_config sp7021_nand_c_defconfig
+	set_kernel_config sp7021_chipC_emu_nand_defconfig
+	set_bootfrom_config NAND
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=NAND" >> $BUILD_CONFIG
 }
 
 c_chip_emmc_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_emmc_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_defconfig
-	CROSS_COMPILE=$1
+
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_emmc_c_defconfig
+	set_kernel_config sp7021_chipC_emu_defconfig
+	set_bootfrom_config EMMC
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=EMMC" >> $BUILD_CONFIG
 }
 
 c_chip_nor_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-	echo "BOOT_FROM=SPINOR" >> $BUILD_CONFIG
-}
-
-c_chip_sdcard_config()
-{
-	if [ "$2" = "revA" ];then
-		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
-	fi
-	UBOOT_CONFIG=sp7021_emmc_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_defconfig
-	CROSS_COMPILE=$1
-	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=SDCARD" >> $BUILD_CONFIG
+	
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_romter_c_defconfig
+	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+	set_bootfrom_config SPINOR
 }
 
 c_chip_tftp_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
+	
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_romter_c_defconfig
+	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+
 	BOOT_KERNEL_FROM_TFTP=1
 	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
 	read TFTP_SERVER_IP
@@ -254,13 +212,11 @@ c_chip_tftp_config()
 	if [ "${BOARD_MAC_ADDR}" != "" ]; then
 		echo "MAC address of target board is ${BOARD_MAC_ADDR}"
 	fi
+	set_uboot_config sp7021_romter_c_defconfig
+	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="${CROSS_COMPILE} >> $BUILD_CONFIG
 	echo "BOOT_KERNEL_FROM_TFTP="${BOOT_KERNEL_FROM_TFTP} >> ${BUILD_CONFIG}
 	echo "USER_NAME=_"${USER_NAME} >> ${BUILD_CONFIG}
 	echo "BOARD_MAC_ADDR="${BOARD_MAC_ADDR} >> ${BUILD_CONFIG}
@@ -270,22 +226,17 @@ c_chip_tftp_config()
 
 c_chip_usb_config()
 {
-	if [ "$2" = "revA" ];then
+	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
-	else
-		XBOOT_CONFIG=q628_Rev2_EMMC_defconfig
 	fi
-	UBOOT_CONFIG=sp7021_romter_c_defconfig
-	KERNEL_CONFIG=sp7021_chipC_emu_initramfs_defconfig
-	CROSS_COMPILE=$1
+	
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_romter_c_defconfig
+	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+	set_bootfrom_config USB
+
 	NEED_ISP=1
-	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
-	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
-	echo "BOOT_FROM=USB" >> $BUILD_CONFIG
 }
 
 others_config()
@@ -384,95 +335,122 @@ others_config()
 	fi
 }
 
+num=0
+
+list_config()
+{	
+	if [ "$1" = "1" ];then # board == ev
+		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+		if [ "$2" = "1" ];then # chip == C
+			$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
+		fi
+		read sel
+		if [ "$sel" = "4" ];then 
+			BOOT_FROM=SDCARD
+		fi
+	else
+		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
+		read sel
+		if [ "$sel" = "2" ];then 
+			BOOT_FROM=SDCARD
+			sel=4
+		fi
+	fi
+	num=`expr $sel + $num`
+}
+
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[1] SP7021 Ev Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[2] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V3)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[4] BPi-F2S Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[5] BPi-F2P Board"$COLOR_ORIGIN
 read board
+chip=1
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
+	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
+	read chip
 elif [ "$board" = "2" ];then
 	echo "LINUX_DTB=sp7021-demov2" > $BUILD_CONFIG
 elif [ "$board" = "3" ];then
 	echo "LINUX_DTB=sp7021-demov3" > $BUILD_CONFIG
+elif [ "$board" = "4" ];then
+	echo "LINUX_DTB=sp7021-bpi-f2s" > $BUILD_CONFIG
+	UBOOT_CONFIG=sp7021_bpi_f2s_defconfig
+	KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig
+elif [ "$board" = "5" ];then
+	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
+	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
+	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
 else
 	echo "Error: Unknow board!!"
 	exit 1
 fi
 
-chip=0
+# elif [ "$board" = "4" ];then
+# 	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
 
-$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
-read chip
-
-num1=0
-num2=6
-
-if [ "$chip" = "2" ];then
-	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
-	read num2
-elif [ "$chip" = "1" ];then
+if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
-	read num1
-else
-	echo "Error: Unknow chip!!"
-	exit 1
+	echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+	num=6
+elif [ "$chip" = "2" ];then
+	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
+	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 fi
 
-num=`expr $num1 + $num2`
+list_config $board $chip
+
 echo "select "$num
+
 case "$num" in
 	1)
-		p_chip_emmc_config $1 revB
+		p_chip_emmc_config revB
 		;;
 	2)
-		p_chip_nand_config $1 revB
+		p_chip_nand_config revB
 		;;
 	3)
-		p_chip_nor_config $1 revB
+		p_chip_nor_config revB
 		;;
 	4)
-		p_chip_sdcard_config $1 revB
+		p_chip_emmc_config revB
 		;;
 	5)
-		p_chip_tftp_config $1 revB
+		p_chip_tftp_config revB
 		;;
 	6)
-		p_chip_usb_config $1 revB
+		p_chip_usb_config revB
 		;;
 	7)
-		c_chip_emmc_config $2 revB
+		c_chip_emmc_config revB
 		;;
 	8)
-		c_chip_nand_config $2 revB
+		c_chip_nand_config revB
 		;;
 	9)
-		c_chip_nor_config $2 revB
+		c_chip_nor_config revB
 		;;
 	10)
-		c_chip_sdcard_config $2 revB
+		c_chip_emmc_config revB
 		;;
 	11)
-		c_chip_tftp_config $2 revB
+		c_chip_tftp_config revB
 		;;
 	12)
-		c_chip_usb_config $2 revB
+		c_chip_usb_config revB
 		;;
 	13)
 		others_config $1 $2
