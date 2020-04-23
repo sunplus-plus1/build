@@ -99,7 +99,7 @@ uboot: check
 	@$(MAKE) secure SECURE_PATH=uboot
 #kernel build
 kernel: check
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules CROSS_COMPILE=$(CROSS_COMPILE)
+	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
 	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
 	@$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN)
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
