@@ -339,14 +339,15 @@ num=0
 
 list_config()
 {	
-	if [ "$1" = "1" ];then # board == ev
+	sel=1
+	if [ "$board" = "1" ];then # board == ev
 		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
-		if [ "$2" = "1" ];then # chip == C
+		if [ "$chip" = "1" ];then # chip == C
 			$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
 		fi
 		read sel
@@ -354,9 +355,11 @@ list_config()
 			BOOT_FROM=SDCARD
 		fi
 	else
-		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
-		read sel
+		if [ "$board" != "2" ];then # board == ev
+			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
+			read sel
+		fi
 		if [ "$sel" = "2" ];then 
 			BOOT_FROM=SDCARD
 			sel=4
@@ -367,10 +370,11 @@ list_config()
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[1] SP7021 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V3)"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[4] BPi-F2S Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[5] BPi-F2P Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[5] BPi-F2S Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[6] BPi-F2P Board"$COLOR_ORIGIN
 read board
 chip=1
 
@@ -379,16 +383,20 @@ if [ "$board" = "1" ];then
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
-	read chip
+	read chip	
 elif [ "$board" = "2" ];then
-	echo "LINUX_DTB=sp7021-demov2" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
+	UBOOT_CONFIG=sp7021_tppg2_defconfig
+	KERNEL_CONFIG=sp7021_chipC_ltpp3g2_defconfig
 elif [ "$board" = "3" ];then
-	echo "LINUX_DTB=sp7021-demov3" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-demov2" > $BUILD_CONFIG
 elif [ "$board" = "4" ];then
+	echo "LINUX_DTB=sp7021-demov3" > $BUILD_CONFIG
+elif [ "$board" = "5" ];then
 	echo "LINUX_DTB=sp7021-bpi-f2s" > $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2s_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig
-elif [ "$board" = "5" ];then
+elif [ "$board" = "6" ];then
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
@@ -411,7 +419,7 @@ elif [ "$chip" = "2" ];then
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 fi
 
-list_config $board $chip
+list_config
 
 echo "select "$num
 
