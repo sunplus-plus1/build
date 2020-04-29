@@ -96,6 +96,9 @@ uboot: check
 	else \
 		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
 	fi
+	$(TOPDIR)/build/tools/add_uhdr.sh "uboot_"pentagram_board"" $(TOPDIR)/boot/uboot/u-boot.bin $(TOPDIR)/boot/uboot/u-boot.img 0x200040 0x200040
+	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
+	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
 #kernel build
 kernel: check
