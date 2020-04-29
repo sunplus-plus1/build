@@ -112,6 +112,12 @@ kernel: check
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+	@echo "Wrapping rom.bin -> rom.img..."
+# for A:
+#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x200040 0x200040
+# for B:
+	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x10040 0x10040
+	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`;>printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 clean:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
