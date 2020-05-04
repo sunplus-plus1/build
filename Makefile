@@ -168,8 +168,7 @@ distclean: clean
 
 init:
 	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
-		$(call switch_branch,riscv,boot,ipack); \
-		$(call switch_branch,kernel_5.4,linux/kernel); \
+		$(call switch_branch,riscv,boot/iboot,boot/xboot,boot/uboot,boot/draminit,ipack,linux/kernel); \
 	else \
 		$(call switch_branch,master,boot,ipack,linux/kernel); \
 	fi
