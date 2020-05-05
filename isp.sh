@@ -84,7 +84,7 @@ rm -rf nonos
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
-	cp -rf $U $K $D $N ./boot2linux_SDcard
+	cp -rf $U $K $N ./boot2linux_SDcard
 	isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
 	rm -rf ISPBOOOT.BIN
 fi

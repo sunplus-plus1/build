@@ -3,10 +3,12 @@
 TOP=../../..
 
 # Generate a disk image containing FAT and EXT3 partitions.
-# ISPBOOOT.bin u-boot.img uImage dtb are placed on the FAT partition,
-# and uncompressed rootfs is placed on the EXT3 partition.
+# ISPBOOOT.BIN, u-boot.img, uImage, a926.img, and uEnv.txt
+# are placed on the FAT partition, and uncompressed rootfs
+# is placed on the EXT3 partition.
 # 1. Create boot (FAT) partition.
-# 2. Copy ISPBOOOT.BIN, u-boot.img, uImage and dtb to it.
+# 2. Copy ISPBOOOT.BIN, u-boot.img, uImage, a926.img, and 
+#    uEnv.txt to it.
 # 3. Copy boot partition to output file 'ISP_SD_BOOOT.img'.
 # 4. Create root (ext3) partition.
 # 5. Copy 'rc.sdcardboot' to '/etc/init.d' of root partition.
@@ -88,7 +90,7 @@ fi
 
 if [ -x "$(command -v mcopy)" ]; then
 	echo '###### do the mcopy cmd ########'
-	mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$OUTPATH/$EXT_ENV" "$FAT_FILE_IN/dtb" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+	mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$OUTPATH/$EXT_ENV" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
 	if [ -f $FAT_FILE_IN/$NONOS_IMG ]; then
 		mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/$NONOS_IMG" ::
 	fi
