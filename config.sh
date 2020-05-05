@@ -412,11 +412,13 @@ if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
 	echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+	echo "BOOT_CPU=C_CHIP" >> $BUILD_CONFIG
 	num=6
 elif [ "$chip" = "2" ];then
 	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
 	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+	echo "BOOT_CPU=P_CHIP" >> $BUILD_CONFIG
 fi
 
 list_config
