@@ -178,8 +178,6 @@ dtb: check
 		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
-
-	$(MAKE) uboot
 	
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -307,9 +305,10 @@ rom: check
 # make rootfs    -> create rootfs image from disk/
 
 all: check
-	@$(MAKE) nonos
 	@$(MAKE) xboot
 	@$(MAKE) dtb
+	@$(MAKE) uboot
+	@$(MAKE) nonos
 	@$(MAKE) kernel
 	@$(MAKE) secure
 	@$(MAKE) rootfs
