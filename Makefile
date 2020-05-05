@@ -37,6 +37,7 @@ NEED_ISP ?= 0
 ZEBU_RUN ?= 0
 BOOT_FROM ?= EMMC
 IS_ASSIGN_DTB ?= 0
+BOOT_CHIP ?= C_CHIP
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
@@ -73,6 +74,14 @@ ifeq ($(ROOTFS_CONFIG),v5)
 ROOTFS_CROSS = $(CROSS_V5_COMPILE)
 endif
 
+# xboot uses name field of u-boot header to differeciate between C-chip boot image
+# and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
+ifeq ("$(BOOT_CHIP)", "C_CHIP")
+img_name = "uboot_pentagram_board"
+else
+img_name = "uboot_B_pentagram_board"
+endif
+
 # 0: uImage, 1: qk_boot image (uncompressed)
 USE_QK_BOOT=0
 
@@ -96,7 +105,7 @@ uboot: check
 	else \
 		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
 	fi
-	$(TOPDIR)/build/tools/add_uhdr.sh "uboot_"pentagram_board"" $(TOPDIR)/boot/uboot/u-boot.bin $(TOPDIR)/boot/uboot/u-boot.img 0x200040 0x200040
+	$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/boot/uboot/u-boot.bin $(TOPDIR)/boot/uboot/u-boot.img 0x200040 0x200040
 	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
 	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
@@ -339,3 +348,5 @@ info:
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
+	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
+
