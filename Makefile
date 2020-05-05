@@ -90,12 +90,15 @@ xboot: check
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
-		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) \
-			BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) TFTP_SERVER_IP=$(TFTP_SERVER_IP) \
-			BOARD_MAC_ADDR=$(BOARD_MAC_ADDR) USER_NAME=$(USER_NAME) EXT_DTB=../../linux/kernel/dtb; \
+		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb  \
+			KCPPFLAGS="-DBOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) -DTFTP_SERVER_IP=$(TFTP_SERVER_IP) \
+			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
-			$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
+		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
 	fi
+	$(TOPDIR)/build/tools/add_uhdr.sh "uboot_"pentagram_board"" $(TOPDIR)/boot/uboot/u-boot.bin $(TOPDIR)/boot/uboot/u-boot.img 0x200040 0x200040
+	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
+	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
 #kernel build
 kernel: check
@@ -109,6 +112,12 @@ kernel: check
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+	@echo "Wrapping rom.bin -> rom.img..."
+# for A:
+#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x200040 0x200040
+# for B:
+	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x10040 0x10040
+	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 clean:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
