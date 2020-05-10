@@ -43,7 +43,7 @@ if [ "$1" = "SDCARD" ]; then
 		env_redund 0x80000 \
 		nonos 0x100000 \
 		dtb 0x40000 \
-		kernel 0xf00000
+		kernel 0x2000000
 elif [ "$1" = "EMMC" ]; then
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
@@ -54,8 +54,8 @@ elif [ "$1" = "EMMC" ]; then
 		env_redund 0x80000 \
 		nonos 0x100000 \
 		dtb 0x40000 \
-		kernel 0xf00000 \
-		rootfs 0x7c000000
+		kernel 0x2000000 \
+		rootfs 0xfc000000
 else
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
@@ -66,8 +66,8 @@ else
 		env_redund 0x80000 \
 		nonos 0x100000 \
 		dtb 0x40000 \
-		kernel 0xf00000 \
-		rootfs 0x6000000
+		kernel 0x1900000 \
+		rootfs 0xe000000
 fi
 rm -rf xboot0
 rm -rf uboot0
