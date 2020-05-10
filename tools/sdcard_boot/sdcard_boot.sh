@@ -28,7 +28,7 @@ RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
 
 # Size of FAT partition size (unit: M)
-FAT_IMG_SIZE_M=50
+FAT_IMG_SIZE_M=100
 
 # Block size is 512 bytes for sfdisk and FAT sector is 1024 bytes
 BLOCK_SIZE=512
