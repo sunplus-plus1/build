@@ -52,7 +52,7 @@ p_chip_nand_config()
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	fi
-	
+
 	set_xboot_config q628_Rev2_SPINAND_defconfig
 	set_uboot_config sp7021_nand_p_defconfig
 	set_kernel_config sp7021_chipP_emu_nand_defconfig
@@ -68,7 +68,7 @@ p_chip_emmc_config()
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
-	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_emmc_p_defconfig
 	set_kernel_config sp7021_chipP_emu_defconfig
 	set_bootfrom_config EMMC
@@ -83,7 +83,7 @@ p_chip_nor_config()
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
-	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_romter_p_defconfig
 	set_kernel_config sp7021_chipP_emu_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -95,7 +95,7 @@ p_chip_tftp_config()
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
-	set_xboot_config q628_Rev2_EMMC_defconfig	
+	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_romter_p_defconfig
 	set_kernel_config sp7021_chipP_emu_initramfs_defconfig
 
@@ -176,7 +176,7 @@ c_chip_nor_config()
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	fi
-	
+
 	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_romter_c_defconfig
 	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
@@ -188,7 +188,7 @@ c_chip_tftp_config()
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	fi
-	
+
 	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_romter_c_defconfig
 	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
@@ -229,7 +229,7 @@ c_chip_usb_config()
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
 	fi
-	
+
 	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_romter_c_defconfig
 	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
@@ -338,7 +338,7 @@ others_config()
 num=0
 
 list_config()
-{	
+{
 	sel=1
 	if [ "$board" = "1" ];then # board == ev
 		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -351,7 +351,7 @@ list_config()
 			$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
 		fi
 		read sel
-		if [ "$sel" = "4" ];then 
+		if [ "$sel" = "4" ];then
 			BOOT_FROM=SDCARD
 		fi
 	else
@@ -360,7 +360,7 @@ list_config()
 			$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
 			read sel
 		fi
-		if [ "$sel" = "2" ];then 
+		if [ "$sel" = "2" ];then
 			BOOT_FROM=SDCARD
 			sel=4
 		fi
@@ -383,7 +383,7 @@ if [ "$board" = "1" ];then
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
-	read chip	
+	read chip
 elif [ "$board" = "2" ];then
 	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2_defconfig
@@ -414,7 +414,7 @@ fi
 
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
-	echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
+	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "BOOT_CHIP=C_CHIP" >> $BUILD_CONFIG
 	num=6

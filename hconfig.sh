@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 COLOR_RED="\033[0;1;31;40m"
 COLOR_GREEN="\033[0;1;32;40m"
 COLOR_YELLOW="\033[0;1;33;40m"
@@ -130,7 +130,7 @@ assign_dtb()
 	read -p "current dtb ["$HW_DTB"]: " DTB_NUM
 
 	if [ ! -z $DTB_NUM ];then
-		if [ $DTB_NUM -gt 0 ]; then		
+		if [ $DTB_NUM -gt 0 ]; then
 			HW_DTB=$(find $DTB_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*sp7021*.dts" | sort -i | sed "s,"$DTB_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed "s/.dts//g" | sed -n $DTB_NUM"p" | sed -r "s, +[0-9]* ,,g")
 			IS_ASSIGN_DTB=1
 		fi
@@ -150,8 +150,8 @@ if [ -z $IC_NAME ]; then
 fi
 
 # while [ $BREAK -eq 0 ]
-# do 
-# 	$ECHO $COLOR_GREEN"Q628 configs <IC name: "$IC_NAME" , IC ver: "$IC_VER" ,chip: "$CHIP_TYPE">"$COLOR_ORIGIN	
+# do
+# 	$ECHO $COLOR_GREEN"Q628 configs <IC name: "$IC_NAME" , IC ver: "$IC_VER" ,chip: "$CHIP_TYPE">"$COLOR_ORIGIN
 # 	if [ $IS_ASSIGN_DTB -eq 1 ]; then
 # 		$ECHO $COLOR_GREEN"dtb: "$HW_DTB
 # 	fi
@@ -198,7 +198,7 @@ fi
 # 				chip_nor_config
 # 				NEED_ISP=0
 # 				;;
-# 			4)	
+# 			4)
 # 				BREAK=0
 # 				change_configs
 # 				save_hwconfig
@@ -213,7 +213,7 @@ fi
 # 				echo "Unknow config!!"
 # 		esac
 # 	fi
-# done 
+# done
 
 # if [ "$IC_VER" = "A" ];then
 # 	XBOOT_CONFIG=q628_defconfig
@@ -223,7 +223,7 @@ fi
 
 # if [ "$CHIP_TYPE" = "A" ];then
 # 	ROOTFS_CONFIG=v7
-# 	CROSS_COMPILE=$2
+# 	CROSS_COMPILE=$1
 # elif [ "$CHIP_TYPE" = "B" ];then
 # 	ROOTFS_CONFIG=v5
 # 	CROSS_COMPILE=$1

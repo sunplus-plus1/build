@@ -94,7 +94,7 @@ SECURE_PATH ?=
 
 #xboot build
 xboot: check
-	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- all
+	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) all
 	@$(MAKE) secure SECURE_PATH=xboot
 #uboot build
 uboot: check
@@ -120,7 +120,7 @@ kernel: check
 	@$(MAKE) secure SECURE_PATH=kernel
 
 nonos:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE)
 	@echo "Wrapping rom.bin -> rom.img..."
 # for A:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x200040 0x200040
@@ -129,8 +129,8 @@ nonos:
 	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 clean:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $@
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE) $@
+	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
@@ -151,11 +151,11 @@ config: init
 	fi
 	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
 
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(TOOLCHAIN_V5_PATH)/armv5-glibc-linux- $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
+	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) clean
-	@$(MAKE) CROSS=$(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf- initramfs
+	@$(MAKE) CROSS=$(CROSS_V7_COMPILE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -165,7 +165,7 @@ config: init
 	@$(MAKE) info
 
 hconfig:  
-	@./build/hconfig.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
+	@./build/hconfig.sh $(CROSS_V7_COMPILE)
 	$(MAKE) config HCONFIG="1"
 
 dtb: check
@@ -324,7 +324,7 @@ test: check
 
 init:
 	@$(RM) -f $(CONFIG_ROOT)
-	@./build/config.sh $(CROSS_V5_COMPILE) $(CROSS_V7_COMPILE)
+	@./build/config.sh $(CROSS_V7_COMPILE)
 
 check:
 	@if ! [ -f $(CONFIG_ROOT) ]; then \
