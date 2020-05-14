@@ -92,10 +92,25 @@ SECURE_PATH ?=
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos
 .PHONY: dtb spirom isp tool_isp
 
+# rootfs image is created by :
+# make initramfs -> re-create initial disk/
+# make kernel    -> install kernel modules to disk/lib/modules/
+# make rootfs    -> create rootfs image from disk/
+all: check
+	@$(MAKE) xboot
+	@$(MAKE) dtb
+	@$(MAKE) uboot
+	@$(MAKE) nonos
+	@$(MAKE) kernel
+	@$(MAKE) secure
+	@$(MAKE) rootfs
+	@$(MAKE) rom
+
 #xboot build
 xboot: check
 	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) all
 	@$(MAKE) secure SECURE_PATH=xboot
+
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -109,6 +124,7 @@ uboot: check
 	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
 	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
+
 #kernel build
 kernel: check
 	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
@@ -155,7 +171,7 @@ config: init
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) clean
-	@$(MAKE) CROSS=$(CROSS_V7_COMPILE) initramfs
+	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -299,29 +315,11 @@ rom: check
 		$(MAKE) spirom; \
 	fi
 
-# rootfs image is created by :
-# make initramfs -> re-create initial disk/
-# make kernel    -> install kernel modules to disk/lib/modules/
-# make rootfs    -> create rootfs image from disk/
-
-all: check
-	@$(MAKE) xboot
-	@$(MAKE) dtb
-	@$(MAKE) uboot
-	@$(MAKE) nonos
-	@$(MAKE) kernel
-	@$(MAKE) secure
-	@$(MAKE) rootfs
-	@$(MAKE) rom
-
 mt: check
 	@$(MAKE) kernel
 	cp linux/application/module_test/mt2.sh $(ROOTFS_DIR)/bin
 	@$(MAKE) rootfs rom
 	
-test: check
-	@$(MAKE) $(MAKE_JOBS) -C linux/application/module_test/i2ctea5767 CROSS_COMPILE=$(CROSS_COMPILE)
-
 init:
 	@$(RM) -f $(CONFIG_ROOT)
 	@./build/config.sh $(CROSS_V7_COMPILE)
