@@ -86,7 +86,7 @@ endif
 USE_QK_BOOT=0
 
 SPI_BIN = spi_all.bin
-DOWN_TOOL  = down_32M.exe
+DOWN_TOOL = down_32M.exe
 SECURE_PATH ?=
 
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos
@@ -145,21 +145,19 @@ nonos:
 	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 clean:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE) $@
+	@$(MAKE) -C $(NONOS_B_PATH) $@
 	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
 	@$(MAKE) -C $(ROOTFS_PATH) $@
 	@$(RM) -rf $(OUT_PATH)
-	@$(RM) -f $(HW_CONFIG_ROOT)
 
 distclean: clean
-	@$(MAKE) -C $(XBOOT_PATH) $@
+	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@
 	@$(MAKE) -C $(UBOOT_PATH) $@
 	@$(MAKE) -C $(LINUX_PATH) $@
-	@$(MAKE) -C $(ROOTFS_PATH) $@
 	@$(RM) -f $(CONFIG_ROOT)
-	@$(RM) -rf $(OUT_PATH)
+	@$(RM) -f $(HW_CONFIG_ROOT)
 
 config: init
 	@if [ -z $(HCONFIG) ]; then \
