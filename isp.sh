@@ -17,7 +17,7 @@ cp $U uboot2
 cp $K kernel
 if [ -f $N ]; then
 	cp $N nonos
-fi	
+fi
 if [ "$1" != "SDCARD" ]; then
 	cp $ROOTFS rootfs
 fi
@@ -56,7 +56,7 @@ elif [ "$1" = "EMMC" ]; then
 		dtb 0x40000 \
 		kernel 0x2000000 \
 		rootfs 0xfc000000
-else
+elif [ "$1" = "NAND" ]; then
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
 		xboot1 0x100000 \
@@ -68,7 +68,16 @@ else
 		dtb 0x40000 \
 		kernel 0x1900000 \
 		rootfs 0xe000000
+elif [ "$1" = "USB" ]; then
+	isp pack_image ISPBOOOT.BIN \
+		xboot0 uboot0 \
+		xboot1 0x100000 \
+		uboot1 0x100000 \
+		nonos 0x100000 \
+		dtb 0x40000 \
+		kernel 0xd80000
 fi
+
 rm -rf xboot0
 rm -rf uboot0
 rm -rf xboot1
