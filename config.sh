@@ -354,6 +354,16 @@ list_config()
 		if [ "$sel" = "4" ];then
 			BOOT_FROM=SDCARD
 		fi
+	elif [ "$board" = "11" ];then
+		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[3] SD Card"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+		read sel
+		if [ $sel -ge 2 ];then
+			sel=`expr $sel + 1`
+		fi
 	else
 		if [ "$board" != "2" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -369,7 +379,7 @@ list_config()
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[2] LTPP3G2 Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
@@ -401,16 +411,18 @@ elif [ "$board" = "5" ];then
 	UBOOT_CONFIG=sp7021_bpi_f2s_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig
 elif [ "$board" = "6" ];then
+	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
-	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
+elif [ "$board" = "11" ];then
+	echo "LINUX_DTB=I143-evboard" > $BUILD_CONFIG
+	UBOOT_CONFIG=I143_evboard_defconfig
+	KERNEL_CONFIG=I143_chipP_evboard_defconfig
+	chip=2
 else
 	echo "Error: Unknow board!!"
 	exit 1
 fi
-
-# elif [ "$board" = "4" ];then
-# 	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
 
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
