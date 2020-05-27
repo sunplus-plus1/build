@@ -8,12 +8,15 @@ BUILD_CONFIG=./.config
 
 XBOOT_CONFIG_ROOT=./boot/xboot/configs
 UBOOT_CONFIG_ROOT=./boot/uboot/configs
-KERNEL_CONFIG_ROOT=./linux/kernel/arch/arm/configs
+KERNEL_ARM_CONFIG_ROOT=./linux/kernel/arch/arm/configs
+KERNEL_RISCV_CONFIG_ROOT=./linux/kernel/arch/riscv/configs
 
 UBOOT_CONFIG=
 KERNEL_CONFIG=
 BOOT_FROM=
 XBOOT_CONFIG=
+
+ARCH=arm
 
 set_uboot_config()
 {
@@ -267,14 +270,14 @@ others_config()
 
 	$ECHO $COLOR_GREEN"Select kernel config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
-	find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
+	find $KERNEL_ARM_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_ARM_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read KERNEL_CONFIG_NUM
 	if [ -z $KERNEL_CONFIG_NUM ];then
 		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
 		exit 1;
 	fi
-	KERNEL_CONFIG=$(find $KERNEL_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
+	KERNEL_CONFIG=$(find $KERNEL_ARM_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_ARM_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
 
 	$ECHO $COLOR_GREEN"Select rootfs config :"$COLOR_ORIGIN
 	$ECHO " ==============================================="
@@ -347,9 +350,9 @@ list_config()
 		$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
-		if [ "$chip" = "1" ];then # chip == C
-			$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
-		fi
+		# if [ "$chip" = "1" ];then # chip == C
+		# 	$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
+		# fi
 		read sel
 		if [ "$sel" = "4" ];then
 			BOOT_FROM=SDCARD
@@ -361,6 +364,15 @@ list_config()
 		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
 		read sel
+		if [ "$sel" = "1" -o "$sel" = "3" ];then
+			UBOOT_CONFIG=i143_emmc_p_defconfig
+			KERNEL_CONFIG=i143_chipP_ev_defconfig
+			XBOOT_CONFIG=i143_EMMC_defconfig
+		else
+			UBOOT_CONFIG=i143_romter_p_defconfig
+			KERNEL_CONFIG=i143_chipP_ev_initramfs_defconfig
+			XBOOT_CONFIG=i143_defconfig
+		fi	
 		if [ $sel -ge 2 ];then
 			sel=`expr $sel + 1`
 		fi
@@ -415,10 +427,9 @@ elif [ "$board" = "6" ];then
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 elif [ "$board" = "11" ];then
-	echo "LINUX_DTB=I143-evboard" > $BUILD_CONFIG
-	UBOOT_CONFIG=I143_evboard_defconfig
-	KERNEL_CONFIG=I143_chipP_evboard_defconfig
+	echo "LINUX_DTB=i143-ev" > $BUILD_CONFIG
 	chip=2
+	ARCH=riscv
 else
 	echo "Error: Unknow board!!"
 	exit 1
@@ -436,6 +447,8 @@ elif [ "$chip" = "2" ];then
 	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	echo "BOOT_CHIP=P_CHIP" >> $BUILD_CONFIG
 fi
+
+echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
 list_config
 
@@ -478,9 +491,9 @@ case "$num" in
 	12)
 		c_chip_usb_config revB
 		;;
-	13)
-		others_config $1 $2
-		;;
+	# 13)
+	# 	others_config $1 $2
+	# 	;;
 	*)
 		echo "Error: Unknow config!!"
 		exit 1

@@ -164,10 +164,11 @@ config: init
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
 	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
+	$(eval ARCH=$(shell cat $(CONFIG_ROOT) | grep 'ARCH=' | sed 's/ARCH=//g'))
 
 	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
+	@$(MAKE) -C $(LINUX_PATH) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) clean
 	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
@@ -344,4 +345,5 @@ info:
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
+	@$(ECHO) "ARCH =" $(ARCH)
 
