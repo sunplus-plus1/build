@@ -170,6 +170,7 @@ config: init
 	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
 	@$(MAKE) -C $(LINUX_PATH) clean
+	@$(MAKE) -C $(UBOOT_PATH) clean
 	@$(MAKE) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
