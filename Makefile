@@ -168,9 +168,9 @@ distclean: clean
 
 init:
 	@if [ $(ARCH_IS_RISCV) -eq 1 ]; then \
-		$(call switch_branch,riscv,boot/iboot,boot/xboot,boot/uboot,boot/draminit,ipack,linux/kernel); \
+		$(call switch_branch,riscv,boot/iboot,boot/xboot,boot/uboot,boot/draminit,ipack); \
 	else \
-		$(call switch_branch,master,boot,ipack,linux/kernel); \
+		$(call switch_branch,master,boot,ipack); \
 	fi
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \

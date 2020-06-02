@@ -14,7 +14,7 @@ riscv_nor_config()
 {
 	XBOOT_CONFIG=i143_Rev2_zmem_defconfig
 	UBOOT_CONFIG=sunplus_i143_defconfig
-	KERNEL_CONFIG=sunplus_i143_defconfig
+	KERNEL_CONFIG=i143_chipP_ev_initramfs_defconfig
 	CROSS_COMPILE=$1
 	NEED_ISP=0
 	echo "XBOOT_CONFIG=${XBOOT_CONFIG}" > $BUILD_CONFIG
