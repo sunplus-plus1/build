@@ -29,9 +29,12 @@ sinclude ./.hwconfig
 
 TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
+TOOLCHAIN_RISCV_PATH = $(TOPDIR)/crossgcc/riscv64-sifive-linux-gnu/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
+CROSS_RISCV_UNKNOWN_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf-
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
@@ -72,7 +75,11 @@ NONOS_B_IMG = rom.img
 ROOTFS_CROSS = $(CROSS_V7_COMPILE)
 ifeq ($(ROOTFS_CONFIG),v5)
 ROOTFS_CROSS = $(CROSS_V5_COMPILE)
+else ifeq ($(ARCH),riscv)
+ROOTFS_CROSS = $(CROSS_RISCV_COMPILE)
 endif
+
+CHIP ?=
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
 # and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
@@ -89,7 +96,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL = down_32M.exe
 SECURE_PATH ?=
 
-.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos
+.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos freertos
 .PHONY: dtb spirom isp tool_isp
 
 # rootfs image is created by :
@@ -97,65 +104,97 @@ SECURE_PATH ?=
 # make kernel    -> install kernel modules to disk/lib/modules/
 # make rootfs    -> create rootfs image from disk/
 all: check
+	@if [ $(CHIP) != "I143" ]; then \
+		$(MAKE) nonos ;\
+	elif [ $(ARCH) = "riscv" ]; then \
+		$(MAKE) freertos ;\
+	fi
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@$(MAKE) nonos
 	@$(MAKE) kernel
 	@$(MAKE) secure
 	@$(MAKE) rootfs
 	@$(MAKE) rom
 
+freertos:
+	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_RISCV_UNKNOWN_COMPILE)
+
 #xboot build
 xboot: check
-	@$(MAKE) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) all
+	@if [ $(CHIP) = "I143" ]; then \
+		$(MAKE) ARCH=riscv $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_UNKNOWN_COMPILE) all ;\
+	else \
+		$(MAKE) ARCH=arm $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) all ;\
+	fi
 	@$(MAKE) secure SECURE_PATH=xboot
 
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
-		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb  \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb  \
 			KCPPFLAGS="-DBOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) -DTFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
-		$(MAKE) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE) EXT_DTB=../../linux/kernel/dtb; \
 	fi
-	$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/boot/uboot/u-boot.bin $(TOPDIR)/boot/uboot/u-boot.img 0x200040 0x200040
+
+	@if [ $(CHIP) = "I143" ]; then \
+		if [ $(ARCH) = "riscv" ]; then \
+			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_RISCV_UNKNOWN_COMPILE); \
+			$(TOPDIR)/build/tools/add_uhdr.sh "uboot_i143_riscv" $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) 0xA0100000 0xA0100000; \
+		else \
+			$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) 0x20100000 0x20100000	;\
+		fi; \
+	else \
+		$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) 0x200040 0x200040	;\
+	fi
 	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
 	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
 
 #kernel build
 kernel: check
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(RM) -rf $(ROOTFS_DIR)/lib/modules/
-	@$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN)
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) \
-		CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(MAKE) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE)
-	@$(MAKE) secure SECURE_PATH=kernel
+	@$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
+	@if [ $(CHIP) == "I143" -a $(ARCH) = "riscv" ]; then \
+		echo "generate riscv uImage in the future" ;\
+	else \
+		$(RM) -rf $(ROOTFS_DIR)/lib/modules/  \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE); \
+		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN); \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE); UIMAGE_LOADADDR=0x20208000;\
+		$(MAKE) secure SECURE_PATH=kernel ;\
+	fi
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE)
 	@echo "Wrapping rom.bin -> rom.img..."
 # for A:
-#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x200040 0x200040
+#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
 # for B:
-	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img 0x10040 0x10040
+	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x10040 0x10040
 	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 clean:
-	@$(MAKE) -C $(NONOS_B_PATH) $@
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@
-	@$(MAKE) -C $(UBOOT_PATH) $@
-	@$(MAKE) -C $(LINUX_PATH) $@
-	@$(MAKE) -C $(ROOTFS_PATH) $@
+	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
+	if [ $(CHIP) = "I143" ]; then \
+		$(MAKE) ARCH=riscv -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_UNKNOWN_COMPILE) $@ ;\
+	else \
+		$(MAKE) ARCH=arm -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@ ;\
+	fi
+	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
+	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
+	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
 	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@
-	@$(MAKE) -C $(UBOOT_PATH) $@
-	@$(MAKE) -C $(LINUX_PATH) $@
+	if [ $(CHIP) = "I143" ]; then \
+		$(MAKE) ARCH=riscv -C $(XBOOT_PATH) CROSS=$(CROSS_RISCV_UNKNOWN_COMPILE) $@ ;\
+	else \
+		$(MAKE) ARCH=arm -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $@ ;\
+	fi
+	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
+	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -f $(HW_CONFIG_ROOT)
 
@@ -165,13 +204,16 @@ config: init
 	fi
 	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
 	$(eval ARCH=$(shell cat $(CONFIG_ROOT) | grep 'ARCH=' | sed 's/ARCH=//g'))
-
-	@$(MAKE) -C $(XBOOT_PATH) CROSS=$(CROSS_V5_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
-	@$(MAKE) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
-	@$(MAKE) -C $(LINUX_PATH) clean
-	@$(MAKE) -C $(UBOOT_PATH) clean
-	@$(MAKE) initramfs
+	@if [ $(CHIP) = "I143" ]; then \
+		$(MAKE) -C $(XBOOT_PATH) ARCH=riscv CROSS=$(CROSS_RISCV_UNKNOWN_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g') ;\
+	else \
+		$(MAKE) -C $(XBOOT_PATH) ARCH=arm CROSS=$(CROSS_V5_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g'); \
+	fi
+	@$(MAKE_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
+	@$(MAKE_ARCH) -C $(UBOOT_PATH) clean
+	@$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
+	@$(MAKE_ARCH) -C $(LINUX_PATH) clean
+	@$(MAKE_ARCH) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
@@ -188,19 +230,19 @@ dtb: check
 	$(eval LINUX_DTB=$(shell cat $(CONFIG_ROOT) | grep 'LINUX_DTB=' | sed 's/LINUX_DTB=//g').dtb)
 
 	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
-		$(MAKE) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
-		$(LN) -fs arch/arm/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
+		$(LN) -fs arch/$(ARCH)/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
 	else \
-		$(MAKE) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
-		$(LN) -fs arch/arm/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE); \
+		$(LN) -fs arch/$(ARCH)/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
 	
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
-		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
+		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
 		TFTP_SERVER_PATH=$(TFTP_SERVER_PATH); \
 	else \
-		$(MAKE) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN); \
+		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP); \
 	fi
 	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
@@ -322,7 +364,7 @@ mt: check
 	
 init:
 	@$(RM) -f $(CONFIG_ROOT)
-	@./build/config.sh $(CROSS_V7_COMPILE)
+	@./build/config.sh $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
 
 check:
 	@if ! [ -f $(CONFIG_ROOT) ]; then \
@@ -331,10 +373,10 @@ check:
 	fi
 
 initramfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
+	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 rootfs:
-	@$(MAKE) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
+	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(ROOTFS_CROSS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
@@ -347,4 +389,5 @@ info:
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)
+	@$(ECHO) "CHIP =" $(CHIP)
 

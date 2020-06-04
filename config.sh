@@ -242,6 +242,38 @@ c_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
+i143_c_chip_nor_config()
+{
+	set_xboot_config i143_romter_defconfig
+	set_uboot_config i143_romter_c_defconfig
+	set_kernel_config pentagram_i143_achip_initramfs_defconfig 
+	set_bootfrom_config SPINOR
+}
+
+i143_c_chip_emmc_config()
+{
+	set_xboot_config i143_emmc_defconfig
+	set_uboot_config i143_emmc_c_defconfig
+	set_kernel_config pentagram_i143_achip_initramfs_defconfig 
+	set_bootfrom_config EMMC
+}
+
+i143_p_chip_nor_config()
+{
+	set_xboot_config i143_romter_defconfig
+	set_uboot_config i143_romter_p_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
+	set_bootfrom_config SPINOR
+}
+i143_p_chip_emmc_config()
+{
+	set_xboot_config i143_emmc_defconfig
+	set_uboot_config i143_emmc_p_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
+	set_bootfrom_config EMMC
+}
+
+
 others_config()
 {
 	$ECHO $COLOR_GREEN"Initial all configs."$COLOR_ORIGIN
@@ -361,20 +393,11 @@ list_config()
 		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[3] SD Card"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[4] TFTP server"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[5] USB"$COLOR_ORIGIN
 		read sel
-		if [ "$sel" = "1" -o "$sel" = "3" ];then
-			UBOOT_CONFIG=i143_emmc_p_defconfig
-			KERNEL_CONFIG=i143_chipP_ev_defconfig
-			XBOOT_CONFIG=i143_EMMC_defconfig
-		else
-			UBOOT_CONFIG=i143_romter_p_defconfig
-			KERNEL_CONFIG=i143_chipP_ev_initramfs_defconfig
-			XBOOT_CONFIG=i143_defconfig
-		fi	
-		if [ $sel -ge 2 ];then
-			sel=`expr $sel + 1`
+		if [ "$sel" = "3" ];then
+			BOOT_FROM=SDCARD
 		fi
 	else
 		if [ "$board" != "2" ];then # board == ev
@@ -427,31 +450,56 @@ elif [ "$board" = "6" ];then
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 elif [ "$board" = "11" ];then
-	echo "LINUX_DTB=i143-ev" > $BUILD_CONFIG
-	chip=2
-	ARCH=riscv
+	echo "CHIP=I143" > $BUILD_CONFIG
+	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
+	read chip
 else
 	echo "Error: Unknow board!!"
 	exit 1
 fi
 
+if [ "$board" = "11" ];then
+	echo "CHIP=I143" >> $BUILD_CONFIG
+else
+	echo "CHIP=Q628" >> $BUILD_CONFIG
+fi
+
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
-	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+	if [ "$board" = "1" ];then
+		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+		echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+		num=6
+	elif [ "$board" = "11" ];then
+		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
+		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+		#echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
+		num=12
+	fi
 	echo "BOOT_CHIP=C_CHIP" >> $BUILD_CONFIG
-	num=6
+
 elif [ "$chip" = "2" ];then
 	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
-	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
-	echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+	if [ "$board" = "1" ];then
+		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+		echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+	elif [ "$board" = "11" ];then
+		ARCH=riscv
+		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
+		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
+		#echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+		num=17
+	fi
 	echo "BOOT_CHIP=P_CHIP" >> $BUILD_CONFIG
 fi
 
 echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
 list_config
-
+echo "$CHIP "
+echo "$CROSS_COMPILE "
 echo "select "$num
 
 case "$num" in
@@ -490,6 +538,18 @@ case "$num" in
 		;;
 	12)
 		c_chip_usb_config revB
+		;;
+	13)
+		i143_c_chip_emmc_config
+		;;
+	14)
+		i143_c_chip_nor_config
+		;;
+	18)
+		i143_p_chip_emmc_config
+		;;
+	19)
+		i143_p_chip_nor_config
 		;;
 	# 13)
 	# 	others_config $1 $2

@@ -9,8 +9,10 @@
 NAME="$1"
 SRC="$2"
 OUTPUT="$3"
-LADDR=$4
-RADDR=$5
+ARCH="$4"
+LADDR=$5
+RADDR=$6
+
 
 ####################
 # check if mkimage is available?
@@ -51,6 +53,12 @@ if [ -z "$OUTPUT" ];then
 	exit 1
 fi
 
+if [ -z "$ARCH" ];then
+	echo "Missed arg4: cpu type"
+	usage
+	exit 1
+fi
+
 if [ -z "$LADDR" ];then
 	LADDR=0
 fi
@@ -65,6 +73,6 @@ if [ ! -f "$SRC" ];then
 	exit 1
 fi
 
-$MKIMAGE -A arm -O linux -T $TYPE -C none -a $LADDR -e $RADDR -n $NAME -d $SRC $OUTPUT
+$MKIMAGE -A $ARCH -O linux -T $TYPE -C none -a $LADDR -e $RADDR -n $NAME -d $SRC $OUTPUT
 
 ls -l $OUTPUT
