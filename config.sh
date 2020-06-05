@@ -256,6 +256,9 @@ i143_c_chip_emmc_config()
 	set_uboot_config i143_emmc_c_defconfig
 	set_kernel_config pentagram_i143_achip_initramfs_defconfig 
 	set_bootfrom_config EMMC
+
+	NEED_ISP=1
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
 i143_p_chip_nor_config()
@@ -271,6 +274,9 @@ i143_p_chip_emmc_config()
 	set_uboot_config i143_emmc_p_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config EMMC
+
+	NEED_ISP=1
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
 
