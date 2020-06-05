@@ -468,29 +468,27 @@ fi
 
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
-	if [ "$board" = "1" ];then
-		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
-		echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
-		num=6
-	elif [ "$board" = "11" ];then
+	if [ "$board" = "11" ];then
 		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
-		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
-		#echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 		num=12
+	else
+		num=6
 	fi
+	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "BOOT_CHIP=C_CHIP" >> $BUILD_CONFIG
 
 elif [ "$chip" = "2" ];then
 	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
-	if [ "$board" = "1" ];then
-		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
-		echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
-	elif [ "$board" = "11" ];then
+	if [ "$board" = "11" ];then
 		ARCH=riscv
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
-		#echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
+		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
 		num=17
+	else
+		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
+		echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	fi
 	echo "BOOT_CHIP=P_CHIP" >> $BUILD_CONFIG
 fi
@@ -498,8 +496,6 @@ fi
 echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
 list_config
-echo "$CHIP "
-echo "$CROSS_COMPILE "
 echo "select "$num
 
 case "$num" in

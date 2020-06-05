@@ -159,7 +159,7 @@ kernel: check
 	@if [ $(CHIP) = "I143" -a $(ARCH) = "riscv" ]; then \
 		echo "generate riscv uImage in the future" ;\
 	else \
-		$(RM) -rf $(ROOTFS_DIR)/lib/modules/  \
+		$(RM) -rf $(ROOTFS_DIR)/lib/modules/;  \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN); \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE); UIMAGE_LOADADDR=0x20208000;\
