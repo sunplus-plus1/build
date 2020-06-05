@@ -547,12 +547,19 @@ case "$num" in
 	14)
 		i143_c_chip_nor_config
 		;;
+	15)
+		i143_c_chip_emmc_config
+		;;
 	18)
 		i143_p_chip_emmc_config
 		;;
 	19)
 		i143_p_chip_nor_config
 		;;
+	20)
+		i143_p_chip_emmc_config
+		;;
+
 	# 13)
 	# 	others_config $1 $2
 	# 	;;
