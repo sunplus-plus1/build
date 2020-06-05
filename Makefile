@@ -156,7 +156,7 @@ uboot: check
 #kernel build
 kernel: check
 	@$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
-	@if [ $(CHIP) == "I143" -a $(ARCH) = "riscv" ]; then \
+	@if [ $(CHIP) = "I143" -a $(ARCH) = "riscv" ]; then \
 		echo "generate riscv uImage in the future" ;\
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/  \
