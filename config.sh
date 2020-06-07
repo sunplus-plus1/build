@@ -115,7 +115,8 @@ p_chip_tftp_config()
 		TFTP_SERVER_PATH=/home/scftp
 	fi
 	echo "TFTP server path is ${TFTP_SERVER_PATH}"
-	echo "Please enter board MAC address:"
+	echo "Please enter MAC address of target board (ex: 00:22:60:00:88:20):"
+	echo "(Press Enter directly if you want to use board's default MAC address.)"
 	read BOARD_MAC_ADDR
 	set_uboot_config sp7021_romter_c_defconfig
 	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
@@ -278,7 +279,50 @@ i143_p_chip_emmc_config()
 	NEED_ISP=1
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
+i143_p_chip_tftp_config()
+{
+	set_xboot_config i143_romter_defconfig
+	set_uboot_config i143_romter_p_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
 
+	BOOT_KERNEL_FROM_TFTP=1
+	echo "Please enter TFTP server IP address: (Default is 172.18.12.62)"
+	read TFTP_SERVER_IP
+	if [ "${TFTP_SERVER_IP}" == "" ]; then
+		TFTP_SERVER_IP=172.18.12.62
+	fi
+	echo "TFTP server IP address is ${TFTP_SERVER_IP}"
+	echo "Please enter TFTP server path: (Default is /home/scftp)"
+	read TFTP_SERVER_PATH
+	if [ "${TFTP_SERVER_PATH}" == "" ]; then
+		TFTP_SERVER_PATH=/home/scftp
+	fi
+	echo "TFTP server path is ${TFTP_SERVER_PATH}"
+	echo "Please enter MAC address of target board (ex: 00:22:60:00:88:20):"
+	echo "(Press Enter directly if you want to use board's default MAC address.)"
+	read BOARD_MAC_ADDR
+	set_uboot_config i143_romter_p_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
+
+	USER_NAME=$(whoami)
+	echo "Your USER_NAME is ${USER_NAME}"
+	echo "BOOT_KERNEL_FROM_TFTP="${BOOT_KERNEL_FROM_TFTP} >> ${BUILD_CONFIG}
+	echo "USER_NAME=_"${USER_NAME} >> ${BUILD_CONFIG}
+	echo "BOARD_MAC_ADDR="${BOARD_MAC_ADDR} >> ${BUILD_CONFIG}
+	echo "TFTP_SERVER_IP="${TFTP_SERVER_IP} >> ${BUILD_CONFIG}
+	echo "TFTP_SERVER_PATH="${TFTP_SERVER_PATH} >> ${BUILD_CONFIG}
+}
+
+i143_p_chip_usb_config()
+{
+	set_xboot_config i143_romter_defconfig
+	set_uboot_config i143_romter_p_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
+	set_bootfrom_config USB
+
+	NEED_ISP=1
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+}
 
 others_config()
 {
@@ -558,6 +602,12 @@ case "$num" in
 		;;
 	20)
 		i143_p_chip_emmc_config
+		;;
+	21)
+		i143_p_chip_tftp_config
+		;;
+	22)
+		i143_p_chip_usb_config
 		;;
 
 	# 13)
