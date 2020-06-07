@@ -104,14 +104,14 @@ SECURE_PATH ?=
 # make kernel    -> install kernel modules to disk/lib/modules/
 # make rootfs    -> create rootfs image from disk/
 all: check
-	@if [ $(CHIP) != "I143" ]; then \
-		$(MAKE) nonos ;\
-	elif [ $(ARCH) = "riscv" ]; then \
-		$(MAKE) freertos ;\
-	fi
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
+	@if [ $(CHIP) != "I143" ]; then \
+		$(MAKE) nonos; \
+	elif [ $(ARCH) = "riscv" ]; then \
+		$(MAKE) freertos; \
+	fi
 	@$(MAKE) kernel
 	@$(MAKE) secure
 	@$(MAKE) rootfs
