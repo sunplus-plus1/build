@@ -324,6 +324,28 @@ i143_p_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
+i143_c_chip_zmem_config()
+{
+	set_xboot_config i143_Rev2_zmem_defconfig
+	set_uboot_config i143_romter_c_zebu_defconfig
+	set_kernel_config pentagram_i143_achip_initramfs_defconfig
+	set_bootfrom_config SPINOR
+
+	ZEBU_RUN=1
+	echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
+}
+
+i143_p_chip_zmem_config()
+{
+	set_xboot_config i143_Rev2_zmem_defconfig
+	set_uboot_config i143_romter_p_zebu_defconfig
+	set_kernel_config i143_chipP_ev_initramfs_defconfig
+	set_bootfrom_config SPINOR
+
+	ZEBU_RUN=1
+	echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
+}
+
 others_config()
 {
 	$ECHO $COLOR_GREEN"Initial all configs."$COLOR_ORIGIN
@@ -449,6 +471,8 @@ list_config()
 		if [ "$sel" = "3" ];then
 			BOOT_FROM=SDCARD
 		fi
+	elif [ "$board" = "12" ];then
+		sel=1
 	else
 		if [ "$board" != "2" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -465,7 +489,7 @@ list_config()
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (zmem)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPi-F2S Board"$COLOR_ORIGIN
@@ -499,7 +523,7 @@ elif [ "$board" = "6" ];then
 	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
-elif [ "$board" = "11" ];then
+elif [ "$board" = "11" -o "$board" = "12" ];then
 	echo "CHIP=I143" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
@@ -510,7 +534,7 @@ else
 	exit 1
 fi
 
-if [ "$board" = "11" ];then
+if [ "$board" = "11" -o "$board" = "12" ];then
 	echo "CHIP=I143" >> $BUILD_CONFIG
 else
 	echo "CHIP=Q628" >> $BUILD_CONFIG
@@ -521,6 +545,9 @@ if [ "$chip" = "1" ];then
 	if [ "$board" = "11" ];then
 		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
 		num=12
+	elif [ "$board" = "12" ];then
+		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
+		num=22
 	else
 		num=6
 	fi
@@ -536,6 +563,12 @@ elif [ "$chip" = "2" ];then
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
 		num=17
+	elif [ "$board" = "12" ];then
+		ARCH=riscv
+		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
+		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
+		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
+		num=25
 	else
 		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
@@ -608,6 +641,12 @@ case "$num" in
 		;;
 	22)
 		i143_p_chip_usb_config
+		;;
+	23)
+		i143_c_chip_zmem_config
+		;;
+	26)
+		i143_p_chip_zmem_config
 		;;
 
 	# 13)
