@@ -245,7 +245,7 @@ c_chip_usb_config()
 
 i143_c_chip_nor_config()
 {
-	set_xboot_config i143_romter_defconfig
+	set_xboot_config i143_romter_c_defconfig
 	set_uboot_config i143_romter_c_defconfig
 	set_kernel_config i143_chipC_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -253,7 +253,7 @@ i143_c_chip_nor_config()
 
 i143_c_chip_emmc_config()
 {
-	set_xboot_config i143_emmc_defconfig
+	set_xboot_config i143_emmc_c_defconfig
 	set_uboot_config i143_emmc_c_defconfig
 	set_kernel_config i143_chipC_ev_defconfig
 	set_bootfrom_config EMMC
@@ -264,14 +264,14 @@ i143_c_chip_emmc_config()
 
 i143_p_chip_nor_config()
 {
-	set_xboot_config i143_romter_defconfig
+	set_xboot_config i143_romter_p_defconfig
 	set_uboot_config i143_romter_p_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
 }
 i143_p_chip_emmc_config()
 {
-	set_xboot_config i143_emmc_defconfig
+	set_xboot_config i143_emmc_p_defconfig
 	set_uboot_config i143_emmc_p_defconfig
 	set_kernel_config i143_chipP_ev_defconfig
 	set_bootfrom_config EMMC
@@ -281,7 +281,7 @@ i143_p_chip_emmc_config()
 }
 i143_p_chip_tftp_config()
 {
-	set_xboot_config i143_romter_defconfig
+	set_xboot_config i143_romter_p_defconfig
 	set_uboot_config i143_romter_p_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 
@@ -315,7 +315,7 @@ i143_p_chip_tftp_config()
 
 i143_p_chip_usb_config()
 {
-	set_xboot_config i143_romter_defconfig
+	set_xboot_config i143_romter_p_defconfig
 	set_uboot_config i143_romter_p_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config USB
@@ -326,7 +326,7 @@ i143_p_chip_usb_config()
 
 i143_c_chip_zmem_config()
 {
-	set_xboot_config i143_Rev2_zmem_defconfig
+	set_xboot_config i143_Rev2_c_zmem_defconfig
 	set_uboot_config i143_romter_c_zebu_defconfig
 	set_kernel_config i143_chipC_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -337,7 +337,7 @@ i143_c_chip_zmem_config()
 
 i143_p_chip_zmem_config()
 {
-	set_xboot_config i143_Rev2_zmem_defconfig
+	set_xboot_config i143_Rev2_p_zmem_defconfig
 	set_uboot_config i143_romter_p_zebu_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -524,7 +524,6 @@ elif [ "$board" = "6" ];then
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 elif [ "$board" = "11" -o "$board" = "12" ];then
-	echo "CHIP=I143" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
@@ -535,7 +534,7 @@ else
 fi
 
 if [ "$board" = "11" -o "$board" = "12" ];then
-	echo "CHIP=I143" >> $BUILD_CONFIG
+	echo "CHIP=I143" > $BUILD_CONFIG
 else
 	echo "CHIP=Q628" >> $BUILD_CONFIG
 fi

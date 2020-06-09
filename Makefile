@@ -41,6 +41,7 @@ ZEBU_RUN ?= 0
 BOOT_FROM ?= EMMC
 IS_ASSIGN_DTB ?= 0
 BOOT_CHIP ?= C_CHIP
+CHIP ?= Q628
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
@@ -78,8 +79,6 @@ ROOTFS_CROSS = $(CROSS_V5_COMPILE)
 else ifeq ($(ARCH),riscv)
 ROOTFS_CROSS = $(CROSS_RISCV_COMPILE)
 endif
-
-CHIP ?=
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
 # and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
