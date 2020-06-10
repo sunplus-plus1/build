@@ -326,7 +326,7 @@ i143_p_chip_usb_config()
 
 i143_c_chip_zmem_config()
 {
-	set_xboot_config i143_Rev2_c_zmem_defconfig
+	set_xboot_config i143_romter_c_zmem_defconfig
 	set_uboot_config i143_romter_c_zebu_defconfig
 	set_kernel_config i143_chipC_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -337,7 +337,7 @@ i143_c_chip_zmem_config()
 
 i143_p_chip_zmem_config()
 {
-	set_xboot_config i143_Rev2_p_zmem_defconfig
+	set_xboot_config i143_romter_p_zmem_defconfig
 	set_uboot_config i143_romter_p_zebu_defconfig
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
@@ -542,10 +542,10 @@ fi
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
 	if [ "$board" = "11" ];then
-		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
+		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
 		num=12
 	elif [ "$board" = "12" ];then
-		echo "LINUX_DTB=pentagram-i143-achip-emu-initramfs" >> $BUILD_CONFIG
+		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
 		num=22
 	else
 		num=6

@@ -67,6 +67,7 @@ OUT_PATH = out
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
 KERNEL_BIN = uImage
+RISCV_KERNEL_BIN = Image.gz
 DTB = dtb
 VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
@@ -162,8 +163,8 @@ kernel: check
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE); \
 		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN); \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE); UIMAGE_LOADADDR=0x20208000;\
-		$(MAKE) secure SECURE_PATH=kernel ;\
 	fi
+	@$(MAKE) secure SECURE_PATH=kernel ;
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE)
@@ -285,7 +286,11 @@ isp: check tool_isp
 				$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
 			fi; \
 		else \
-			$(CP) -vf $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN) $(OUT_PATH); \
+			if [ $(ARCH) = "riscv" ]; then \
+				$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(RISCV_KERNEL_BIN) $(OUT_PATH); \
+			else \
+				$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(OUT_PATH); \
+			fi;\
 		fi ; \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" doesn't exist."$(COLOR_ORIGIN); \
@@ -343,10 +348,17 @@ secure:
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ;\
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
-		if [ ! -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN) ]; then \
-			exit 1;\
-		fi ;\
-		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/arm/boot $(KERNEL_BIN) 1 ;\
+		if [ $(ARCH) = "riscv" ]; then \
+			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(RISCV_KERNEL_BIN) ]; then \
+				exit 1;\
+			fi ;\
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(RISCV_KERNEL_BIN) 1 ;\
+		else \
+			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
+				exit 1;\
+			fi ;\
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
+		fi;\
 	fi
 
 rom: check
