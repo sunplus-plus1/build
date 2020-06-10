@@ -17,7 +17,7 @@ snonos_run=echo \"## Booting A926 from image at ${addr_dst_nonos}\"; sp_nonos_go
 sboot_nonos=setenv filesize 0; fatsize $isp_if $isp_dev /$NONOS_IMG; if itest.l ${filesize} != 0; then run sload_nonos;run snonos_run;fi;
 ##boot cmd
 sboot=bootm ${addr_dst_kernel} - ${fdtcontroladdr};
-uenvcmd=run sboot_nonos; run sload_kernel; run sRpi_args; run sbootargs sboot;
+uenvcmd=run sboot_nonos; run sload_kernel; run sbootargs sboot;
 #
 ## END
 #
