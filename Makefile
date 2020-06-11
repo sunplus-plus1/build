@@ -67,7 +67,6 @@ OUT_PATH = out
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
 KERNEL_BIN = uImage
-RISCV_KERNEL_BIN = Image.gz
 DTB = dtb
 VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
@@ -157,12 +156,12 @@ uboot: check
 kernel: check
 	@$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE)
 	@if [ $(CHIP) = "I143" -a $(ARCH) = "riscv" ]; then \
-		echo "generate riscv uImage in the future" ;\
+		cd $(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0xA0200000 0xA0200000 kernel; \
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/;  \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE); \
-		$(RM) -f $(LINUX_PATH)/arch/arm/boot/$(KERNEL_BIN); \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE); UIMAGE_LOADADDR=0x20208000;\
+		$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE);\
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel ;
 
@@ -286,11 +285,7 @@ isp: check tool_isp
 				$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
 			fi; \
 		else \
-			if [ $(ARCH) = "riscv" ]; then \
-				$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(RISCV_KERNEL_BIN) $(OUT_PATH); \
-			else \
-				$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(OUT_PATH); \
-			fi;\
+			$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(OUT_PATH); \
 		fi ; \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" doesn't exist."$(COLOR_ORIGIN); \
@@ -348,17 +343,10 @@ secure:
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ;\
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
-		if [ $(ARCH) = "riscv" ]; then \
-			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(RISCV_KERNEL_BIN) ]; then \
+		if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
 				exit 1;\
-			fi ;\
-			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(RISCV_KERNEL_BIN) 1 ;\
-		else \
-			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
-				exit 1;\
-			fi ;\
-			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
-		fi;\
+		fi ;\
+		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
 	fi
 
 rom: check
