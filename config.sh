@@ -492,16 +492,16 @@ $ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board"$COLOR_OR
 $ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (zmem)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[5] BPi-F2S Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[6] BPi-F2P Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[6] BPI-F2P Board"$COLOR_ORIGIN
 read board
 chip=1
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
 	read chip
 elif [ "$board" = "2" ];then
 	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
@@ -525,8 +525,8 @@ elif [ "$board" = "6" ];then
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 elif [ "$board" = "11" -o "$board" = "12" ];then
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] Chip C"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] Chip P"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Chip P (Sifive U54MC x4)"$COLOR_ORIGIN
 	read chip
 else
 	echo "Error: Unknow board!!"
