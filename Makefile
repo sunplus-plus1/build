@@ -21,7 +21,7 @@
 #                                                                        #
 ##########################################################################
 TOPDIR = $(PWD)
-SHELL := sh 
+SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
 sinclude ./.config
@@ -47,7 +47,7 @@ BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
 TFTP_SERVER_PATH ?=
 BOARD_MAC_ADDR ?=
-USER_NAME ?= 
+USER_NAME ?=
 
 CONFIG_ROOT = ./.config
 HW_CONFIG_ROOT = ./.hwconfig
@@ -120,7 +120,7 @@ DOWN_TOOL = down_32M.exe
 SECURE_PATH ?=
 
 .PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos freertos toolchain
-.PHONY: dtb spirom isp tool_isp
+.PHONY: dtb spirom isp tool_isp kconfig uconfig xconfig
 
 # rootfs image is created by :
 # make initramfs -> re-create initial disk/
@@ -223,7 +223,7 @@ config: init
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
 
-hconfig:  
+hconfig:
 	@./build/hconfig.sh $(CROSS_V7_COMPILE)
 	$(MAKE) config HCONFIG="1"
 
@@ -237,7 +237,7 @@ dtb: check
 		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
-	
+
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
 		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
@@ -318,17 +318,17 @@ isp: check tool_isp
 		fi \
 	fi
 	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
-	
+
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
 		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) ; \
 	fi
-	
+
 part:
 	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME!!!" $(COLOR_ORIGIN)
 	@cd out; ./$(PART_SHELL)
-	
-secure: 
+
+secure:
 	@if [ "$(SECURE_PATH)" = "xboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###xboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
@@ -362,7 +362,7 @@ mt: check
 	@$(MAKE) kernel
 	cp linux/application/module_test/mt2.sh $(ROOTFS_DIR)/bin
 	@$(MAKE) rootfs rom
-	
+
 init:
 	@$(RM) -f $(CONFIG_ROOT)
 	@./build/config.sh $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
@@ -378,6 +378,15 @@ initramfs:
 
 rootfs:
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM)
+
+kconfig:
+	$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) menuconfig
+
+uconfig:
+	$(MAKE_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) menuconfig
+
+xconfig:
+	$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) menuconfig
 
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
