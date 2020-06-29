@@ -68,8 +68,8 @@
 #define PROGRAM_HEADER_LAST  // Move "programming header" to the last programming step
 #define ADDRESS_FATLOAD     (16 << 20)                      // default area for U-Boot's fatload
 
-#define ALIGN_TO_1K(X)      ( (X + ((1<<10)-1)) & (0xFFFFFFFF - ((1<<10)-1)) )
-#define ALIGN_TO_1M(X)      ( (X + ((1<<20)-1)) & (0xFFFFFFFF - ((1<<20)-1)) )
+#define ALIGN_TO_1K(X)      ((X + ((1<<10)-1)) & (0xFFFFFFFF - ((1<<10)-1)))
+#define ALIGN_TO_1M(X)      ((X + ((1<<20)-1)) & (0xFFFFFFFF - ((1<<20)-1)))
 
 // For command "isp pack_image ..."
 #define ARGC_PACK_IMAGE_MAINCMD                      (0)    // isp
@@ -224,7 +224,7 @@ int get_partition_info_idx_by_file_name(const char *file_name_ptr)
 	//      If files for 3 U-Boot files are the same (argv[ARGC_PACK_IMAGE_XBOOT0_FILE], argv[ARGC_PACK_IMAGE_XBOOT1_FILE], argv[ARGC_PACK_IMAGE_XBOOT2_FILE]),
 	//      please copy it to 3 files with different file names.
 	for (i = 0; i < NUM_OF_PARTITION; i++) {
-		if (strncmp( basename(isp_info.file_header.partition_info[i].file_name), basename( file_name_ptr), SIZE_FILE_NAME) == 0) {
+		if (strncmp(basename(isp_info.file_header.partition_info[i].file_name), basename((char*)file_name_ptr), SIZE_FILE_NAME) == 0) {
 			return i;
 			// break;
 		}
@@ -304,7 +304,7 @@ int compile_string_for_part_sizes(char *partition_info_ptr, int max_size)
 		is_1MB_aligned = ((isp_info.file_header.partition_info[i].partition_size & ((1 << 20) - 1)) == 0) ? 1 : 0;
 		string_size += snprintf((partition_info_ptr + string_size), (max_size - string_size),
 					(is_1MB_aligned ? "%s_%uM" : "%s_%uK"),
-					basename( isp_info.file_header.partition_info[i].file_name),
+					basename(isp_info.file_header.partition_info[i].file_name),
 					(is_1MB_aligned ? (isp_info.file_header.partition_info[i].partition_size >> 20) :
 					 (isp_info.file_header.partition_info[i].partition_size >> 10)));
 	}
@@ -333,7 +333,7 @@ u32 cal_block_size_required(void)
 	// Check if sizes of partitions are (N * block_size_required)
 	for (i = 0; i < NUM_OF_PARTITION; i++) {
 		if (isp_info.file_header.partition_info[i].partition_size & (block_size_required - 1)) {
-			printf("Error: partition size of %s isn't NAND block-size aligned.\n", basename( isp_info.file_header.partition_info[i].file_name));
+			printf("Error: partition size of %s isn't NAND block-size aligned.\n", basename(isp_info.file_header.partition_info[i].file_name));
 			exit(-1);
 		}
 	}
@@ -444,7 +444,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 			if (isp_info.file_header.partition_info[i].file_name[0] == 0x00)
 				break;
 
-			fprintf(fd, "uuid uuid_gpt_%s\n", basename( isp_info.file_header.partition_info[i].file_name));
+			fprintf(fd, "uuid uuid_gpt_%s\n", basename(isp_info.file_header.partition_info[i].file_name));
 		}
 		fprintf(fd, "uuid uuid_gpt_userdata\n");
 		fprintf(fd, "\n");
@@ -458,8 +458,8 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				continue;
 			}
 #endif
-			fprintf(fd, "name=%s,", basename( isp_info.file_header.partition_info[i].file_name));
-			fprintf(fd, "uuid=${uuid_gpt_%s},", basename( isp_info.file_header.partition_info[i].file_name));
+			fprintf(fd, "name=%s,", basename(isp_info.file_header.partition_info[i].file_name));
+			fprintf(fd, "uuid=${uuid_gpt_%s},", basename(isp_info.file_header.partition_info[i].file_name));
 			if (strcmp(isp_info.file_header.partition_info[i].file_name,"rootfs")==0)
 			{
 				// The emmc rootfs partition is set to EXT2 fs, and the partition size is all remaining space.
@@ -490,7 +490,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 		for (i = 0; i < NUM_OF_PARTITION; i++) {
 			if (isp_info.file_header.partition_info[i].file_name[0] == 0x00)
 				break;
-			fprintf(fd, "setenv uuid_gpt_%s\n", basename( isp_info.file_header.partition_info[i].file_name));
+			fprintf(fd, "setenv uuid_gpt_%s\n", basename(isp_info.file_header.partition_info[i].file_name));
 		}
 		fprintf(fd, "setenv uuid_gpt_userdata\n");
 		fprintf(fd, "\n");
@@ -501,10 +501,10 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 			continue;
 
 		fprintf(fd, "echo\n");
-		fprintf(fd, "echo programming %s ...\n", basename( isp_info.file_header.partition_info[i].file_name));
+		fprintf(fd, "echo programming %s ...\n", basename(isp_info.file_header.partition_info[i].file_name));
 
 		if (isp_info.file_header.partition_info[i].flags & FLAGS_BCH1K60) {
-			fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), isp_info.file_header.partition_info[i].file_size,
+			fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), isp_info.file_header.partition_info[i].file_size,
 				isp_info.file_header.partition_info[i].file_offset);
 
 #if !defined(REDUCE_MESSAGE)
@@ -516,7 +516,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 
 			if (nand_or_emmc == IDX_NAND) {
 				fprintf(fd, "setenv isp_nand_addr 0x${isp_addr_next}\n");
-				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x%x, programmed size: 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name),
+				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x%x, programmed size: 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name),
 					isp_info.file_header.partition_info[i].partition_size, isp_info.file_header.partition_info[i].file_size);
 				// "nand erase.chip" already,
 				// fprintf(fd, "nand erase $isp_nand_addr 0x%x\n", isp_info.file_header.partition_info[i].file_size);
@@ -527,7 +527,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				fprintf(fd, "echo %s\n", cmd);
 				fprintf(fd, "%s\n", cmd);
 			} else if (nand_or_emmc == IDX_EMMC) {
-				// fprintf(fd, "ispsp set_emmc_blk %s 0x0000\n", basename( isp_info.file_header.partition_info[i].file_name));
+				// fprintf(fd, "ispsp set_emmc_blk %s 0x0000\n", basename(isp_info.file_header.partition_info[i].file_name));
 				// fprintf(fd, "mmc write $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(isp_info.file_header.partition_info[i].file_size));
 #ifdef XBOOT1_IN_EMMC_BOOTPART
 				if (i == IDX_PARTITION_XBOOT1) {
@@ -556,9 +556,9 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					fprintf(fd, "setenv isp_mtdpart_size 0x${isp_mtdpart_size}\n");
 
 #if !defined(REDUCE_MESSAGE)
-					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && mtdparts && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
+					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && mtdparts && printenv mtdparts", basename(isp_info.file_header.partition_info[i].file_name));
 #else
-					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
+					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename(isp_info.file_header.partition_info[i].file_name));
 #endif
 
 					fprintf(fd, "echo \"%s\"\n", cmd);
@@ -576,9 +576,9 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					fprintf(fd, "setenv isp_mtdpart_size 0x${isp_mtdpart_size}\n");
 
 #if !defined(REDUCE_MESSAGE)
-					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && mtdparts && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
+					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && mtdparts && printenv mtdparts", basename(isp_info.file_header.partition_info[i].file_name));
 #else
-					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename( isp_info.file_header.partition_info[i].file_name));
+					snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s && printenv mtdparts", basename(isp_info.file_header.partition_info[i].file_name));
 #endif
 
 					fprintf(fd, "echo \"%s\"\n", cmd);
@@ -591,7 +591,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 			if (nand_or_emmc == IDX_NAND) {
 #if !defined(PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT)
 				fprintf(fd, "setexpr isp_nand_addr $isp_nand_addr_1st_part + 0x%x && setenv isp_nand_addr 0x${isp_nand_addr}\n", isp_info.file_header.partition_info[i].partition_start_addr);
-				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x%x, programmed size: 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name),
+				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x%x, programmed size: 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name),
 					isp_info.file_header.partition_info[i].partition_size, isp_info.file_header.partition_info[i].file_size);
 #else /* defined(PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT) */
 				if (isp_info.file_header.partition_info[i].partition_start_addr == 0) {
@@ -600,7 +600,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 					fprintf(fd, "ispsp find_area $isp_find_area_end 0x%x\n",      isp_info.file_header.partition_info[i].partition_size);
 				}
 				fprintf(fd, "setenv isp_nand_addr $isp_find_area_start && setenv isp_nand_addr 0x${isp_nand_addr}\n");
-				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x${isp_find_area_new_size}, programmed size: 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name),
+				fprintf(fd, "echo partition: %s, start from $isp_nand_addr, size: 0x${isp_find_area_new_size}, programmed size: 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name),
 					isp_info.file_header.partition_info[i].file_size);
 #endif /* PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT */
 
@@ -614,11 +614,11 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				{
 					fprintf(fd, "setenv isp_mtdpart_size 0x%x\n", isp_info.file_header.partition_info[i].partition_size);
 				}
-				snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s", basename( isp_info.file_header.partition_info[i].file_name));
+				snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_nand_addr} %s", basename(isp_info.file_header.partition_info[i].file_name));
 #else /* defined(PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT) */
 				fprintf(fd, "setenv isp_mtdpart_size 0x${isp_find_area_new_size}\n");
 				fprintf(fd, "setenv isp_find_area_start 0x${isp_find_area_start}\n");
-				snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_find_area_start} %s", basename( isp_info.file_header.partition_info[i].file_name));
+				snprintf(cmd, sizeof(cmd), "mtdparts add nand0 ${isp_mtdpart_size}@${isp_find_area_start} %s", basename(isp_info.file_header.partition_info[i].file_name));
 #endif /* PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT */
 				fprintf(fd, "echo %s\n", cmd);
 				fprintf(fd, "%s\n", cmd);
@@ -640,7 +640,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 
 				while (file_size) {
 					size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
-					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), size,
+					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), size,
 						(size_programmed + (isp_info.file_header.partition_info[i].file_offset)));
 
 #if !defined(REDUCE_MESSAGE)
@@ -688,7 +688,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				file_size = isp_info.file_header.partition_info[i].file_size;
 				size_programmed = 0;
 				if (file_size == 0) {
-					// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
+					// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
 					fprintf(fd, "mw.b $isp_ram_addr 0xFF 0x0800\n");     // fill 0xFF for 2KB.
 					// fprintf(fd, "mmc write $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(0x0800));
 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
@@ -697,13 +697,13 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				}
 				while (file_size) {
 					size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
-					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), size,
+					fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), size,
 						(size_programmed + (isp_info.file_header.partition_info[i].file_offset)));
 
 #if !defined(REDUCE_MESSAGE)
 					fprintf(fd, "md.b $isp_ram_addr 0x0100\n");
 #endif
-					// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
+					// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
 					// fprintf(fd, "mmc write $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(size));
 					fprintf(fd, "mmc write $isp_ram_addr 0x%x 0x%x\n",
 						isp_info.file_header.partition_info[i].emmc_partition_start + BYTE2BLOCK(size_programmed),
@@ -752,13 +752,13 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 		size_verified = 0;
 
 		fprintf(fd, "echo\n");
-		fprintf(fd, "echo verifying %s ...\n", basename( isp_info.file_header.partition_info[i].file_name));
+		fprintf(fd, "echo verifying %s ...\n", basename(isp_info.file_header.partition_info[i].file_name));
 
 
 #if 0   // test, it would cause BCH error.
 		char t[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 		int tflag = 0;
-		if ((strcmp( basename( isp_info.file_header.partition_info[i].file_name), "spsdk") == 0) && (tflag == 0)) {
+		if ((strcmp(basename(isp_info.file_header.partition_info[i].file_name), "spsdk") == 0) && (tflag == 0)) {
 			printf("++++++hy test code++++++\n");
 			fprintf(fd, "nand write 0x%x 0x017A0000 0x0A\n", &t);
 			//fprintf(fd, "nand write 0x%x 0x017C0000 0x0A\n",&t);
@@ -786,7 +786,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 #if !defined(NAND_READ_BY_PARTITION_NAME)
 					snprintf(cmd, sizeof(cmd), "bblk read bblk $isp_ram_addr $isp_nand_addr_write_bblk_%d 0x%x", idx_nand_write_bblk, size);
 #else
-					snprintf(cmd, sizeof(cmd), "bblk read bblk $isp_ram_addr %s 0x%x", basename( isp_info.file_header.partition_info[i].file_name), size);
+					snprintf(cmd, sizeof(cmd), "bblk read bblk $isp_ram_addr %s 0x%x", basename(isp_info.file_header.partition_info[i].file_name), size);
 #endif
 				} else {
 					if (flag_first) {
@@ -797,7 +797,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr $isp_nand_addr 0x%x", size);
 #else
 						fprintf(fd, "setexpr isp_nand_addr $isp_nand_addr_1st_part + 0x%x && setenv isp_nand_addr 0x${isp_nand_addr}\n", isp_info.file_header.partition_info[i].partition_start_addr);
-						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr %s 0x%x", basename( isp_info.file_header.partition_info[i].file_name), size);
+						snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr %s 0x%x", basename(isp_info.file_header.partition_info[i].file_name), size);
 #endif
 					} else {
 						// fprintf(fd, "setexpr isp_addr_nand_read_next $isp_nand_addr + 0x%x && setenv isp_addr_nand_read_next 0x${isp_addr_nand_read_next}\n", size_verified);
@@ -809,7 +809,7 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				fprintf(fd, "echo %s\n", cmd);
 				fprintf(fd, "%s\n", cmd);
 			} else if (nand_or_emmc == IDX_EMMC) {
-				// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename( isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_verified));
+				// fprintf(fd, "ispsp set_emmc_blk %s 0x%x\n", basename(isp_info.file_header.partition_info[i].file_name), BYTE2BLOCK(size_verified));
 				// fprintf(fd, "mmc read $isp_ram_addr $isp_emmc_blk 0x%x\n", BYTE2BLOCK(size));
 #ifdef XBOOT1_IN_EMMC_BOOTPART
 				if (i == IDX_PARTITION_XBOOT1) {
@@ -1139,6 +1139,7 @@ int pack_image(int argc, char **argv)
 	sprintf(cmd, "cat %s >> %s", file_name_isp_script[IDX_NAND], tmp_file);
 	// printf("%s\n", cmd);
 	system(cmd);
+
 #ifdef SUPPORT_MAIN_STORAGE_IS_EMMC
 	sprintf(cmd, "cat %s >> %s", file_name_isp_script[IDX_EMMC], tmp_file);
 	// printf("%s\n", cmd);
@@ -1171,10 +1172,10 @@ int pack_image(int argc, char **argv)
 
 	fprintf(fd, "echo Load ISP main script and run it ...\n");
 	fprintf(fd, "if test \"$isp_main_storage\" = nand ; then\n");
-	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), isp_script_size[IDX_NAND], file_offset_isp_script[IDX_NAND]);
+	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), isp_script_size[IDX_NAND], file_offset_isp_script[IDX_NAND]);
 	fprintf(fd, "elif test \"$isp_main_storage\" = emmc ; then\n");
 #ifdef SUPPORT_MAIN_STORAGE_IS_EMMC
-	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), isp_script_size[IDX_EMMC], file_offset_isp_script[IDX_EMMC]);
+	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), isp_script_size[IDX_EMMC], file_offset_isp_script[IDX_EMMC]);
 #else
 	fprintf(fd, "    echo Error\n");
 	fprintf(fd, "    exit -1\n");
@@ -1182,7 +1183,7 @@ int pack_image(int argc, char **argv)
 
 	fprintf(fd, "else\n");
 	fprintf(fd, "    setenv isp_main_storage nand\n");  // for U-Boot backward compatible, default to nand
-	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename( isp_info.file_name_pack_image), isp_script_size[IDX_NAND], file_offset_isp_script[IDX_NAND]);
+	fprintf(fd, "    fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), isp_script_size[IDX_NAND], file_offset_isp_script[IDX_NAND]);
 	fprintf(fd, "fi\n");
 	fprintf(fd, "source $isp_ram_addr\n");
 	fclose(fd);
@@ -1197,7 +1198,7 @@ int pack_image(int argc, char **argv)
 	printf("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
 	printf("Should be able to run isp_info.file_header.init_script[] by:\n\n");
 	printf("setenv isp_if usb && setenv isp_dev 0 && setenv isp_ram_addr 0x%x\n", ADDRESS_FATLOAD);
-	printf("$isp_if start && fatload $isp_if $isp_dev $isp_ram_addr /%s 0x0800 0x%x && md.b $isp_ram_addr 0x0200\n", basename( isp_info.file_name_pack_image),
+	printf("$isp_if start && fatload $isp_if $isp_dev $isp_ram_addr /%s 0x0800 0x%x && md.b $isp_ram_addr 0x0200\n", basename(isp_info.file_name_pack_image),
 	       (FILE_SIZE_IMAGE_XBOOT0 + FILE_SIZE_IMAGE_UBOOT0));
 	printf("setexpr script_addr $isp_ram_addr + 0x%x && setenv script_addr 0x${script_addr} && source $script_addr\n", ((u32)(offsetof(struct file_header_s, init_script))));
 	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
@@ -1261,7 +1262,7 @@ int pack_image(int argc, char **argv)
 			break;
 
 		printf("%-32s 0x%x/0x%x (%.02lf%%) used\n",
-		       basename( isp_info.file_header.partition_info[i].file_name),
+		       basename(isp_info.file_header.partition_info[i].file_name),
 		       isp_info.file_header.partition_info[i].file_size, isp_info.file_header.partition_info[i].partition_size,
 		       100 * (double)(isp_info.file_header.partition_info[i].file_size) / ((double)(isp_info.file_header.partition_info[i].partition_size)));
 	}
@@ -1377,9 +1378,9 @@ int extract4update(int argc, char **argv, int extract4update_src)
 			continue;
 
 		fprintf(fd2, "echo\n");
-		fprintf(fd2, "echo Updating %s ...\n\n", basename( file_header_extract4update.partition_info[i].file_name));
+		fprintf(fd2, "echo Updating %s ...\n\n", basename(file_header_extract4update.partition_info[i].file_name));
 		fprintf(fd2, "if test \"$isp_main_storage\" = nand ; then\n");
-		fprintf(fd2, "    nand erase.part %s\n", basename( file_header_extract4update.partition_info[i].file_name));
+		fprintf(fd2, "    nand erase.part %s\n", basename(file_header_extract4update.partition_info[i].file_name));
 		fprintf(fd2, "elif test \"$isp_main_storage\" = emmc ; then\n");
 		fprintf(fd2, "    echo\n");
 		fprintf(fd2, "fi\n");
@@ -1406,7 +1407,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 				flag_first = 0;
 				snprintf(cmd, sizeof(cmd), "%s $isp_ram_addr %s 0x%x",
 					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "bblk write bblk" : "nand write",
-					 basename( file_header_extract4update.partition_info[i].file_name), size);
+					 basename(file_header_extract4update.partition_info[i].file_name), size);
 			} else {
 				if (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) {
 					printf("Error: %s: %d\n", __FILE__, __LINE__);
@@ -1422,7 +1423,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 			fprintf(fd2, "    %s\n", cmd);
 			fprintf(fd2, "elif test \"$isp_main_storage\" = emmc ; then\n");
 #ifdef SUPPORT_MAIN_STORAGE_IS_EMMC
-			// snprintf(cmd, sizeof(cmd), "ispsp set_emmc_blk %s 0x%x", basename( file_header_extract4update.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
+			// snprintf(cmd, sizeof(cmd), "ispsp set_emmc_blk %s 0x%x", basename(file_header_extract4update.partition_info[i].file_name), BYTE2BLOCK(size_programmed));
 			// fprintf(fd2, "    echo %s\n", cmd);
 			// fprintf(fd2, "    %s\n", cmd);
 			// snprintf(cmd, sizeof(cmd), "mmc write $isp_ram_addr $isp_emmc_blk 0x%x", BYTE2BLOCK(size));
@@ -1444,7 +1445,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 
 		fprintf(fd2, "\nmw.b $isp_ram_addr 0x00 0x%x\n\n", MAX_MEM_SIZE_FOR_ISP);
 		fprintf(fd2, "echo\n");
-		fprintf(fd2, "echo Verifying %s ...\n\n", basename( file_header_extract4update.partition_info[i].file_name));
+		fprintf(fd2, "echo Verifying %s ...\n\n", basename(file_header_extract4update.partition_info[i].file_name));
 
 		file_size = file_header_extract4update.partition_info[i].file_size;
 		flag_first = 1;     // first MAX_MEM_SIZE_FOR_ISP bytes of the programmed file.
@@ -1456,7 +1457,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 				flag_first = 0;
 				snprintf(cmd, sizeof(cmd), "%s $isp_ram_addr %s 0x%x",
 					 (file_header_extract4update.partition_info[i].flags & FLAGS_BCH1K60) ? "bblk read bblk" : "nand read",
-					 basename( file_header_extract4update.partition_info[i].file_name), size);
+					 basename(file_header_extract4update.partition_info[i].file_name), size);
 			} else {
 				snprintf(cmd, sizeof(cmd), "nand read $isp_ram_addr $isp_addr_nand_read_next 0x%x", size);  // isp_addr_nand_read_next is set in nand_write() (uboot/drivers/mtd/nand/nand_base.c)
 			}
@@ -1466,7 +1467,7 @@ int extract4update(int argc, char **argv, int extract4update_src)
 			fprintf(fd2, "    %s\n", cmd);
 			fprintf(fd2, "elif test \"$isp_main_storage\" = emmc ; then\n");
 #ifdef SUPPORT_MAIN_STORAGE_IS_EMMC
-			// snprintf(cmd, sizeof(cmd), "ispsp set_emmc_blk %s 0x%x", basename( file_header_extract4update.partition_info[i].file_name), BYTE2BLOCK(size_verified));
+			// snprintf(cmd, sizeof(cmd), "ispsp set_emmc_blk %s 0x%x", basename(file_header_extract4update.partition_info[i].file_name), BYTE2BLOCK(size_verified));
 			// fprintf(fd2, "    echo %s\n", cmd);
 			// fprintf(fd2, "    %s\n", cmd);
 			// snprintf(cmd, sizeof(cmd), "mmc read $isp_ram_addr $isp_emmc_blk 0x%x", BYTE2BLOCK(size));
@@ -1540,8 +1541,8 @@ int extract4update(int argc, char **argv, int extract4update_src)
 	sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
 	fd2 = fopen(tmp_file, "w");
 
-	// fprintf(fd2, "echo verifying %s ...\n", basename( file_header.partition_info[0].file_name));
-	// snprintf(cmd, sizeof(cmd), "nand read.bblk $isp_ram_addr %s 0x%x", basename( file_header.partition_info[0].file_name), file_header.partition_info[0].file_size);
+	// fprintf(fd2, "echo verifying %s ...\n", basename(file_header.partition_info[0].file_name));
+	// snprintf(cmd, sizeof(cmd), "nand read.bblk $isp_ram_addr %s 0x%x", basename(file_header.partition_info[0].file_name), file_header.partition_info[0].file_size);
 	// fprintf(fd2, "echo %s\n", cmd);
 	// fprintf(fd2, "%s\n", cmd);
 	//
