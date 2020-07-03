@@ -63,6 +63,7 @@ ROOTFS_PATH = linux/rootfs
 NONOS_B_PATH = nonos/Bchip-non-os
 IPACK_PATH = ipack
 OUT_PATH = out
+FREERTOS_PATH = $(IPACK_PATH)
 
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
@@ -72,6 +73,7 @@ VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
 ROOTFS_IMG = rootfs.img
 NONOS_B_IMG = rom.img
+FREERTOS_IMG = freertos.img
 
 CROSS_COMPILE_FOR_XBOOT =$(CROSS_V5_COMPILE)
 CROSS_COMPILE_FOR_LINUX =$(CROSS_V7_COMPILE)
@@ -106,10 +108,12 @@ endif
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
 # and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
+IS_P_CHIP ?= 0
 ifeq ("$(BOOT_CHIP)", "C_CHIP")
 img_name = "uboot_pentagram_board"
 else
 img_name = "uboot_B_pentagram_board"
+IS_P_CHIP = 1
 endif
 
 # 0: uImage, 1: qk_boot image (uncompressed)
@@ -142,7 +146,13 @@ all: check
 
 freertos:
 	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT)
-
+	@if [ "$(NEED_ISP)" = '1' ]; then \
+		if [ "$(IS_P_CHIP)" = "1" ];then \
+		$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
+		$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf  $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
+		cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
+		fi; \
+	fi
 #xboot build
 xboot: check
 	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) all
@@ -268,9 +278,19 @@ isp: check tool_isp
 		$(ECHO) $(COLOR_YELLOW)"u-boot.img doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	@if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
-		$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
-		$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
+	
+	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
+		if [ "$(IS_P_CHIP)" = "1" ];then \
+			if [ -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) ]; then \
+				$(CP) -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) $(OUT_PATH)/a926.img; \
+				$(ECHO) $(COLOR_YELLOW)"Copy freertos.img to out folder."$(COLOR_ORIGIN); \
+			fi; \
+		fi; \
+	else \
+		if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
+			$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
+			$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
+		fi ; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
 		if [ "$(USE_QK_BOOT)" = "1" ];then \
