@@ -134,7 +134,7 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	if [ "$(IS_I143_RISCV)" = "1" ];then \
+	@if [ "$(IS_I143_RISCV)" = "1" ];then \
 		$(MAKE) freertos; \
 	else \
 		$(MAKE) nonos; \
