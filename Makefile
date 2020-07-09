@@ -24,6 +24,7 @@ TOPDIR = $(PWD)
 SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
+include ./build/qemu.mak
 sinclude ./.config
 sinclude ./.hwconfig
 
