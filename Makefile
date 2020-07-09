@@ -24,7 +24,6 @@ TOPDIR = $(PWD)
 SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
-include ./build/qemu.mak
 sinclude ./.config
 sinclude ./.hwconfig
 
@@ -423,4 +422,6 @@ info:
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)
 	@$(ECHO) "CHIP =" $(CHIP)
+
+include ./build/qemu.mak
 
