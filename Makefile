@@ -134,7 +134,7 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@if [ "$(IS_I143_RISCV)" = "1" ];then \
+	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		$(MAKE) freertos; \
 	else \
 		$(MAKE) nonos; \
@@ -147,7 +147,7 @@ all: check
 freertos:
 	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT)
 	@if [ "$(NEED_ISP)" = '1' ]; then \
-		if [ "$(IS_P_CHIP)" = "1" ];then \
+		if [ "$(IS_P_CHIP)" = "1" ]; then \
 		$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
 		$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf  $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
 		cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
@@ -167,7 +167,7 @@ uboot: check
 	else \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb; \
 	fi
-	@if [ "$(IS_I143_RISCV)" = "1" ];then \
+	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 			$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
@@ -179,7 +179,7 @@ uboot: check
 #kernel build
 kernel: check
 	@$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX)
-	@if [ "$(IS_I143_RISCV)" = "1" ];then \
+	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		cd $(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0xA0200000 0xA0200000 kernel; \
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/;  \
@@ -261,7 +261,7 @@ spirom: check
 	fi
 
 tool_isp:
-	@$(MAKE) -C $(TOPDIR)/build/tools/isp
+	@$(MAKE) -C $(TOPDIR)/build/tools/isp FREERTOS=$(IS_I143_RISCV)
 
 isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
@@ -280,7 +280,7 @@ isp: check tool_isp
 	fi
 	
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
-		if [ "$(IS_P_CHIP)" = "1" ];then \
+		if [ "$(IS_P_CHIP)" = "1" ]; then \
 			if [ -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) ]; then \
 				$(CP) -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) $(OUT_PATH)/a926.img; \
 				$(ECHO) $(COLOR_YELLOW)"Copy freertos.img to out folder."$(COLOR_ORIGIN); \
@@ -293,7 +293,7 @@ isp: check tool_isp
 		fi ; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
-		if [ "$(USE_QK_BOOT)" = "1" ];then \
+		if [ "$(USE_QK_BOOT)" = "1" ]; then \
 			$(CP) -f $(LINUX_PATH)/$(VMLINUX) $(OUT_PATH); \
 			$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
 			$(CROSS_COMPILE_FOR_LINUX)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
@@ -314,7 +314,7 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(DTB) ]; then \
-		if [ "$(USE_QK_BOOT)" = "1" ];then \
+		if [ "$(USE_QK_BOOT)" = "1" ]; then \
 			$(CP) -f $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB).raw ; \
 			cd $(IPACK_PATH); \
 			pwd && pwd && pwd; \
