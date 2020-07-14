@@ -23,6 +23,7 @@ ROOT_IMG=$OUTPATH/../rootfs.img
 OUT_FILE=$OUTPATH/ISP_SD_BOOOT.img
 FAT_IMG_OUT=fat.img
 EXT_ENV=uEnv.txt
+EXT_ENV_RISCV=uEnv_riscv.txt
 NONOS_IMG=a926.img
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
@@ -54,7 +55,11 @@ if [ ! -d $ROOT_DIR_IN ]; then
 fi
 
 # cp uEnv to out/sdcardboot 
-cp $EXT_ENV $OUTPATH
+if [ $1 -eq "1" ]; then
+	cp $EXT_ENV_RISCV $OUTPATH/$EXT_ENV
+else
+	cp $EXT_ENV $OUTPATH
+fi
 
 # Calculate parameter.
 partition_size_1=$(($FAT_IMG_SIZE_M*1024*1024))

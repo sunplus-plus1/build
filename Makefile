@@ -278,7 +278,7 @@ isp: check tool_isp
 		$(ECHO) $(COLOR_YELLOW)"u-boot.img doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	
+
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		if [ "$(IS_P_CHIP)" = "1" ]; then \
 			if [ -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) ]; then \
@@ -341,7 +341,7 @@ isp: check tool_isp
 
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
-		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) ; \
+		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) $(IS_I143_RISCV); \
 	fi
 
 part:
