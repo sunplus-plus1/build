@@ -1884,7 +1884,6 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "nonos") == 0) {
 #if defined(FREERTOS) && (FREERTOS == 1)
 			fprintf(fd2, "    echo \"## Booting FreeRTOS from image at ${addr_dst_nonos}\"\n");
-			//fprintf(fd2, "    sp_nonos_go ${addr_dst_nonos}\n");
 #else
 			fprintf(fd2, "    echo \"## Booting A926 from image at ${addr_dst_nonos}\"\n");
 			fprintf(fd2, "    sp_nonos_go ${addr_dst_nonos}\n");
@@ -1897,9 +1896,12 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	}
 
 #if defined(FREERTOS) && (FREERTOS == 1)
+	// Skip header and unzip kernel image.
 	fprintf(fd2, "setexpr addr_temp_kernel ${addr_temp_kernel} + 0x40\n");
 	fprintf(fd2, "setexpr addr_dst_kernel ${addr_dst_kernel} + 0x40\n");
 	fprintf(fd2, "unzip ${addr_temp_kernel} ${addr_dst_kernel}\n");
+
+	// Start to boot Linux and FreeRTOS.
 	fprintf(fd2, "booti ${addr_dst_kernel} - ${fdtcontroladdr}\n");
 #else
 	fprintf(fd2, "bootm ${addr_dst_kernel} - ${fdtcontroladdr}\n");
