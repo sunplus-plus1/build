@@ -38,7 +38,7 @@
  *      * ...
  */
 
-#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <endian.h>
 
 #include <stdio.h>
