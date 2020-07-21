@@ -328,7 +328,7 @@ i143_c_chip_zmem_config()
 {
 	set_xboot_config i143_romter_c_zmem_defconfig
 	set_uboot_config i143_romter_c_zebu_defconfig
-	set_kernel_config i143_chipC_ev_initramfs_defconfig
+	set_kernel_config i143_chipC_zebu_defconfig
 	set_bootfrom_config SPINOR
 
 	ZEBU_RUN=1
@@ -339,7 +339,7 @@ i143_p_chip_zmem_config()
 {
 	set_xboot_config i143_romter_p_zmem_defconfig
 	set_uboot_config i143_romter_p_zebu_defconfig
-	set_kernel_config i143_chipP_ev_initramfs_defconfig
+	set_kernel_config i143_chipP_zebu_defconfig
 	set_bootfrom_config SPINOR
 
 	ZEBU_RUN=1
