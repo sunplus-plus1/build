@@ -693,8 +693,11 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 				}
 
 				while (file_size) {
-					//size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
-					size = (file_size > 0x800000UL) ? 0x800000UL : file_size;
+					size = (file_size > MAX_MEM_SIZE_FOR_ISP) ? MAX_MEM_SIZE_FOR_ISP : file_size;
+					//size = (file_size > 0x4000000UL) ? 0x4000000UL : file_size;
+					//size = (file_size > 0x2000000UL) ? 0x2000000UL : file_size;
+					//size = (file_size > 0x1000000UL) ? 0x1000000UL : file_size;
+					//size = (file_size > 0x800000UL) ? 0x800000UL : file_size;
 					if (rootfs_gt_4GB && ((partition_programmed + size) > 0xfc000000UL)) {
 						size = 0xfc000000UL - partition_programmed;
 					}
