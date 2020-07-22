@@ -1626,8 +1626,9 @@ int extract4update(int argc, char **argv, int extract4update_src)
 	fprintf(fd2, "fatload $isp_if $isp_dev $isp_ram_addr $isp_update_file_name 0x%x $isp_update_file_offset\n", isp_script_size);
 
 #if !defined(REDUCE_MESSAGE)
-	fprintf(fd2, "md.b $isp_ram_addr 0x0200 && source $isp_ram_addr\n");
+	fprintf(fd2, "md.b $isp_ram_addr 0x0200\n");
 #endif
+	fprintf(fd2, "source $isp_ram_addr\n");
 
 	fclose(fd2);
 
