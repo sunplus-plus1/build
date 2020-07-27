@@ -1,5 +1,5 @@
 #
-## uEnv.txt
+## uEnv.txt for riscv
 #
 NONOS_IMG=a926.img
 KERNEL_IMG=uImage
@@ -13,8 +13,8 @@ sload_kernel=fatload $isp_if $isp_dev $addr_temp_kernel /$KERNEL_IMG;
 sload_dtb=fatload $isp_if $isp_dev $addr_dst_dtb /$DTB;
 ## load nonos
 sload_nonos=fatload $isp_if $isp_dev $addr_dst_nonos /$NONOS_IMG;
-snonos_run=echo \"## Booting A926 from image at ${addr_dst_nonos}\"; sp_nonos_go ${addr_dst_nonos};
-sboot_nonos=setenv filesize 0; fatsize $isp_if $isp_dev /$NONOS_IMG; if itest.l ${filesize} != 0; then run sload_nonos;run snonos_run;fi;
+snonos_run=echo \"## Booting FreeRTOS from image at ${addr_dst_nonos}\";
+sboot_nonos=setenv filesize 0; fatsize $isp_if $isp_dev /$NONOS_IMG; if itest.l ${filesize} != 0; then run sload_nonos; run snonos_run; fi;
 sunzip=setexpr addr_temp_kernel ${addr_temp_kernel} + 0x40; setexpr addr_dst_kernel ${addr_dst_kernel} + 0x40; unzip ${addr_temp_kernel} ${addr_dst_kernel};
 ##boot cmd
 sboot=booti ${addr_dst_kernel} - ${fdtcontroladdr};
