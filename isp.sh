@@ -94,13 +94,13 @@ rm -rf nonos
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
 	cp -rf $U $K $N ./boot2linux_SDcard
-	isp extract4boot2linux_sdcardboot ISPBOOOT.BIN boot2linux_SDcard/ISPBOOOT.BIN
-	rm -rf ISPBOOOT.BIN
+	dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=64
+	rm -f ISPBOOOT.BIN
 fi
 if [ "$1" = "USB" ]; then
 	mkdir -p boot2linux_usb
 	isp extract4boot2linux_usbboot ISPBOOOT.BIN boot2linux_usb/ISPBOOOT.BIN
-	rm -rf ISPBOOOT.BIN
+	rm -f ISPBOOOT.BIN
 fi
 
 # Create image for partial update:
