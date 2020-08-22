@@ -204,6 +204,7 @@ clean:
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
+	@$(MAKE) -C $(TOPDIR)/build/tools/isp $@
 	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
