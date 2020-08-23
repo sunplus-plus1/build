@@ -1765,7 +1765,7 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 {
 	FILE *fd, *fd2;
 	struct file_header_s file_header_extract4boot2linux;
-	const char *partition_to_be_loaded[] = {"kernel", "nonos", NULL};
+	const char *partition_to_be_loaded[] = {"nonos", "kernel", NULL};
 	int i, idx;
 	const char *char_ptr;
 	char bSD_not_load;
@@ -1844,68 +1844,90 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	//fprintf(fd2, "fatinfo $isp_if $isp_dev\n");
 	//fprintf(fd2, "fatls   $isp_if $isp_dev /\n\n");
 
-	for (i = 0; i < NUM_OF_PARTITION; i++) {
-		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
-			break;
-		}
-
-#if defined(FREERTOS) && (FREERTOS == 1)
-		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "kernel") == 0) {
-			fprintf(fd2, "echo Loading kernel to $addr_temp_kernel\n");
-			fprintf(fd2, "fatload $isp_if $isp_dev $addr_temp_kernel /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
-				file_header_extract4boot2linux.partition_info[i].file_size,
-				file_header_extract4boot2linux.partition_info[i].file_offset);
-		} else
-#endif
-		{
-			fprintf(fd2, "echo Loading %s to $addr_dst_%s\n", partition_to_be_loaded[i], partition_to_be_loaded[i]);
-			fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_%s /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
-				partition_to_be_loaded[i],
-				file_header_extract4boot2linux.partition_info[i].file_size,
-				file_header_extract4boot2linux.partition_info[i].file_offset);
-		}
-	}
-
-	for (i = 0; i < NUM_OF_PARTITION; i++) {
-		if (file_header_extract4boot2linux.partition_info[i].file_size == 0) {
-			break;
-		}
-
-#if defined(FREERTOS) && (FREERTOS == 1)
-		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "kernel") == 0) {
-			fprintf(fd2, "echo verifying kernel\n");
-			fprintf(fd2, "md5sum $addr_temp_kernel 0x%lx md5sum_value\n",
-				file_header_extract4boot2linux.partition_info[i].file_size);
-		} else
-#endif
-		{
-			fprintf(fd2, "echo verifying %s\n", partition_to_be_loaded[i]);
-			fprintf(fd2, "md5sum $addr_dst_%s 0x%lx md5sum_value\n", partition_to_be_loaded[i],
-				file_header_extract4boot2linux.partition_info[i].file_size);
-		}
-		fprintf(fd2, "if test \"$md5sum_value\" = %s; then\n", file_header_extract4boot2linux.partition_info[i].md5sum);
-		fprintf(fd2, "    echo md5sum: OK.\n");
+	// non-os or FreeRTOS
+	for (i = 0; i < num_need_cp; i++) {
 		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "nonos") == 0) {
-#if defined(FREERTOS) && (FREERTOS == 1)
-			fprintf(fd2, "    echo \"## Booting FreeRTOS from image at ${addr_dst_nonos}\"\n");
-#else
-			fprintf(fd2, "    echo \"## Booting A926 from image at ${addr_dst_nonos}\"\n");
-			fprintf(fd2, "    sp_nonos_go ${addr_dst_nonos}\n");
-#endif
+			break;
 		}
-		fprintf(fd2, "else\n");
-		fprintf(fd2, "    echo md5sum: Error!\n");
-		fprintf(fd2, "    exit -1\n");
-		fprintf(fd2, "fi\n\n");
 	}
+
+#if defined(FREERTOS) && (FREERTOS == 1)
+	fprintf(fd2, "echo Loading FreeRTOS to $addr_dst_nonos\n");
+	fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_nonos /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
+		file_header_extract4boot2linux.partition_info[i].file_size,
+		file_header_extract4boot2linux.partition_info[i].file_offset);
+
+	fprintf(fd2, "echo Verifying FreeRTOS\n");
+	fprintf(fd2, "md5sum $addr_dst_nonos 0x%lx md5sum_value\n",
+		file_header_extract4boot2linux.partition_info[i].file_size);
+#else
+	fprintf(fd2, "echo Loading nonos to $addr_dst_kernel\n");
+	fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_kernel /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
+		file_header_extract4boot2linux.partition_info[i].file_size,
+		file_header_extract4boot2linux.partition_info[i].file_offset);
+
+	fprintf(fd2, "echo Verifying nonos\n");
+	fprintf(fd2, "md5sum $addr_dst_kernel 0x%lx md5sum_value\n",
+		file_header_extract4boot2linux.partition_info[i].file_size);
+#endif
+	fprintf(fd2, "if test \"$md5sum_value\" = %s; then\n", file_header_extract4boot2linux.partition_info[i].md5sum);
+	fprintf(fd2, "    echo md5sum: OK.\n");
+	fprintf(fd2, "else\n");
+	fprintf(fd2, "    echo md5sum: Error!\n");
+	fprintf(fd2, "    exit -1\n");
+	fprintf(fd2, "fi\n\n");
+#if defined(FREERTOS) && (FREERTOS == 1)
+#else
+	fprintf(fd2, "echo Copying nonos to $addr_dst_nonos\n");
+	fprintf(fd2, "setexpr tmpval $filesize + 3\n");
+	fprintf(fd2, "setexpr tmpval $tmpval / 4\n");
+	fprintf(fd2, "cp.l $addr_dst_kernel $addr_dst_nonos $tmpval\n");
+	fprintf(fd2, "echo \"## Booting A926 from image at ${addr_dst_nonos}\"\n");
+	fprintf(fd2, "sp_nonos_go ${addr_dst_nonos}\n");
+#endif
+
+	// kernel
+	for (i = 0; i < num_need_cp; i++) {
+		if (strcmp(file_header_extract4boot2linux.partition_info[i].file_name, "kernel") == 0) {
+			break;
+		}
+	}
+
+#if defined(FREERTOS) && (FREERTOS == 1)
+	fprintf(fd2, "echo Loading kernel to $addr_temp_kernel\n");
+	fprintf(fd2, "fatload $isp_if $isp_dev $addr_temp_kernel /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
+		file_header_extract4boot2linux.partition_info[i].file_size,
+		file_header_extract4boot2linux.partition_info[i].file_offset);
+
+	fprintf(fd2, "echo Verifying kernel\n");
+	fprintf(fd2, "md5sum $addr_temp_kernel 0x%lx md5sum_value\n",
+		file_header_extract4boot2linux.partition_info[i].file_size);
+#else
+	fprintf(fd2, "echo Loading kernel to $addr_dst_kernel\n");
+	fprintf(fd2, "fatload $isp_if $isp_dev $addr_dst_kernel /ISPBOOOT.BIN 0x%lx 0x%x\n\n",
+		file_header_extract4boot2linux.partition_info[i].file_size,
+		file_header_extract4boot2linux.partition_info[i].file_offset);
+
+	fprintf(fd2, "echo Verifying kernel\n");
+	fprintf(fd2, "md5sum $addr_dst_kernel 0x%lx md5sum_value\n",
+		file_header_extract4boot2linux.partition_info[i].file_size);
+#endif
+	fprintf(fd2, "if test \"$md5sum_value\" = %s; then\n", file_header_extract4boot2linux.partition_info[i].md5sum);
+	fprintf(fd2, "    echo md5sum: OK.\n");
+	fprintf(fd2, "else\n");
+	fprintf(fd2, "    echo md5sum: Error!\n");
+	fprintf(fd2, "    exit -1\n");
+	fprintf(fd2, "fi\n\n");
 
 #if defined(FREERTOS) && (FREERTOS == 1)
 	// Skip header and unzip kernel image.
 	fprintf(fd2, "setexpr addr_temp_kernel ${addr_temp_kernel} + 0x40\n");
 	fprintf(fd2, "setexpr addr_dst_kernel ${addr_dst_kernel} + 0x40\n");
+	fprintf(fd2, "echo Unzipping kernel to ${addr_dst_kernel}\n");
 	fprintf(fd2, "unzip ${addr_temp_kernel} ${addr_dst_kernel}\n");
 
 	// Start to boot Linux and FreeRTOS.
+	fprintf(fd2, "echo \"## Booting FreeRTOS from image at ${addr_dst_nonos}\"\n");
 	fprintf(fd2, "booti ${addr_dst_kernel} - ${fdtcontroladdr}\n");
 #else
 	fprintf(fd2, "bootm ${addr_dst_kernel} - ${fdtcontroladdr}\n");
