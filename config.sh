@@ -50,7 +50,7 @@ set_xboot_config()
 	echo "XBOOT_CONFIG="$XBOOT_CONFIG >> $BUILD_CONFIG
 }
 
-p_chip_nand_config()
+p_chip_spi_nand_config()
 {
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
@@ -145,7 +145,31 @@ p_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
-c_chip_nand_config()
+p_chip_config()
+{
+	case "$1" in
+	"emmc")
+		p_chip_emmc_config revB
+		;;
+	"spi_nand")
+		p_chip_spi_nand_config revB
+		;;
+	"nor")
+		p_chip_nor_config revB
+		;;
+	"tftp")
+		p_chip_tftp_config revB
+		;;
+	"usb")
+		p_chip_usb_config revB
+		;;
+	*)
+		echo "Error: Unknow config!!"
+		exit 1
+	esac
+}
+
+c_chip_spi_nand_config()
 {
 	if [ "$1" = "revA" ];then
 		XBOOT_CONFIG=q628_defconfig
@@ -158,6 +182,18 @@ c_chip_nand_config()
 
 	NEED_ISP=1
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+}
+
+c_chip_spi_nor_config()
+{
+	if [ "$1" = "revA" ];then
+		XBOOT_CONFIG=q628_defconfig
+	fi
+
+	set_xboot_config q628_Rev2_EMMC_defconfig
+	set_uboot_config sp7021_nor_c_defconfig
+	set_kernel_config sp7021_chipC_emu_nor_defconfig
+	set_bootfrom_config SPINOR
 }
 
 c_chip_emmc_config()
@@ -243,6 +279,33 @@ c_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
+c_chip_config() 
+{
+	case "$1" in
+	"emmc")
+		c_chip_emmc_config revB
+		;;
+	"spi_nand")
+		c_chip_spi_nand_config revB
+		;;
+	"spi_nor")
+		c_chip_spi_nor_config revB
+		;;
+	"nor")
+		c_chip_nor_config revB
+		;;
+	"tftp")
+		c_chip_tftp_config revB
+		;;
+	"usb")
+		c_chip_usb_config revB
+		;;
+	*)
+		echo "Error: Unknow config!!"
+		exit 1
+	esac
+}
+
 i143_c_chip_nor_config()
 {
 	set_xboot_config i143_romter_c_defconfig
@@ -262,6 +325,21 @@ i143_c_chip_emmc_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
+i143_c_chip_config()
+{
+	case "$1" in
+	"emmc")
+		i143_c_chip_emmc_config 
+		;;
+	"nor")
+		i143_c_chip_nor_config 
+		;;
+	*)
+		echo "Error: Unknow config!!"
+		exit 1
+	esac
+}
+
 i143_p_chip_nor_config()
 {
 	set_xboot_config i143_romter_p_defconfig
@@ -269,6 +347,7 @@ i143_p_chip_nor_config()
 	set_kernel_config i143_chipP_ev_initramfs_defconfig
 	set_bootfrom_config SPINOR
 }
+
 i143_p_chip_emmc_config()
 {
 	set_xboot_config i143_emmc_p_defconfig
@@ -279,6 +358,7 @@ i143_p_chip_emmc_config()
 	NEED_ISP=1
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
+
 i143_p_chip_tftp_config()
 {
 	set_xboot_config i143_romter_p_defconfig
@@ -324,6 +404,27 @@ i143_p_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
+i143_p_chip_config()
+{
+	case "$1" in
+	"emmc")
+		i143_p_chip_emmc_config 
+		;;
+	"nor")
+		i143_p_chip_nor_config 
+		;;
+	"tftp")
+		i143_p_chip_tftp_config 
+		;;
+	"usb")
+		i143_p_chip_usb_config 
+		;;
+	*)
+		echo "Error: Unknow config!!"
+		exit 1
+	esac
+}
+
 i143_c_chip_zmem_config()
 {
 	set_xboot_config i143_romter_c_zmem_defconfig
@@ -344,6 +445,21 @@ i143_p_chip_zmem_config()
 
 	ZEBU_RUN=1
 	echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
+}
+
+i143_zmem_config()
+{
+	case "$1" in
+	"c")
+		i143_c_chip_zmem_config 
+		;;
+	"p")
+		i143_p_chip_zmem_config 
+		;;
+	*)
+		echo "Error: Unknow config!!"
+		exit 1
+	esac
 }
 
 others_config()
@@ -443,33 +559,133 @@ others_config()
 }
 
 num=0
+bootdev=
+chip=1
 
 list_config()
 {
 	sel=1
-	if [ "$board" = "1" ];then # board == ev
-		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
-		# if [ "$chip" = "1" ];then # chip == C
-		# 	$ECHO $COLOR_YELLOW"[7] others"$COLOR_ORIGIN
-		# fi
-		read sel
-		if [ "$sel" = "4" ];then
-			BOOT_FROM=SDCARD
+	if [ "$board" = "1" ];then 
+		# chip == C
+		if [ "$chip" = "1" ];then # board == ev
+			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] SPI-NOR"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] NOR/Romter"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] SD Card"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[6] TFTP server"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				bootdev=emmc 
+				;;
+			"2")
+				bootdev=spi_nand 
+				;;
+			"3")
+				bootdev=spi_nor 
+				;;
+			"4")
+				bootdev=nor 
+				;;
+			"5")
+				bootdev=emmc 
+				BOOT_FROM=SDCARD
+				;;
+			"6")
+				bootdev=tftp 
+				;;
+			"7")
+				bootdev=usb 
+				;;
+			*)
+				echo "Error: Unknow config!!"
+				exit 1
+			esac
+		elif [ "$chip" = "2" ];then
+			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] SD Card"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] TFTP server"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[6] USB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				bootdev=emmc 
+				;;
+			"2")
+				bootdev=spi_nand 
+				;;
+			"3")
+				bootdev=nor 
+				;;
+			"4")
+				bootdev=emmc 
+				BOOT_FROM=SDCARD
+				;;
+			"5")
+				bootdev=tftp 
+				;;
+			"6")
+				bootdev=usb 
+				;;
+			*)
+				echo "Error: Unknow config!!"
+				exit 1
+			esac
+		else
+			echo "Error: Unknow chip!!"
+			exit 1
 		fi
 	elif [ "$board" = "11" ];then
-		$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[3] SD Card"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[4] TFTP server"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[5] USB"$COLOR_ORIGIN
-		read sel
-		if [ "$sel" = "3" ];then
-			BOOT_FROM=SDCARD
+		if [ "$chip" = "1" ];then 
+			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				bootdev=emmc 
+				;;
+			"2")
+				bootdev=nor 
+				;;
+			*)
+				echo "Error: Unknow config!!"
+				exit 1		
+			esac
+		elif [ "$chip" = "2" ];then
+			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] SD Card"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] TFTP server"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] USB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				bootdev=emmc 
+				;;
+			"2")
+				bootdev=nor 
+				;;
+			"3")
+				bootdev=emmc 
+				BOOT_FROM=SDCARD
+				;;
+			"4")
+				bootdev=tftp 
+				;;
+			"5")
+				bootdev=usb 
+				;;
+			*)
+				echo "Error: Unknow config!!"
+				exit 1		
+			esac
+		else
+			echo "Error: Unknow chip!!"
+			exit 1
 		fi
 	elif [ "$board" = "12" ];then
 		sel=1
@@ -479,12 +695,19 @@ list_config()
 			$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
 			read sel
 		fi
-		if [ "$sel" = "2" ];then
+		case "$sel" in
+		"1")
+			bootdev=emmc 
+			;;
+		"2")
+			bootdev=emmc 
 			BOOT_FROM=SDCARD
-			sel=4
-		fi
+			;;
+		*)
+			echo "Error: Unknow config!!"
+			exit 1		
+		esac
 	fi
-	num=`expr $sel + $num`
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
@@ -495,7 +718,6 @@ $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[6] BPI-F2P Board"$COLOR_ORIGIN
 read board
-chip=1
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
@@ -543,12 +765,13 @@ if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
 	if [ "$board" = "11" ];then
 		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
-		num=12
+		num=3
 	elif [ "$board" = "12" ];then
 		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
-		num=22
+		bootdev=c
+		num=5
 	else
-		num=6
+		num=2
 	fi
 	echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
@@ -561,14 +784,16 @@ elif [ "$chip" = "2" ];then
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
-		num=17
+		num=4
 	elif [ "$board" = "12" ];then
 		ARCH=riscv
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
-		num=25
+		bootdev=p
+		num=5
 	else
+		num=1
 		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=v5" >> $BUILD_CONFIG
 	fi
@@ -579,76 +804,25 @@ echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
 list_config
 echo "select "$num
+echo "bootdev "$bootdev
 
 case "$num" in
 	1)
-		p_chip_emmc_config revB
+		p_chip_config $bootdev
 		;;
 	2)
-		p_chip_nand_config revB
+		c_chip_config $bootdev
 		;;
 	3)
-		p_chip_nor_config revB
+		i143_c_chip_config $bootdev
 		;;
 	4)
-		p_chip_emmc_config revB
+		i143_p_chip_config $bootdev
 		;;
 	5)
-		p_chip_tftp_config revB
+		i143_zmem_config $bootdev
 		;;
-	6)
-		p_chip_usb_config revB
-		;;
-	7)
-		c_chip_emmc_config revB
-		;;
-	8)
-		c_chip_nand_config revB
-		;;
-	9)
-		c_chip_nor_config revB
-		;;
-	10)
-		c_chip_emmc_config revB
-		;;
-	11)
-		c_chip_tftp_config revB
-		;;
-	12)
-		c_chip_usb_config revB
-		;;
-	13)
-		i143_c_chip_emmc_config
-		;;
-	14)
-		i143_c_chip_nor_config
-		;;
-	15)
-		i143_c_chip_emmc_config
-		;;
-	18)
-		i143_p_chip_emmc_config
-		;;
-	19)
-		i143_p_chip_nor_config
-		;;
-	20)
-		i143_p_chip_emmc_config
-		;;
-	21)
-		i143_p_chip_tftp_config
-		;;
-	22)
-		i143_p_chip_usb_config
-		;;
-	23)
-		i143_c_chip_zmem_config
-		;;
-	26)
-		i143_p_chip_zmem_config
-		;;
-
-	# 13)
+	# 6)
 	# 	others_config $1 $2
 	# 	;;
 	*)
