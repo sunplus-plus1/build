@@ -193,7 +193,7 @@ c_chip_spi_nor_config()
 	set_xboot_config q628_Rev2_EMMC_defconfig
 	set_uboot_config sp7021_nor_c_defconfig
 	set_kernel_config sp7021_chipC_emu_nor_defconfig
-	set_bootfrom_config SPINOR
+	set_bootfrom_config NOR_JFFS2
 }
 
 c_chip_emmc_config()
@@ -279,7 +279,7 @@ c_chip_usb_config()
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 }
 
-c_chip_config() 
+c_chip_config()
 {
 	case "$1" in
 	"emmc")
@@ -329,10 +329,10 @@ i143_c_chip_config()
 {
 	case "$1" in
 	"emmc")
-		i143_c_chip_emmc_config 
+		i143_c_chip_emmc_config
 		;;
 	"nor")
-		i143_c_chip_nor_config 
+		i143_c_chip_nor_config
 		;;
 	*)
 		echo "Error: Unknow config!!"
@@ -408,16 +408,16 @@ i143_p_chip_config()
 {
 	case "$1" in
 	"emmc")
-		i143_p_chip_emmc_config 
+		i143_p_chip_emmc_config
 		;;
 	"nor")
-		i143_p_chip_nor_config 
+		i143_p_chip_nor_config
 		;;
 	"tftp")
-		i143_p_chip_tftp_config 
+		i143_p_chip_tftp_config
 		;;
 	"usb")
-		i143_p_chip_usb_config 
+		i143_p_chip_usb_config
 		;;
 	*)
 		echo "Error: Unknow config!!"
@@ -451,10 +451,10 @@ i143_zmem_config()
 {
 	case "$1" in
 	"c")
-		i143_c_chip_zmem_config 
+		i143_c_chip_zmem_config
 		;;
 	"p")
-		i143_p_chip_zmem_config 
+		i143_p_chip_zmem_config
 		;;
 	*)
 		echo "Error: Unknow config!!"
@@ -565,39 +565,39 @@ chip=1
 list_config()
 {
 	sel=1
-	if [ "$board" = "1" ];then 
+	if [ "$board" = "1" ];then
 		# chip == C
 		if [ "$chip" = "1" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[3] SPI-NOR"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[4] NOR/Romter"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] SPI-NOR (jffs2)"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] NOR/Romter (initramfs)"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[5] SD Card"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[6] TFTP server"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
-				bootdev=emmc 
+				bootdev=emmc
 				;;
 			"2")
-				bootdev=spi_nand 
+				bootdev=spi_nand
 				;;
 			"3")
-				bootdev=spi_nor 
+				bootdev=spi_nor
 				;;
 			"4")
-				bootdev=nor 
+				bootdev=nor
 				;;
 			"5")
-				bootdev=emmc 
+				bootdev=emmc
 				BOOT_FROM=SDCARD
 				;;
 			"6")
-				bootdev=tftp 
+				bootdev=tftp
 				;;
 			"7")
-				bootdev=usb 
+				bootdev=usb
 				;;
 			*)
 				echo "Error: Unknow config!!"
@@ -613,23 +613,23 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
-				bootdev=emmc 
+				bootdev=emmc
 				;;
 			"2")
-				bootdev=spi_nand 
+				bootdev=spi_nand
 				;;
 			"3")
-				bootdev=nor 
+				bootdev=nor
 				;;
 			"4")
-				bootdev=emmc 
+				bootdev=emmc
 				BOOT_FROM=SDCARD
 				;;
 			"5")
-				bootdev=tftp 
+				bootdev=tftp
 				;;
 			"6")
-				bootdev=usb 
+				bootdev=usb
 				;;
 			*)
 				echo "Error: Unknow config!!"
@@ -640,20 +640,20 @@ list_config()
 			exit 1
 		fi
 	elif [ "$board" = "11" ];then
-		if [ "$chip" = "1" ];then 
+		if [ "$chip" = "1" ];then
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
-				bootdev=emmc 
+				bootdev=emmc
 				;;
 			"2")
-				bootdev=nor 
+				bootdev=nor
 				;;
 			*)
 				echo "Error: Unknow config!!"
-				exit 1		
+				exit 1
 			esac
 		elif [ "$chip" = "2" ];then
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -664,24 +664,24 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
-				bootdev=emmc 
+				bootdev=emmc
 				;;
 			"2")
-				bootdev=nor 
+				bootdev=nor
 				;;
 			"3")
-				bootdev=emmc 
+				bootdev=emmc
 				BOOT_FROM=SDCARD
 				;;
 			"4")
-				bootdev=tftp 
+				bootdev=tftp
 				;;
 			"5")
-				bootdev=usb 
+				bootdev=usb
 				;;
 			*)
 				echo "Error: Unknow config!!"
-				exit 1		
+				exit 1
 			esac
 		else
 			echo "Error: Unknow chip!!"
@@ -697,15 +697,15 @@ list_config()
 		fi
 		case "$sel" in
 		"1")
-			bootdev=emmc 
+			bootdev=emmc
 			;;
 		"2")
-			bootdev=emmc 
+			bootdev=emmc
 			BOOT_FROM=SDCARD
 			;;
 		*)
 			echo "Error: Unknow config!!"
-			exit 1		
+			exit 1
 		esac
 	fi
 }

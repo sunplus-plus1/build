@@ -116,6 +116,12 @@ img_name = "uboot_B_pentagram_board"
 IS_P_CHIP = 1
 endif
 
+ifeq ($(BOOT_FROM),NOR_JFFS2)
+	NOR_JFFS2 = 1
+else
+	NOR_JFFS2 = 0
+endif
+
 # 0: uImage, 1: qk_boot image (uncompressed)
 USE_QK_BOOT=0
 
@@ -165,7 +171,8 @@ uboot: check
 			KCPPFLAGS="-DBOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) -DTFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb; \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
+			KCPPFLAGS="-DNOR_JFFS2=$(NOR_JFFS2)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
@@ -182,12 +189,12 @@ kernel: check
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		cd $(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0xA0200000 0xA0200000 kernel; \
 	else \
-		$(RM) -rf $(ROOTFS_DIR)/lib/modules/;  \
+		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX);\
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 	fi
-	@$(MAKE) secure SECURE_PATH=kernel ;
+	@$(MAKE) secure SECURE_PATH=kernel;
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE)
@@ -254,7 +261,7 @@ spirom: check
 		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
 		TFTP_SERVER_PATH=$(TFTP_SERVER_PATH) CHIP=$(CHIP); \
 	else \
-		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP); \
+		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP) NOR_JFFS2=$(NOR_JFFS2); \
 	fi
 	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
