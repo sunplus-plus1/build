@@ -52,6 +52,7 @@ USER_NAME ?=
 CONFIG_ROOT = ./.config
 HW_CONFIG_ROOT = ./.hwconfig
 ISP_SHELL = isp.sh
+NOR_ISP_SHELL = nor_isp.sh
 PART_SHELL = part.sh
 SDCARD_BOOT_SHELL = sdcard_boot.sh
 
@@ -116,6 +117,12 @@ img_name = "uboot_B_pentagram_board"
 IS_P_CHIP = 1
 endif
 
+ifeq ($(BOOT_FROM),SPINOR)
+	SPINOR = 1
+else
+	SPINOR = 0
+endif
+
 ifeq ($(BOOT_FROM),NOR_JFFS2)
 	NOR_JFFS2 = 1
 else
@@ -172,14 +179,14 @@ uboot: check
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
-			KCPPFLAGS="-DNOR_JFFS2=$(NOR_JFFS2)"; \
+			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 			$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
 	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
+	@img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) | cut -f1` ; \
 	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
 
@@ -234,8 +241,9 @@ config: init
 	@$(MAKE_ARCH) -C $(LINUX_PATH) clean
 	@$(MAKE_ARCH) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
-	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
+	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
+	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(NOR_ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
@@ -255,6 +263,23 @@ dtb: check
 		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
+
+spirom_isp: check tool_isp
+	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
+		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(XBOOT_BIN)" doesn't exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@if [ -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
+		$(CP) -f $(UBOOT_PATH)/$(UBOOT_BIN) $(OUT_PATH); \
+	else \
+		$(ECHO) $(COLOR_YELLOW)$(UBOOT_BIN)" doesn't exist."$(COLOR_ORIGIN); \
+		exit 1; \
+	fi
+	@cd out/; ./$(NOR_ISP_SHELL)
+	@$(RM) -f $(OUT_PATH)/$(XBOOT_BIN)
+	@$(RM) -f $(OUT_PATH)/$(UBOOT_BIN)
 
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -280,10 +305,10 @@ isp: check tool_isp
 		exit 1; \
 	fi
 	@if [ -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
-		$(CP) -f $(UBOOT_PATH)/u-boot.img $(OUT_PATH); \
+		$(CP) -f $(UBOOT_PATH)/$(UBOOT_BIN) $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(UBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
 	else \
-		$(ECHO) $(COLOR_YELLOW)"u-boot.img doesn't exist."$(COLOR_ORIGIN); \
+		$(ECHO) $(COLOR_YELLOW)$(UBOOT_BIN)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
 
@@ -384,6 +409,7 @@ rom: check
 		$(MAKE) isp; \
 	else \
 		$(MAKE) spirom; \
+		$(MAKE) spirom_isp; \
 	fi
 
 mt: check

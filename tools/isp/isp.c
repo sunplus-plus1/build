@@ -2026,6 +2026,363 @@ int extract4boot2linux(int argc, char **argv,int extrac4boot2linux_src)
 	return 0;
 }
 
+#define NOR_ISP_PARTITION_SIZE 0x100000
+int gen_nor_isp_script(const char *file_name_isp_script)
+{
+	FILE *fd;
+	char tmp_file[32], cmd[1024];
+	int i;
+	u32 size, size_file, size_erased, size_programmed, size_verified;
+
+	sprintf(tmp_file, "tmp%08x", (u32)(getpid()));
+
+	fd = fopen(tmp_file, "w");
+	if (fd == NULL) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		return -1;
+	}
+
+	// Initialize NOR flash.
+	fprintf(fd, "echo \"\nInitialize NOR flash...\"\n");
+	fprintf(fd, "sf probe 0:0 50000000\n");
+
+	// Erase flash.
+	size_file = isp_info.file_header.partition_info[0].partition_size;
+	fprintf(fd, "echo \"\nErase whole chip (%d MiB)...\"\n", size_file / NOR_ISP_PARTITION_SIZE);
+	size_erased = 0;
+	while (size_file) {
+		if (size_file > NOR_ISP_PARTITION_SIZE) {
+			size = NOR_ISP_PARTITION_SIZE;
+		} else {
+			size = size_file;
+		}
+
+		fprintf(fd, "sf erase 0x%x 0x%x\n", size_erased, size);
+
+		size_file   -= size;
+		size_erased += size;
+	}
+
+	// Program image to flash.
+	fprintf(fd, "echo \"\nProgram image to flash...\"\n");
+	size_file = isp_info.file_header.partition_info[0].file_size;
+	size_programmed = 0;
+	while (size_file) {
+		if (size_file > NOR_ISP_PARTITION_SIZE) {
+			size = NOR_ISP_PARTITION_SIZE;
+		} else {
+			size = size_file;
+		}
+
+		fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image),
+			size,
+			isp_info.file_header.partition_info[0].file_offset+size_programmed);
+		fprintf(fd, "sf write $isp_ram_addr 0x%x 0x%x\n", size_programmed, size);
+
+		size_file       -= size;
+		size_programmed += size;
+	}
+
+	// Verify by checking md5sum.
+	fprintf(fd, "echo \"\nVerifying...\"\n");
+	size_file = isp_info.file_header.partition_info[0].file_size;
+	size_verified = 0;
+	while (size_file) {
+		if (size_file > NOR_ISP_PARTITION_SIZE) {
+			size = NOR_ISP_PARTITION_SIZE;
+		} else {
+			size = size_file;
+		}
+
+		fprintf(fd, "sf read $isp_ram_addr 0x%x 0x%x\n", size_verified, size);
+		fprintf(fd, "md5sum $isp_ram_addr 0x%x md5sum_value\n", size);
+		md5sum(isp_info.full_file_name[0], size_verified, size, cmd);
+		fprintf(fd, "if test \"$md5sum_value\" = %s; then\n", cmd);
+		fprintf(fd, "    echo \"md5sum: OK.\"\n");
+		fprintf(fd, "else\n");
+		fprintf(fd, "    echo \"md5sum: Error!\"\n");
+		fprintf(fd, "    exit -1\n");
+		fprintf(fd, "fi\n\n");
+
+		size_file     -= size;
+		size_verified += size;
+	}
+
+	fprintf(fd, "echo \"**************************************************\"\n");
+	fprintf(fd, "echo \"              ISP all: Done                       \"\n");
+	fprintf(fd, "echo \"**************************************************\"\n");
+	fclose(fd);
+
+#if 0
+	printf("\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
+	sprintf(cmd, "cat %s", tmp_file);
+	system(cmd);
+	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+#endif
+
+	sprintf(cmd, "mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n \"ISP script for %s\" -d %s %s %s", isp_info.file_name_pack_image, tmp_file, file_name_isp_script,
+		MESSAGE_OUT);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	sprintf(cmd, "rm -f %s", tmp_file);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	return 0;
+}
+
+int pack_image4nor_isp(int argc, char **argv)
+{
+	FILE *fd;
+	int i;
+	struct stat file_stat;
+	char tmp_file1[32], tmp_file2[32], tmp_file3[32], cmd[1024];
+	u32 tmp_u32, nor_isp_script_size, file_offset_nor_isp_script;
+	u32 offset_of_last_file;
+	u32 next_partition_start_address;
+	int idx_partition_info;
+	const char file_name_nor_isp[] = "nor_isp";
+
+	if (sizeof(struct partition_info_s) != SIZE_PARTITION_INFO_S) {
+		printf("Expect sizeof (partition_info) == %d\n", SIZE_PARTITION_INFO_S);
+		exit(-1);
+	}
+
+	sprintf(tmp_file1, "tmp%08x", (u32)(getpid()));
+	sprintf(tmp_file2, "tmp2%08x", (u32)(getpid()));
+	sprintf(tmp_file3, "tmp3%08x", (u32)(getpid()));
+	isp_info.file_header.flags |= FLAGS_MTD_ONLY;
+
+	idx_partition_info = 0;
+	offset_of_last_file = sizeof(isp_info.file_header);
+	for (i = 0; i < argc; i++) {
+		if (i <= ARGC_PACK_IMAGE_SUBCMD) {  // ARGC_PACK_IMAGE_MAINCMD, ARGC_PACK_IMAGE_SUBCMD
+			continue;
+		} else if (i == ARGC_PACK_IMAGE_OUTPUT) {
+			if (strlen(argv[i]) > SIZE_FULL_FILE_NAME) {
+				printf("Error: strlen(%s) exceeds %d!\n", argv[i], SIZE_FULL_FILE_NAME);
+				exit(-1);
+			}
+			strcpy(isp_info.file_name_pack_image, argv[i]);
+			// strcpy(isp_info.base_file_name_pack_image, basename(argv[i]));
+
+			fd = fopen(isp_info.file_name_pack_image, "wb");
+			if (fd == NULL) {
+				printf("Failed to open '%s'!\n", isp_info.file_name_pack_image);
+				exit(-1);
+			}
+			fclose(fd);
+			sprintf(cmd, "rm %s", isp_info.file_name_pack_image);
+			system(cmd);
+		} else if (i == ARGC_PACK_IMAGE_XBOOT0_FILE) {
+			if (stat(argv[i], &file_stat) == 0) {
+				tmp_u32 = (u32)(file_stat.st_size);
+				tmp_u32 = ALIGN_TO_1K(tmp_u32);
+				if (tmp_u32 > FILE_SIZE_IMAGE_XBOOT0) {
+					printf("Error: xboot size large than %d\n", FILE_SIZE_IMAGE_XBOOT0);
+					exit(-1);
+				}
+				truncate(argv[i], FILE_SIZE_IMAGE_XBOOT0);
+				offset_of_last_file += FILE_SIZE_IMAGE_XBOOT0;
+				if (strlen(argv[i]) > SIZE_FULL_FILE_NAME) {
+					printf("Error: strlen(%s) exceeds %d!\n", argv[i], SIZE_FULL_FILE_NAME);
+					exit(-1);
+				}
+				strcpy(isp_info.full_file_name_xboot0, argv[i]);
+			} else {
+				printf("Failed to stat '%s'!\n", argv[i]);
+				exit(-1);
+			}
+		} else if (i == ARGC_PACK_IMAGE_UBOOT0_FILE) {
+			if (stat(argv[i], &file_stat) == 0) {
+				tmp_u32 = (u32)(file_stat.st_size);
+				tmp_u32 = ALIGN_TO_1K(tmp_u32);
+				if (tmp_u32 > FILE_SIZE_IMAGE_UBOOT0) {
+					printf("Error: uboot size large than %d!\n", FILE_SIZE_IMAGE_UBOOT0);
+					exit(-1);
+				}
+				truncate(argv[i], FILE_SIZE_IMAGE_UBOOT0);
+				offset_of_last_file += FILE_SIZE_IMAGE_UBOOT0;
+				if (strlen(argv[i]) > SIZE_FULL_FILE_NAME) {
+					printf("Error: strlen(%s) exceeds %d!\n", argv[i], SIZE_FULL_FILE_NAME);
+					exit(-1);
+				}
+				strcpy(isp_info.full_file_name_uboot0, argv[i]);
+			} else {
+				printf("Failed to stat '%s'!\n", argv[i]);
+				exit(-1);
+			}
+		} else {
+			if (strlen(argv[i]) > SIZE_FULL_FILE_NAME) {
+				printf("Error: strlen(%s) exceeds %d!\n", argv[i], SIZE_FULL_FILE_NAME);
+				exit(-1);
+			}
+			strcpy(isp_info.full_file_name[idx_partition_info], argv[i]);
+
+			strncpy(isp_info.file_header.partition_info[idx_partition_info].file_name, basename(argv[i]), SIZE_FILE_NAME);
+			isp_info.file_header.partition_info[idx_partition_info].file_name[SIZE_FILE_NAME - 1] = 0x00;
+			i++;
+			if (i >= argc) {
+				printf("Error: %s: %d\n", __FILE__, __LINE__);
+				exit(-1);
+			}
+			isp_info.file_header.partition_info[idx_partition_info].partition_size = strtoull(argv[i], NULL, 0);
+			idx_partition_info++;
+		}
+	}
+
+	printf("Creating ISP file: %s\n", argv[ARGC_PACK_IMAGE_OUTPUT]);
+
+	next_partition_start_address = 0;
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
+		if (isp_info.file_header.partition_info[i].file_name[0]) {
+			if (stat(isp_info.full_file_name[i], &file_stat) != 0) {
+				printf("File not found: %s\n", isp_info.full_file_name[i]);
+				sprintf(cmd, "touch %s", isp_info.full_file_name[i]);   // create a zero-byte file for it
+				system(cmd);
+			}
+			if (stat(isp_info.full_file_name[i], &file_stat) == 0) {
+				tmp_u32 = (u32)(file_stat.st_size);
+				tmp_u32 = ALIGN_TO_1K(tmp_u32);
+				// printf("File size of %s is %lu, extend it to %u\n", isp_info.full_file_name[i], file_stat.st_size, tmp_u32);
+				truncate(isp_info.full_file_name[i], tmp_u32);
+				isp_info.file_header.partition_info[i].file_size = tmp_u32;
+
+				if (isp_info.file_header.partition_info[i].partition_size < isp_info.file_header.partition_info[i].file_size) {
+					printf("Error: Assgined partition size is less than the image size: %s, %lu < %lu\n",
+					       isp_info.file_header.partition_info[i].file_name,
+					       isp_info.file_header.partition_info[i].partition_size,
+					       isp_info.file_header.partition_info[i].file_size);
+					exit(-1);
+				}
+
+				isp_info.file_header.partition_info[i].file_offset = offset_of_last_file;
+				offset_of_last_file += tmp_u32;
+				md5sum(isp_info.full_file_name[i], 0, 0, isp_info.file_header.partition_info[i].md5sum);
+
+				isp_info.file_header.partition_info[i].partition_start_addr = next_partition_start_address;
+				next_partition_start_address += isp_info.file_header.partition_info[i].partition_size;
+			} else {
+				printf("Error for '%s': %s: %d\n", isp_info.full_file_name[i],__FILE__, __LINE__);  // isp_info.full_file_name[i] doesn't exist or can't be created
+				exit(-1);
+			}
+		}
+	}
+
+	//dump_isp_info();
+
+	gen_nor_isp_script(file_name_nor_isp);
+	if (stat(file_name_nor_isp, &file_stat) == 0) {
+		tmp_u32 = (u32)(file_stat.st_size);
+		tmp_u32 = ALIGN_TO_1K(tmp_u32);
+		// printf("File size of %s is %lu, extend it to %u\n", file_name_nor_isp, file_stat.st_size, tmp_u32);
+		truncate(file_name_nor_isp, tmp_u32);
+		nor_isp_script_size = tmp_u32;
+		file_offset_nor_isp_script = offset_of_last_file;
+		offset_of_last_file += tmp_u32;
+	} else {
+		printf("Error for '%s': %s: %d\n", file_name_nor_isp, __FILE__, __LINE__);
+		exit(-1);
+	}
+
+	// Concatenate all input files.
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
+		if (isp_info.file_header.partition_info[i].partition_size != 0) {
+			sprintf(cmd, "cat %s >> %s", isp_info.full_file_name[i], tmp_file1);
+			// printf("%s\n", cmd);
+			system(cmd);
+		}
+	}
+
+	// Concatenate NOR ISP script file.
+	sprintf(cmd, "cat %s >> %s", file_name_nor_isp, tmp_file1);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	// Create 'init script' and store it to 'isp_info.file_header.init_script[]'
+	fd = fopen(tmp_file2, "w");
+	fprintf(fd, "if test \"$isp_if\" = usb ; then\n");
+	fprintf(fd, "    echo ISP file from USB storage\n");
+	fprintf(fd, "elif test \"$isp_if\" = mmc ; then\n");
+	fprintf(fd, "    echo ISP file from SD Card\n");
+	fprintf(fd, "else\n");
+	fprintf(fd, "    echo set to USB device 0 and use memory area start from 0x%x\n", ADDRESS_FATLOAD);
+	fprintf(fd, "    setenv isp_if usb\n");
+	fprintf(fd, "    setenv isp_dev 0\n");
+	fprintf(fd, "    setenv isp_ram_addr 0x%x\n", ADDRESS_FATLOAD);
+	fprintf(fd, "    $isp_if start\n");
+	fprintf(fd, "fi\n\n");
+	fprintf(fd, "fatinfo $isp_if $isp_dev\n");
+	fprintf(fd, "fatls   $isp_if $isp_dev /\n\n");
+
+	fprintf(fd, "if test \"$isp_force_to_abort\" = yes ; then\n");
+	fprintf(fd, "    echo isp_force_to_abort\n");
+	fprintf(fd, "    exit -1\n");
+	fprintf(fd, "fi\n\n");
+
+	fprintf(fd, "echo Load NOR ISP script and run it...\n");
+	fprintf(fd, "fatload $isp_if $isp_dev $isp_ram_addr /%s 0x%x 0x%x\n", basename(isp_info.file_name_pack_image), nor_isp_script_size, file_offset_nor_isp_script);
+	fprintf(fd, "source $isp_ram_addr\n");
+	fclose(fd);
+
+	sprintf(cmd, "mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n \"Init ISP script\" -d %s %s %s", tmp_file2, tmp_file3, MESSAGE_OUT);
+	// printf("%s\n", cmd);
+	system(cmd);
+
+	if (stat(tmp_file3, &file_stat) == 0) {
+		if (file_stat.st_size > SIZE_INIT_SCRIPT) {
+			printf("\n\n\nSIZE_INIT_SCRIPT is too small\n\n");
+			exit(-1);
+		}
+
+		fd = fopen(tmp_file3, "rb");
+		if (fread(isp_info.file_header.init_script, file_stat.st_size, 1, fd) != 1) {
+			printf("Error: %s: %d\n", __FILE__, __LINE__);
+			exit(-1);
+		}
+		fclose(fd);
+	}
+
+	fd = fopen(tmp_file2, "wb");
+	if (fd == NULL) {
+		printf("Error for '%s': %s: %d\n", tmp_file2, __FILE__, __LINE__);
+		exit(-1);
+	}
+	if (fwrite(&isp_info.file_header, sizeof(isp_info.file_header), 1, fd) != 1) {
+		printf("Error: %s: %d\n", __FILE__, __LINE__);
+		exit(-1);
+	}
+	fclose(fd);
+
+	sprintf(cmd, "cat %s %s %s %s > %s", isp_info.full_file_name_xboot0, isp_info.full_file_name_uboot0, tmp_file2, tmp_file1, isp_info.file_name_pack_image);
+	system(cmd);
+
+	sprintf(cmd, "rm -f %s", tmp_file1);
+	system(cmd);
+	sprintf(cmd, "rm -f %s", tmp_file2);
+	system(cmd);
+	sprintf(cmd, "rm -f %s", tmp_file3);
+	system(cmd);
+	sprintf(cmd, "rm -f %s", file_name_nor_isp);
+	system(cmd);
+
+	printf("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
+	for (i = 0; i < NUM_OF_PARTITION; i++) {
+		if (isp_info.file_header.partition_info[i].partition_size == 0)
+			break;
+
+		printf("%-16s 0x%lx/0x%lx (%.02lf%%) used\n",
+		       basename(isp_info.file_header.partition_info[i].file_name),
+		       isp_info.file_header.partition_info[i].file_size, isp_info.file_header.partition_info[i].partition_size,
+		       100 * (double)(isp_info.file_header.partition_info[i].file_size) / ((double)(isp_info.file_header.partition_info[i].partition_size)));
+	}
+	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+	printf("Done!\n");
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	char *sub_cmd;
@@ -2062,7 +2419,9 @@ int main(int argc, char **argv)
 		return extract4update(argc, argv, EXTRACT4UPDATE_FROM_STORAGE);
 	} else if (strcmp(sub_cmd, "extract4tftpupdate") == 0) {
 		return extract4update(argc, argv, EXTRACT4UPDATE_FROM_TFTP);
-	}  else {
+	} else if (strcmp(sub_cmd, "pack_image4nor_isp") == 0) {
+		return pack_image4nor_isp(argc, argv);
+	} else {
 		printf("Unknown sub_cmd: %s\n\n", sub_cmd);
 		return 1;
 	}
