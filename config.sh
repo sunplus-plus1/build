@@ -191,7 +191,7 @@ c_chip_spi_nor_config()
 	fi
 
 	set_xboot_config q628_Rev2_EMMC_defconfig
-	set_uboot_config sp7021_romter_c_defconfig
+	set_uboot_config sp7021_nor_c_defconfig
 	set_kernel_config sp7021_chipC_emu_nor_defconfig
 	set_bootfrom_config NOR_JFFS2
 }
