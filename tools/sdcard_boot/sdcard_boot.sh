@@ -2,20 +2,22 @@
 
 TOP=../../..
 
-# Generate a disk image containing FAT and EXT3 partitions.
+# Generate a disk image containing FAT32 and EXT4 partitions.
 # ISPBOOOT.BIN, u-boot.img, uImage, a926.img, and uEnv.txt
-# are placed on the FAT partition, and uncompressed rootfs
-# is placed on the EXT3 partition.
-# 1. Create boot (FAT) partition.
-# 2. Copy ISPBOOOT.BIN, u-boot.img, uImage, a926.img, and 
+# are placed on the FAT32 partition, and uncompressed root
+# file-system is placed on the EXT4 partition.
+# 1. Create boot (FAT32) partition.
+# 2. Copy ISPBOOOT.BIN, u-boot.img, uImage, a926.img, and
 #    uEnv.txt to it.
 # 3. Copy boot partition to output file 'ISP_SD_BOOOT.img'.
-# 4. Create root (ext3) partition.
+# 4. Create root (ext4) partition.
 # 5. Copy 'rc.sdcardboot' to '/etc/init.d' of root partition.
 # 6. Resize root partition.
 # 7. Copy root partition to output file 'ISP_SD_BOOOT.img'.
 # 8. Create partition table.
 
+MKFS=$TOP/linux/rootfs/tools/mke2fs
+RESIZE=$TOP/linux/rootfs/tools/resize2fs
 OUTPATH=$TOP/out/boot2linux_SDcard
 FAT_FILE_IN=$OUTPATH
 ROOT_DIR_IN=$TOP/linux/rootfs/initramfs/disk
@@ -28,10 +30,10 @@ NONOS_IMG=a926.img
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
 
-# Size of FAT partition size (unit: M)
-FAT_IMG_SIZE_M=100
+# Size of FAT32 partition size (unit: M)
+FAT_IMG_SIZE_M=128
 
-# Block size is 512 bytes for sfdisk and FAT sector is 1024 bytes
+# Block size is 512 bytes for sfdisk and FAT32 sector is 1024 bytes
 BLOCK_SIZE=512
 FAT_SECTOR=1024
 
@@ -54,7 +56,7 @@ if [ ! -d $ROOT_DIR_IN ]; then
 	exit 1
 fi
 
-# cp uEnv to out/sdcardboot 
+# cp uEnv.txt to out/sdcardboot
 if [ $1 -eq "1" ]; then
 	cp $EXT_ENV_RISCV $OUTPATH/$EXT_ENV
 else
@@ -64,7 +66,7 @@ fi
 # Calculate parameter.
 partition_size_1=$(($FAT_IMG_SIZE_M*1024*1024))
 
-# Check size of FAT partition.
+# Check size of FAT32 partition.
 rm -f "$FAT_IMG_OUT"
 
 sz=`du -sb $FAT_FILE_IN | cut -f1`
@@ -107,45 +109,44 @@ else
 	exit
 fi
 
-# Offset boot partition (FAT)
+# Offset boot partition (FAT32)
 dd if="$FAT_IMG_OUT" of="$OUT_FILE" bs="$seek_bs" seek="$seek_offset"
 rm -f "$FAT_IMG_OUT"
 
-# Create root partition (exte)
+# Create root partition (ext4)
 # Copy 'rc.sdcardboot' to '/etc/init.d' of root partition.
 cp -rf "$RC_SDCARDBOOTFILE" $RC_SDCARDBOOTDIR
 
-# Calculate size of root partition (assume 40% + 10MB overhead).
+# Calculate size of root partition (assume 40% + 20MB overhead).
 sz=`du -sb $ROOT_DIR_IN | cut -f1`
 sz=$((sz*14/10))
-partition_size_2=$((sz/1024/1024+10))
+partition_size_2=$((sz/1024/1024+20))
 
-echo '###### do mke2fs cmd (mke2fs version need to bigger than 1.45.1) ########'
+echo '###### do mke2fs cmd (mke2fs version needs to bigger than 1.45.1) ########'
 chmod 777 $ROOT_DIR_IN/bin/busybox
 rm -f "$ROOT_IMG"
-./mke2fs -j -d "$ROOT_DIR_IN" -r 1 -N 0 -L '' -O ^64bit -b 4096 "$ROOT_IMG" "$((partition_size_2))M"
+$MKFS -t ext4 -b 4096 -d "$ROOT_DIR_IN" "$ROOT_IMG" "$((partition_size_2))M"
 if [ $? -ne 0 ]; then
- 	exit
+	exit
 fi
 
-# Resize to minimum + 10%
-resize2fs -M "$ROOT_IMG"
-partition_size_2=`du -sb $ROOT_IMG | cut -f1`
-partition_size_2=$((partition_size_2*11/10))
-partition_size_2=$(((partition_size_2+1048575)/1024/1024))
-echo "rootfs created size = $partition_size_2 MB"
-resize2fs $ROOT_IMG $(($partition_size_2))M
+# Resize to minimum + 10%. resize2fs version needs to bigger than 1.45.1.
+partition_sz_2=`$RESIZE -P $ROOT_IMG | cut -d: -f2`
+partition_sz_2=$((partition_sz_2*11/10+1))
+$RESIZE $ROOT_IMG $partition_sz_2
 
-# Offset root partition (ext3)
+# Offset root partition (ext4)
 dd if="$ROOT_IMG" of="$OUT_FILE" bs="$seek_bs" seek="$(($seek_offset+$partition_size_1/$seek_bs))"
 
 # Create the partition info
-partition_size_2=$((partition_size_2*1024*1024))
+partition_size_2=`du -sb $ROOT_IMG | cut -f1`
+partition_size_2=$(((partition_size_2+65535)/65536))
+partition_size_2=$((partition_size_2*65536))
 echo '###### do sfdisk cmd (sfdisk version need to bigger than 2.27.1) ########'
 if [ -x "$(command -v sfdisk)" ]; then
 	sfdisk -v
 	printf "type=b, size=$(($partition_size_1/$BLOCK_SIZE))
-	        type=83, size=$(($partition_size_2/$BLOCK_SIZE))" |
+		type=83, size=$(($partition_size_2/$BLOCK_SIZE))" |
 	sfdisk "$OUT_FILE"
 else
 	echo "no sfdisk cmd, please install it"
