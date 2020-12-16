@@ -8,7 +8,7 @@ DTB=dtb
 sRpi_args=setenv filesize 0; fatsize $isp_if $isp_dev /cmdline.txt; if test $filesize != 0; then fatload $isp_if $isp_dev $addr_dst_dtb /cmdline.txt; raspb init $fileaddr $filesize; fi;
 
 ##bootargs
-sbootargs=setenv bootargs console=ttyS0,115200 earlyprintk root=/dev/mmcblk1p2 rw user_debug=255 rootwait $bootargs;
+sbootargs=setenv bootargs console=tty1 console=ttyS0,115200 earlyprintk root=/dev/mmcblk1p2 rw user_debug=255 rootwait $bootargs;
 
 ## load kernel
 sload_kernel=fatload $isp_if $isp_dev $addr_dst_kernel /$KERNEL_IMG;
