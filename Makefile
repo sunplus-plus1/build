@@ -323,7 +323,7 @@ isp: check tool_isp
 		if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
 			$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
 			$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
-		fi ; \
+		fi; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
 		if [ "$(USE_QK_BOOT)" = "1" ]; then \
@@ -341,7 +341,7 @@ isp: check tool_isp
 			fi; \
 		else \
 			$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(OUT_PATH); \
-		fi ; \
+		fi; \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(VMLINUX)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
@@ -355,13 +355,13 @@ isp: check tool_isp
 			cd .. ; \
 		else \
 			$(CP) -vf $(LINUX_PATH)/$(DTB) $(OUT_PATH)/$(DTB) ; \
-		fi ; \
+		fi; \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(DTB)" to out folder."$(COLOR_ORIGIN); \
 	else \
 		$(ECHO) $(COLOR_YELLOW)$(DTB)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	@if [ "$(BOOT_FROM)" != "SDCARD" ]; then  \
+	@if [ "$(BOOT_FROM)" != "SDCARD" ] && [ "$(BOOT_FROM)" != "USB" ]; then  \
 		if [ -f $(ROOTFS_PATH)/$(ROOTFS_IMG) ]; then \
 			$(ECHO) $(COLOR_YELLOW)"Copy "$(ROOTFS_IMG)" to out folder."$(COLOR_ORIGIN); \
 			$(CP) -vf $(ROOTFS_PATH)/$(ROOTFS_IMG) $(OUT_PATH)/ ;\
@@ -386,7 +386,7 @@ secure:
 		$(ECHO) $(COLOR_YELLOW) "###xboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
 			exit 1; \
-		fi ;\
+		fi; \
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
 		cd $(XBOOT_PATH); \
 		/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
@@ -394,13 +394,13 @@ secure:
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 			exit 1; \
-		fi ;\
+		fi; \
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ;\
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
 		if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
-				exit 1;\
-		fi ;\
+			exit 1; \
+		fi; \
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
 	fi
 
