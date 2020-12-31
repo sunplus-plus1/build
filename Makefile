@@ -261,6 +261,9 @@ dtb: check
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
 	else \
 		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		if [ $$? -ne 0 ]; then \
+			exit 1; \
+		fi; \
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(LINUX_DTB) $(LINUX_PATH)/dtb; \
 	fi
 
