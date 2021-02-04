@@ -18,6 +18,106 @@ XBOOT_CONFIG=
 
 ARCH=arm
 
+# bootdev=emmc
+# bootdev=spi_nand
+# bootdev=spi_nor
+# bootdev=nor
+# bootdev=tftp
+# bootdev=usb
+
+bootdev_lookup()
+{
+	dev=$1
+	if [ "$1" = "spi_nor" ]; then
+		dev=nor
+	elif [ "$1" = "nor" ];then
+		dev=romter
+	elif [ "$1" = "spi_nand" ];then
+		dev=nand
+	elif [ "$1" = "usb" ];then
+		dev=romter
+	elif [ "$1" = "tftp" ];then
+		dev=romter
+	fi
+	echo $dev
+}
+
+chip_lookup()
+{
+	chip=$1
+	if [ "$1" = "1" ]; then
+		chip=c
+	elif [ "$1" = "2" ];then
+		chip=p
+	fi
+	echo $chip
+}
+
+xboot_defconfig_combine()
+{	
+	# $1 => project
+	# $2 => bootdev
+	# $3 => c/p
+	# $4 => board
+
+	pid=$1
+	chip=$3
+	dev=$(bootdev_lookup $2)
+	board=$4
+	defconfig=
+
+	if [ "$board" = "zebu" ]; then
+		defconfig=${pid}_${chip}_zmem_defconfig
+	else
+		defconfig=${pid}_${dev}_${chip}_defconfig		
+	fi
+	echo $defconfig
+}
+
+uboot_defconfig_combine()
+{
+	# $1 => project
+	# $2 => bootdev
+	# $3 => c/p
+	# $4 => board
+
+	pid=$1
+	dev=$(bootdev_lookup $2)
+	chip=$3
+	board=$4
+	defconfig=
+
+	if [ "$board" = "zebu" ]; then
+		defconfig=${pid}_${chip}_zebu_defconfig
+	else
+		defconfig=${pid}_${dev}_${chip}_defconfig
+	fi
+
+	echo $defconfig
+}
+
+linux_defconfig_combine()
+{
+	# $1 => project
+	# $2 => bootdev
+	# $3 => c/p
+	# $4 => board
+
+	pid=$1
+	dev=$(bootdev_lookup $2)
+	chip=$3
+	board=$4
+	defconfig=
+
+	if [ "$4" = "zebu" ]; then 
+		defconfig=${pid}_${chip}_${board}_defconfig
+	else
+		defconfig=${pid}_${dev}_${chip}_${board}_defconfig
+	fi
+
+	echo $defconfig
+}
+
 set_uboot_config()
 {
 	if [ "$UBOOT_CONFIG" = "" ];then
@@ -431,9 +531,6 @@ i143_c_chip_zmem_config()
 	set_uboot_config i143_romter_c_zebu_defconfig
 	set_kernel_config i143_chipC_zebu_defconfig
 	set_bootfrom_config SPINOR
-
-	ZEBU_RUN=1
-	echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
 }
 
 i143_p_chip_zmem_config()
@@ -442,9 +539,6 @@ i143_p_chip_zmem_config()
 	set_uboot_config i143_romter_p_zebu_defconfig
 	set_kernel_config i143_chipP_zebu_defconfig
 	set_bootfrom_config SPINOR
-
-	ZEBU_RUN=1
-	echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
 }
 
 i143_zmem_config()
@@ -561,11 +655,12 @@ others_config()
 num=0
 bootdev=
 chip=1
+runzebu=0
 
 list_config()
 {
 	sel=1
-	if [ "$board" = "1" ];then
+	if [ "$board" = "1" -o "$board" = "21" ];then
 		# chip == C
 		if [ "$chip" = "1" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -688,7 +783,11 @@ list_config()
 			exit 1
 		fi
 	elif [ "$board" = "12" ];then
+		runzebu=1
 		sel=1
+	elif [ "$board" = "22" ];then
+		runzebu=1
+		bootdev=nor
 	else
 		if [ "$board" != "2" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -711,14 +810,15 @@ list_config()
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (zmem)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board      [21] Q645 Ev Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (zmem)   [22] Q645 Zebu"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[6] BPI-F2P Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[7] LTPP3G2 Board (Sunplus)"$COLOR_ORIGIN
 read board
+echo "CHIP=Q628" >> $BUILD_CONFIG
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
@@ -751,30 +851,34 @@ elif [ "$board" = "7" ];then
 	UBOOT_CONFIG=sp7021_tppg2sunplus_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig		
 elif [ "$board" = "11" -o "$board" = "12" ];then
+	echo "CHIP=I143" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (Sifive U54MC x4)"$COLOR_ORIGIN
+	read chip
+elif [ "$board" = "21" -o "$board" = "22" ];then
+	ARCH=arm64
+	echo "CHIP=Q645" >> $BUILD_CONFIG
+	echo "LINUX_DTB=q645-ev" > $BUILD_CONFIG
+	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A55 x4)"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Chip P (xxx)"$COLOR_ORIGIN
 	read chip
 else
 	echo "Error: Unknow board!!"
 	exit 1
 fi
 
-if [ "$board" = "11" -o "$board" = "12" ];then
-	echo "CHIP=I143" > $BUILD_CONFIG
-else
-	echo "CHIP=Q628" >> $BUILD_CONFIG
-fi
-
 if [ "$chip" = "1" ];then
 	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
-	if [ "$board" = "11" ];then
+	if [ "$board" = "11" -o "$board" = "12" ];then
 		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
-		num=3
-	elif [ "$board" = "12" ];then
-		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
-		bootdev=c
-		num=5
+		if [ "$board" = "11" ];then
+			num=3
+		elif [ "$board" = "12" ];then
+			bootdev=c
+			num=5
+		fi
 	else
 		num=2
 	fi
@@ -784,19 +888,17 @@ if [ "$chip" = "1" ];then
 
 elif [ "$chip" = "2" ];then
 	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
-	if [ "$board" = "11" ];then
+	if [ "$board" = "11" -o "$board" = "12" ];then
 		ARCH=riscv
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
-		num=4
-	elif [ "$board" = "12" ];then
-		ARCH=riscv
-		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
-		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
-		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
-		bootdev=p
-		num=5
+		if [ "$board" = "11" ];then
+			num=4
+		elif [ "$board" = "12" ];then
+			bootdev=p
+			num=5
+		fi
 	else
 		num=1
 		echo "CROSS_COMPILE="$1 >> $BUILD_CONFIG
@@ -805,9 +907,53 @@ elif [ "$chip" = "2" ];then
 	echo "BOOT_CHIP=P_CHIP" >> $BUILD_CONFIG
 fi
 
+list_config
+
+################################################################################
+##
+## use product name, bootdev, chip, board to combine into a deconfig file name 
+## so, the defconfig file name must follow named rule like 
+## 
+## non-zebu:
+##     xboot, uboot:
+##         ${pid}_${bootdev}_${chip}_defconfig           --> q645_emmc_c_defconfig
+##	   linux:
+##         ${pid}_${bootdev}_${chip}_${board}_defconfig	 --> q645_emmc_c_ev_defconfig
+##	
+## zebu:	   
+##     xboot:
+##         ${pid}_${chip}_zmem_defconfig      --> q645_c_zmem_defconfig
+##     uboot:
+##         ${pid}_${chip}_zebu_defconfig      --> q645_c_zebu_defconfig
+##     linux:
+##         ${pid}_${chip}_zebu_defconfig      --> q645_c_zebu_defconfig
+
+set_config_directly=0
+
+if [ "$board" = "21" -o "$board" = "22" ];then
+	## board = q645
+	sel_chip=$(chip_lookup $chip)
+	sel_board=ev
+	if [ "$board" = "22" ];then
+		sel_board=zebu
+	fi
+	set_config_directly=1
+fi
+
+if [ "$set_config_directly" = "1" ]; then
+	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $bootdev $sel_chip $sel_board)
+	UBOOT_CONFIG=$(uboot_defconfig_combine q645 $bootdev $sel_chip $sel_board)
+	KERNEL_CONFIG=$(linux_defconfig_combine q645 $bootdev $sel_chip $sel_board)
+fi
+
+################################################################################
+
+if [ "$runzebu" = "1" ]; then
+	echo "ZEBU_RUN=1" >> $BUILD_CONFIG
+fi
+
 echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
-list_config
 echo "select "$num
 echo "bootdev "$bootdev
 
