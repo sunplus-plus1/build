@@ -818,36 +818,36 @@ $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[6] BPI-F2P Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[7] LTPP3G2 Board (Sunplus)"$COLOR_ORIGIN
 read board
-echo "CHIP=Q628" >> $BUILD_CONFIG
+echo "CHIP=Q628" > $BUILD_CONFIG
 
 if [ "$board" = "1" ];then
-	echo "LINUX_DTB=sp7021-ev" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-ev" >> $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
 	read chip
 elif [ "$board" = "2" ];then
-	echo "LINUX_DTB=sp7021-ltpp3g2revD" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-ltpp3g2revD" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2_defconfig
 elif [ "$board" = "3" ];then
-	echo "LINUX_DTB=sp7021-demov2" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-demov2" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_demov2_defconfig
 	KERNEL_CONFIG=sp7021_chipC_demov2_defconfig
 elif [ "$board" = "4" ];then
-	echo "LINUX_DTB=sp7021-demov3" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-demov3" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_demov3_defconfig
 	KERNEL_CONFIG=sp7021_chipC_demov3_defconfig
 elif [ "$board" = "5" ];then
-	echo "LINUX_DTB=sp7021-bpi-f2s" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-bpi-f2s" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2s_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig
 elif [ "$board" = "6" ];then
-	echo "LINUX_DTB=sp7021-bpi-f2p" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-bpi-f2p" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
 elif [ "$board" = "7" ];then
-	echo "LINUX_DTB=sp7021-ltpp3g2-sunplus" > $BUILD_CONFIG
+	echo "LINUX_DTB=sp7021-ltpp3g2-sunplus" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2sunplus_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig		
 elif [ "$board" = "11" -o "$board" = "12" ];then
@@ -858,8 +858,8 @@ elif [ "$board" = "11" -o "$board" = "12" ];then
 	read chip
 elif [ "$board" = "21" -o "$board" = "22" ];then
 	ARCH=arm64
-	echo "CHIP=Q645" >> $BUILD_CONFIG
-	echo "LINUX_DTB=q645-ev" > $BUILD_CONFIG
+	echo "CHIP=Q645" > $BUILD_CONFIG
+	echo "LINUX_DTB=q645-ev" >> $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A55 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (xxx)"$COLOR_ORIGIN

@@ -104,7 +104,11 @@
 
 
 
+#if defined(Q645) && (Q645 == 1)
+#define FILE_SIZE_IMAGE_XBOOT0                      (160 << 10)
+#else
 #define FILE_SIZE_IMAGE_XBOOT0                      (64 << 10)
+#endif
 #define FILE_SIZE_IMAGE_UBOOT0                      ((1 << 20) - FILE_SIZE_IMAGE_XBOOT0)
 
 #define NAND_READ_BY_PARTITION_NAME                         // if not defined, it's by NAND address

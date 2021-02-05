@@ -297,7 +297,7 @@ spirom: check
 	fi
 
 tool_isp:
-	@$(MAKE) -C $(TOPDIR)/build/tools/isp FREERTOS=$(IS_I143_RISCV)
+	@$(MAKE) -C $(TOPDIR)/build/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 
 isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
