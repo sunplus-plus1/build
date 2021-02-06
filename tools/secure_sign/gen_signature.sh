@@ -7,7 +7,8 @@
 CUR_PATH=
 IN_IMG=
 OUT_SIG=
-TOOLPATH=build/tools/secure_sign
+#TOOLPATH=build/tools/secure_sign
+TOOLPATH=$(dirname $0)
 SIGN_BIN=$TOOLPATH/sign_ed25519
 TEMPFILE=tempfile
 SIGN_FLAG=0
