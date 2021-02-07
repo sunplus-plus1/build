@@ -859,7 +859,7 @@ elif [ "$board" = "11" -o "$board" = "12" ];then
 elif [ "$board" = "21" -o "$board" = "22" ];then
 	ARCH=arm64
 	echo "CHIP=Q645" > $BUILD_CONFIG
-	echo "LINUX_DTB=q645-ev" >> $BUILD_CONFIG
+	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A55 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (xxx)"$COLOR_ORIGIN
