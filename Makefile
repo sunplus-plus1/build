@@ -78,6 +78,9 @@ FREERTOS_IMG = freertos.img
 
 CROSS_COMPILE_FOR_XBOOT =$(CROSS_V5_COMPILE)
 CROSS_COMPILE_FOR_LINUX =$(CROSS_V7_COMPILE)
+ifeq ($(ARCH),arm64)
+CROSS_COMPILE_FOR_LINUX=$(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+endif
 CROSS_COMPILE_FOR_ROOTFS =$(CROSS_V7_COMPILE)
 
 ifeq ($(CHIP),I143)
