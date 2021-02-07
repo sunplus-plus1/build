@@ -86,9 +86,7 @@ endif
 
 ifeq ($(ARCH),riscv)
 CROSS_COMPILE_FOR_LINUX =$(CROSS_RISCV_COMPILE)
-endif
-
-ifeq ($(ARCH),arm64)
+else ifeq ($(ARCH),arm64)
 CROSS_COMPILE_FOR_LINUX=$(CROSS_ARM64_COMPILE)
 endif
 
@@ -197,7 +195,7 @@ kernel: check
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) uImage V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) all V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
 
