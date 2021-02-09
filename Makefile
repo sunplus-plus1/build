@@ -394,6 +394,10 @@ secure:
 		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
 		cd $(XBOOT_PATH); \
 		/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
+		if [ "$(CHIP)" = "Q645" ]; then \
+		mv ./bin/$(XBOOT_BIN)  ./bin/$(XBOOT_BIN).orig ;\
+		cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ;\
+		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
