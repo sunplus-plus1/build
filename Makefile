@@ -36,6 +36,7 @@ CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
 CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
 CROSS_RISCV_UNKNOWN_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf-
 CROSS_ARM64_COMPILE = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+CROSS_ARM64_XBOOT_COMPILE = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin/arm-none-eabi-
 
 NEED_ISP ?= 0
 ZEBU_RUN ?= 0
@@ -82,6 +83,8 @@ CROSS_COMPILE_FOR_LINUX =$(CROSS_V7_COMPILE)
 
 ifeq ($(CHIP),I143)
 CROSS_COMPILE_FOR_XBOOT =$(CROSS_RISCV_UNKNOWN_COMPILE)
+else ifeq ($(ARCH),arm64)
+CROSS_COMPILE_FOR_XBOOT =$(CROSS_ARM64_XBOOT_COMPILE)
 endif
 
 ifeq ($(ARCH),riscv)
@@ -95,6 +98,7 @@ ARCH_XBOOT = arm
 ifeq ($(CHIP),I143)
 ARCH_XBOOT = riscv
 endif
+ARCH_UBOOT = $(ARCH_XBOOT)
 
 IS_I143_RISCV ?= 0
 ifeq ($(CHIP),I143)
@@ -175,7 +179,7 @@ uboot: check
 			KCPPFLAGS="-DBOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) -DTFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
+		$(MAKE) ARCH=$(ARCH_UBOOT) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
 			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
