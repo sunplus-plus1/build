@@ -154,7 +154,6 @@ all: check
 		$(MAKE) nonos; \
 	fi
 	@$(MAKE) kernel
-	@$(MAKE) secure
 	@$(MAKE) rootfs
 	@$(MAKE) rom
 
@@ -162,9 +161,9 @@ freertos:
 	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT)
 	@if [ "$(NEED_ISP)" = '1' ]; then \
 		if [ "$(IS_P_CHIP)" = "1" ]; then \
-		$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
-		$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf  $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
-		cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
+			$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
+			$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
+			cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
 		fi; \
 	fi
 #xboot build
@@ -396,8 +395,8 @@ secure:
 		cd $(XBOOT_PATH); \
 		/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
 		if [ "$(CHIP)" = "Q645" ]; then \
-		mv ./bin/$(XBOOT_BIN)  ./bin/$(XBOOT_BIN).orig ;\
-		cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ;\
+			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ;\
+			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ;\
 		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
