@@ -10,10 +10,9 @@ source sb_info.sh_inc
 
 
 SB_INFO=out/sb_info.bin
-BODY_BIN= $1
+BODY_BIN=$1
 BODY_EN=out/body_encrypted.bin
 OUTFILE_SB_BIN=out/outfile_sb.bin
-
 OUT_SIG=out/outfile_sb.sig
 
 

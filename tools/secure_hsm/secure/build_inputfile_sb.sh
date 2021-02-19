@@ -25,7 +25,7 @@ echo "[secure] input file = $1"
 [ $? -ne 0 ] && echo "fail!" && exit 1
 ./04_gen_sb_info.sh
 [ $? -ne 0 ] && echo "fail!" && exit 1
-./05_sign_inputfile_sb.sh
+./05_sign_inputfile_sb.sh $1
 [ $? -ne 0 ] && echo "fail!" && exit 1
 
 echo "$0 : Well Done"
