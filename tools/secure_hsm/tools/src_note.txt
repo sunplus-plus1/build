@@ -1,0 +1,21 @@
+mconf:
+	We do not modify its source. Find source in any linux kernel scripts/kconfig/.
+
+sign_ed25519:
+	Find its source in boot/iboot/secure/ed25519/apps/.
+
+auto_config_h :
+	Find source in <q645>/boot/iboot/tools/auto_config_h_src/
+
+tcpsum :
+	Find source in <q645>/boot/iboot/lib/
+
+hkdf-sha3_512, sha3-file :
+	Find source in <q645>/boot/iboot/secure/sw/apps/
+
+mkey_ed_sha3, sign_ed_sha3, mkey_x25519, x25519_ss :
+	Find source in <q645>/boot/iboot/secure/sw/libeddsa/apps/
+
+aes-gcm :
+	Find source in <q645>/boot/iboot/secure/sw/aes-gcm/
+	https://github.com/theicfire/aes-gcm
