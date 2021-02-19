@@ -1,0 +1,14 @@
+
+OTP_Sb_keys      - For secure boot, ASM key pair (Sb_Kpub in OTP, Sb_Kpriv).
+
+	1. Host signs image hash by Sb_Kpriv.
+	2. IC verifies signature by Sb_Kpub.
+
+
+OTP_Devicei_keys - For IC side decryption, ASM key pair (Device_Kpub, Device_Kpriv in OTP).
+
+	1. Host encrypts data by Device_Kpriv.
+	2. IC decryppts data by Device_Kpub.
+
+
+HSM AIC/ADC keys - Optionally preload HSM keys via xboot image.

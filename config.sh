@@ -822,7 +822,7 @@ echo "CHIP=Q628" > $BUILD_CONFIG
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" >> $BUILD_CONFIG
-	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+	$ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
 	read chip
@@ -852,7 +852,7 @@ elif [ "$board" = "7" ];then
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig		
 elif [ "$board" = "11" -o "$board" = "12" ];then
 	echo "CHIP=I143" > $BUILD_CONFIG
-	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
+	$ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (Sifive U54MC x4)"$COLOR_ORIGIN
 	read chip
@@ -860,17 +860,13 @@ elif [ "$board" = "21" -o "$board" = "22" ];then
 	ARCH=arm64
 	echo "CHIP=Q645" > $BUILD_CONFIG
 	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
-	$ECHO $COLOR_GREEN"Select chip."$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A55 x4)"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] Chip P (xxx)"$COLOR_ORIGIN
-	read chip
 else
 	echo "Error: Unknow board!!"
 	exit 1
 fi
 
 if [ "$chip" = "1" ];then
-	$ECHO $COLOR_GREEN"Select configs (C chip)."$COLOR_ORIGIN
+	$ECHO $COLOR_GREEN"Select configs (C chip):"$COLOR_ORIGIN
 	if [ "$board" = "11" -o "$board" = "12" ];then
 		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
 		if [ "$board" = "11" ];then
@@ -887,7 +883,7 @@ if [ "$chip" = "1" ];then
 	echo "BOOT_CHIP=C_CHIP" >> $BUILD_CONFIG
 
 elif [ "$chip" = "2" ];then
-	$ECHO $COLOR_GREEN"Select configs (P chip)."$COLOR_ORIGIN
+	$ECHO $COLOR_GREEN"Select configs (P chip):"$COLOR_ORIGIN
 	if [ "$board" = "11" -o "$board" = "12" ];then
 		ARCH=riscv
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG

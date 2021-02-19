@@ -66,6 +66,7 @@ ROOTFS_PATH = linux/rootfs
 NONOS_B_PATH = nonos/Bchip-non-os
 IPACK_PATH = ipack
 OUT_PATH = out
+SECURE_HSM_PATH = $(TOPDIR)/$(BUILD_PATH)/tools/secure_hsm/secure
 FREERTOS_PATH = $(IPACK_PATH)
 
 XBOOT_BIN = xboot.img
@@ -159,7 +160,6 @@ all: check
 		$(MAKE) nonos; \
 	fi
 	@$(MAKE) kernel
-	@$(MAKE) secure
 	@$(MAKE) rootfs
 	@$(MAKE) rom
 
@@ -167,9 +167,9 @@ freertos:
 	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT)
 	@if [ "$(NEED_ISP)" = '1' ]; then \
 		if [ "$(IS_P_CHIP)" = "1" ]; then \
-		$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
-		$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf  $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
-		cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
+			$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
+			$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
+			cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
 		fi; \
 	fi
 #xboot build
@@ -180,7 +180,7 @@ xboot: check
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb  \
+		$(MAKE) ARCH=$(ARCH_UBOOT) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb  \
 			KCPPFLAGS="-DBOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) -DTFTP_SERVER_IP=$(TFTP_SERVER_IP) \
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
@@ -218,13 +218,19 @@ nonos:
 	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x10040 0x10040
 	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
+
+hsm_init:
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		cd $(SECURE_HSM_PATH); ./gen_HSM_keys.sh ; \
+	fi
+
 clean:
 	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
-	@$(MAKE) -C $(TOPDIR)/build/tools/isp $@
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp $@
 	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
@@ -234,7 +240,7 @@ distclean: clean
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -f $(HW_CONFIG_ROOT)
 
-config: init
+config: init hsm_init
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
@@ -251,6 +257,7 @@ config: init
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(NOR_ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	@$(MAKE) info
@@ -396,21 +403,42 @@ secure:
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
 			exit 1; \
 		fi; \
-		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
-		cd $(XBOOT_PATH); \
-		/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
+		if [ "$(CHIP)" = "Q645_1" ]; then \
+			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+			./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ;\
+			cd $(TOPDIR)/$(XBOOT_PATH); \
+			bash ./add_xhdr.sh $(SECURE_HSM_PATH)/out/outfile_sb.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
+			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ;\
+			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
+		else \
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
+			cd $(XBOOT_PATH); \
+			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
+		fi;	\
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 			exit 1; \
 		fi; \
-		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ;\
+		if [ "$(CHIP)" = "Q645_1" ]; then \
+			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+			./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) ;\
+			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN); \
+		else \
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ; \
+		fi; \
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
 		if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
 			exit 1; \
 		fi; \
-		$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
+		if [ "$(CHIP)" = "Q645_1" ]; then \
+			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+			./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ;\
+			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
+		else \
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
+		fi; \
 	fi
 
 rom: check
