@@ -1,0 +1,60 @@
+# match with include/bootmain.h
+
+# SECU (S=55h)
+SB_MAGIC=0x55434553
+SB_FLAG_SIGNED=1
+SB_FLAG_ENCRYPTED=2
+
+# sb_info total is 200 bytes
+SB_MAGIC_OFF=0
+SB_FLAGS_OFF=4
+SB_H_SBKEY_OFF=8
+SB_H_DEKEY_OFF=12
+SB_SIG_OFF=16
+SB_E_KPUB_OFF=80
+SB_IV_OFF=112
+SB_KA_AUTH_OFF=128
+SB_KA_EN_OFF=144
+SB_BD_AUTH_OFF=176
+SB_BD_LEN_OFF=192
+SB_INFO_SIZE=200
+
+
+# hsm_keys
+HSMK_MAGIC=0x4b4d5348
+HSMK_MAGIC_OFF=0
+HSMK_DUK_OFF=4
+HSMK_BBR_OFF=20
+HSMK_APP0_OFF=36
+HSMK_APP1_OFF=52
+HSMK_ADC_OFF=68
+HSMK_LEN_USRK_OFF=84
+HSMK_USRK_OFF=88
+
+
+
+
+# Secure Boot ASYM key pair for
+#   ED25519/SHA3-512
+SB_KPRIV=otp_Sb_keys/ed_priv_0.bin
+SB_KPUB=otp_Sb_keys/ed_pub_0.bin
+SB_KPUB_HASH=otp_Sb_keys/ed_pub_0_hash.bin
+
+# Device Encryption key for
+#   ECIES X25519/AES-256-GCM/HKDF-SHA3-512
+DEV_KPUB=build_keys/ecies/x_pub_0.bin
+DEV_KPRIV=otp_Device_keys/x_priv_0.bin
+DEV_KPRIV_HASH=otp_Device_keys/x_priv_0_hash.bin
+
+# Tools
+SHA3_TOOL=../tools/sha3-file
+
+ED_MKEY_TOOL=../tools/mkey_ed_sha3
+ED_SIGN_TOOL=../tools/sign_ed_sha3
+
+X25519_MKEY_TOOL=../tools/mkey_x25519
+
+AESGCM_TOOL=../tools/aes-gcm
+
+KDF_TOOL=../tools/hkdf-sha3_512
+XSS_TOOL=../tools/x25519_ss

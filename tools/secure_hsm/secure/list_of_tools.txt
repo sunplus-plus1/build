@@ -1,0 +1,10 @@
+aes-gcm
+makekeys_ed25519
+sign_ed25519_sha3
+hkdf-sha3_512
+x25519_ss
+
+unused:
+sign_ed25519_sha2
+hkdf-sha2_512
+sha3-file
