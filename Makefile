@@ -398,7 +398,7 @@ secure:
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645" ]; then \
+		if [ "$(CHIP)" = "Q645_1" ]; then \
 			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 			./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ;\
 			cd $(TOPDIR)/$(XBOOT_PATH); \
