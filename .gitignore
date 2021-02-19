@@ -6,3 +6,9 @@
 
 tools/isp/isp
 tools/isp/isp.o
+tools/secure_hsm/secure/build_keys
+tools/secure_hsm/secure/hsm_keys
+tools/secure_hsm/secure/otp_Device_keys
+tools/secure_hsm/secure/otp_Sb_keys
+tools/secure_hsm/secure/out
+
