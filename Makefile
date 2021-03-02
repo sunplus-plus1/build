@@ -406,15 +406,19 @@ secure:
 		if [ "$(CHIP)" = "Q645_1" ]; then \
 			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 			./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ;\
-			cd $(TOPDIR)/$(XBOOT_PATH); \
-			bash ./add_xhdr.sh $(SECURE_HSM_PATH)/out/outfile_sb.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
-			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ;\
-			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
+			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ; \
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
 			cd $(XBOOT_PATH); \
 			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check ;\
-		fi;	\
+		fi; \
+		if [ "$(CHIP)" = "Q645" ]; then \
+			cd $(TOPDIR)/$(XBOOT_PATH); \
+			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; \
+			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ; \
+			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
+			make size_check ; \
+		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
