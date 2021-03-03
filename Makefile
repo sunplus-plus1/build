@@ -68,6 +68,7 @@ IPACK_PATH = ipack
 OUT_PATH = out
 SECURE_HSM_PATH = $(TOPDIR)/$(BUILD_PATH)/tools/secure_hsm/secure
 FREERTOS_PATH = $(IPACK_PATH)
+TFA_PATH = boot/trusted-firmware-a
 
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
@@ -152,6 +153,9 @@ SECURE_PATH ?=
 # make rootfs    -> create rootfs image from disk/
 all: check
 	@$(MAKE) xboot
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		$(MAKE) tfa; \
+	fi
 	@$(MAKE) dtb
 	@$(MAKE) uboot
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
@@ -176,6 +180,9 @@ freertos:
 xboot: check
 	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) all
 	@$(MAKE) secure SECURE_PATH=xboot
+#tfa build
+tfa: check
+	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
 
 #uboot build
 uboot: check
@@ -227,6 +234,7 @@ hsm_init:
 clean:
 	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
+	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
