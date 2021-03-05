@@ -44,6 +44,7 @@ BOOT_FROM ?= EMMC
 IS_ASSIGN_DTB ?= 0
 BOOT_CHIP ?= C_CHIP
 CHIP ?= Q628
+ZMEM ?= 0
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
@@ -268,6 +269,7 @@ config: init hsm_init
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
+	$(eval ZMEM=$(shell cat $(CONFIG_ROOT) | grep 'ZMEM=' | sed 's/ZMEM=//g'))
 	@$(MAKE) info
 
 hconfig:
@@ -505,6 +507,7 @@ info:
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)
 	@$(ECHO) "CHIP =" $(CHIP)
+	@$(ECHO) "ZMEM =" $(ZMEM)
 
 include ./build/qemu.mak
 

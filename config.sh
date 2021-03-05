@@ -59,15 +59,21 @@ xboot_defconfig_combine()
 	# $2 => bootdev
 	# $3 => c/p
 	# $4 => board
+	# $5 => zmem
 
 	pid=$1
 	chip=$3
 	dev=$(bootdev_lookup $2)
 	board=$4
+	xzmem=$5
 	defconfig=
 
 	if [ "$board" = "zebu" ]; then
-		defconfig=${pid}_${chip}_zmem_defconfig
+		if [ "$xzmem" = "1" ]; then
+			defconfig=${pid}_${chip}_zmem_defconfig
+		else
+			defconfig=${pid}_${chip}_zebu_defconfig
+		fi
 	else
 		defconfig=${pid}_${dev}_${chip}_defconfig		
 	fi
@@ -80,15 +86,21 @@ uboot_defconfig_combine()
 	# $2 => bootdev
 	# $3 => c/p
 	# $4 => board
+	# $5 => zmem
 
 	pid=$1
 	dev=$(bootdev_lookup $2)
 	chip=$3
 	board=$4
+	uzmem=$5
 	defconfig=
 
-	if [ "$board" = "zebu" ]; then
-		defconfig=${pid}_${chip}_zebu_defconfig
+	if [ "$board" = "zebu" ]; then		
+		if [ "$uzmem" = "1" ]; then
+			defconfig=${pid}_${chip}_zmem_defconfig
+		else
+			defconfig=${pid}_${chip}_zebu_defconfig
+		fi
 	else
 		defconfig=${pid}_${dev}_${chip}_defconfig
 	fi
@@ -656,6 +668,7 @@ num=0
 bootdev=
 chip=1
 runzebu=0
+zmem=0
 
 list_config()
 {
@@ -786,6 +799,13 @@ list_config()
 		runzebu=1
 		sel=1
 	elif [ "$board" = "22" ];then
+		$ECHO $COLOR_YELLOW"[1] Normal"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] Zmem"$COLOR_ORIGIN
+		read zram
+		if [ "$zram" == "2" ];then
+			zmem=1
+			echo "ZMEM=1" > $BUILD_CONFIG
+		fi
 		runzebu=1
 		bootdev=nor
 	else
@@ -937,8 +957,8 @@ if [ "$board" = "21" -o "$board" = "22" ];then
 fi
 
 if [ "$set_config_directly" = "1" ]; then
-	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $bootdev $sel_chip $sel_board)
-	UBOOT_CONFIG=$(uboot_defconfig_combine q645 $bootdev $sel_chip $sel_board)
+	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $bootdev $sel_chip $sel_board $zmem)
+	UBOOT_CONFIG=$(uboot_defconfig_combine q645 $bootdev $sel_chip $sel_board $zmem)
 	KERNEL_CONFIG=$(linux_defconfig_combine q645 $bootdev $sel_chip $sel_board)
 fi
 
