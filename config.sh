@@ -54,7 +54,7 @@ chip_lookup()
 }
 
 xboot_defconfig_combine()
-{	
+{
 	# $1 => project
 	# $2 => bootdev
 	# $3 => c/p
@@ -75,7 +75,7 @@ xboot_defconfig_combine()
 			defconfig=${pid}_${chip}_zebu_defconfig
 		fi
 	else
-		defconfig=${pid}_${dev}_${chip}_defconfig		
+		defconfig=${pid}_${dev}_${chip}_defconfig
 	fi
 	echo $defconfig
 }
@@ -95,7 +95,7 @@ uboot_defconfig_combine()
 	uzmem=$5
 	defconfig=
 
-	if [ "$board" = "zebu" ]; then		
+	if [ "$board" = "zebu" ]; then
 		if [ "$uzmem" = "1" ]; then
 			defconfig=${pid}_${chip}_zmem_defconfig
 		else
@@ -121,7 +121,7 @@ linux_defconfig_combine()
 	board=$4
 	defconfig=
 
-	if [ "$4" = "zebu" ]; then 
+	if [ "$4" = "zebu" ]; then
 		defconfig=${pid}_${chip}_${board}_defconfig
 	else
 		defconfig=${pid}_${dev}_${chip}_${board}_defconfig
@@ -800,11 +800,11 @@ list_config()
 		sel=1
 	elif [ "$board" = "22" ];then
 		$ECHO $COLOR_YELLOW"[1] Normal"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] Zmem"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] ZMem"$COLOR_ORIGIN
 		read zram
 		if [ "$zram" == "2" ];then
 			zmem=1
-			echo "ZMEM=1" > $BUILD_CONFIG
+			echo "ZMEM=1" >> $BUILD_CONFIG
 		fi
 		runzebu=1
 		bootdev=nor
@@ -869,7 +869,7 @@ elif [ "$board" = "6" ];then
 elif [ "$board" = "7" ];then
 	echo "LINUX_DTB=sp7021-ltpp3g2-sunplus" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2sunplus_defconfig
-	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig		
+	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig
 elif [ "$board" = "11" -o "$board" = "12" ];then
 	echo "CHIP=I143" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
@@ -927,16 +927,16 @@ list_config
 
 ################################################################################
 ##
-## use product name, bootdev, chip, board to combine into a deconfig file name 
-## so, the defconfig file name must follow named rule like 
-## 
+## use product name, bootdev, chip, board to combine into a deconfig file name
+## so, the defconfig file name must follow named rule like
+##
 ## non-zebu:
 ##     xboot, uboot:
 ##         ${pid}_${bootdev}_${chip}_defconfig           --> q645_emmc_c_defconfig
 ##	   linux:
 ##         ${pid}_${bootdev}_${chip}_${board}_defconfig	 --> q645_emmc_c_ev_defconfig
-##	
-## zebu:	   
+##
+## zebu:
 ##     xboot:
 ##         ${pid}_${chip}_zmem_defconfig      --> q645_c_zmem_defconfig
 ##     uboot:
