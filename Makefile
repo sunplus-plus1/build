@@ -115,6 +115,9 @@ IS_I143_RISCV = 1
 endif
 endif
 
+ifeq ($(CHIP),Q645)
+#XBOOT_LPDDR4_MAX = $$((160 * 1024))
+endif
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
 # and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
@@ -428,6 +431,12 @@ secure:
 			make size_check ; \
 			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ; \
 			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
+			sz=`du -sb ./bin/$(XBOOT_BIN) | cut -f1` ; \
+			printf "$(XBOOT_BIN) (+ lpddr4 fw) size = %d (hex %x)\n" $$sz $$sz ; \
+			if [ $$sz -gt $(XBOOT_LPDDR4_MAX) ]; then \
+				echo "$(XBOOT_BIN) (+ lpddr4 fw) size limit is $(XBOOT_LPDDR4_MAX). Please reduce its size.\n" ; \
+				exit 1; \
+			fi; \
 		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
