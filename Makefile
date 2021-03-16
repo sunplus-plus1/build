@@ -116,7 +116,7 @@ endif
 endif
 
 ifeq ($(CHIP),Q645)
-#XBOOT_LPDDR4_MAX = $$((160 * 1024))
+XBOOT_LPDDR4_MAX = $$((160 * 1024))
 endif
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
