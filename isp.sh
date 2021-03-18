@@ -4,10 +4,15 @@ export PATH=$PATH:$TOP/build/tools/isp/
 
 X=xboot.img
 U=u-boot.img
-K=uImage
+if [ "$2" = "Q645" ]; then
+	K=Image.gz
+else
+	K=uImage
+fi
 ROOTFS=rootfs.img
 D=dtb
 N=a926.img
+
 # Partition name = file name
 cp $X xboot0
 cp $U uboot0
@@ -94,7 +99,11 @@ rm -rf nonos
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
 	cp -rf $U $K $N ./boot2linux_SDcard
-	dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=64
+	if [ "$2" = "Q645" ]; then
+		dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=160
+	else
+		dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=64
+	fi
 	rm -f ISPBOOOT.BIN
 fi
 if [ "$1" = "USB" ]; then

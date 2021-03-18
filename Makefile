@@ -265,11 +265,12 @@ config: init hsm_init
 	@$(MAKE_ARCH) -C $(LINUX_PATH) clean
 	@$(MAKE_ARCH) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(NOR_ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL)
-	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
 	@$(CP) -f $(IPACK_PATH)/bin/$(DOWN_TOOL) $(OUT_PATH)
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	$(eval ZMEM=$(shell cat $(CONFIG_ROOT) | grep 'ZMEM=' | sed 's/ZMEM=//g'))
@@ -323,7 +324,7 @@ spirom: check
 	fi
 
 tool_isp:
-	@$(MAKE) -C $(TOPDIR)/build/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 
 isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
@@ -399,7 +400,7 @@ isp: check tool_isp
 			exit 1; \
 		fi \
 	fi
-	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM)
+	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP)
 
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
