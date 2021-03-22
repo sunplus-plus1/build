@@ -202,7 +202,11 @@ uboot: check
 			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 			$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
-	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		$(TOPDIR)/build/tools/add_uhdr_q645_uboot.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
+	else \
+		$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
+	fi
 	@img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) | cut -f1` ; \
 	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
 	@$(MAKE) secure SECURE_PATH=uboot
