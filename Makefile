@@ -258,6 +258,7 @@ config: init hsm_init
 	fi
 	$(eval CROSS_COMPILE=$(shell cat $(CONFIG_ROOT) | grep 'CROSS_COMPILE=' | sed 's/CROSS_COMPILE=//g'))
 	$(eval ARCH=$(shell cat $(CONFIG_ROOT) | grep 'ARCH=' | sed 's/ARCH=//g'))
+	$(eval CHIP=$(shell cat $(CONFIG_ROOT) | grep 'CHIP=' | sed 's/CHIP=//g'))
 	@$(MAKE) -C $(XBOOT_PATH) ARCH=$(ARCH_XBOOT) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) clean
@@ -266,7 +267,6 @@ config: init hsm_init
 	@$(MAKE_ARCH) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
-	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 	@$(RM) -f $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(PART_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(ISP_SHELL)
 	@$(LN) -s $(TOPDIR)/$(BUILD_PATH)/$(NOR_ISP_SHELL) $(TOPDIR)/$(OUT_PATH)/$(NOR_ISP_SHELL)
