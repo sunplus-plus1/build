@@ -157,9 +157,7 @@ SECURE_PATH ?=
 # make rootfs    -> create rootfs image from disk/
 all: check
 	@$(MAKE) xboot
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) tfa; \
-	fi
+
 	@$(MAKE) dtb
 	@$(MAKE) uboot
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
@@ -186,8 +184,16 @@ xboot: check
 	@$(MAKE) secure SECURE_PATH=xboot
 #tfa build
 tfa: check
+	@if [ ! -f $(UBOOT_PATH)/u-boot.bin ]; then \
+		$(ECHO) $(COLOR_YELLOW) "### make uboot first !!###"$(COLOR_ORIGIN) ;\
+		exit 1; \
+	fi;
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
-
+	@dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=uboot_temp  bs=1 skip=64 conv=notrunc 2>/dev/null
+	@dd if=$(TFA_PATH)/build/bl31.img of=uboot_temp bs=1k seek=600 conv=notrunc 2>/dev/null
+	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) uboot_temp $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
+	@rm -rf uboot_temp
+	@$(MAKE) secure SECURE_PATH=uboot
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -203,13 +209,13 @@ uboot: check
 			$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
 	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(TOPDIR)/build/tools/add_uhdr_q645_uboot.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
+		$(MAKE) tfa;\
 	else \
 		$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
+		img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) | cut -f1` ; \
+		printf "size: %d (hex %x)\n" $$img_sz $$img_sz ;\
+		$(MAKE) secure SECURE_PATH=uboot ;\
 	fi
-	@img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) | cut -f1` ; \
-	printf "size: %d (hex %x)\n" $$img_sz $$img_sz
-	@$(MAKE) secure SECURE_PATH=uboot
 
 #kernel build
 kernel: check
