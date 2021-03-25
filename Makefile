@@ -189,10 +189,14 @@ tfa: check
 		exit 1; \
 	fi;
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
+
 	@dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=uboot_temp  bs=1 skip=64 conv=notrunc 2>/dev/null
-	@dd if=$(TFA_PATH)/build/bl31.img of=uboot_temp bs=1k seek=600 conv=notrunc 2>/dev/null
-	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) uboot_temp $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@rm -rf uboot_temp
+	@img_sz=`du -sb uboot_temp | cut -f1` ; add_zero=$$((4-img_sz%4));\
+	dd if=/dev/zero of=uboot_temp  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null
+	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" uboot_temp $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
+	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > new_uboot.bin
+	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) new_uboot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
+	@rm -rf uboot_temp new_uboot.bin
 	@$(MAKE) secure SECURE_PATH=uboot
 #uboot build
 uboot: check
