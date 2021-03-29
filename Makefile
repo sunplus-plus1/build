@@ -208,8 +208,8 @@ uboot: check
 			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
-			$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
-			$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
+		$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
+		$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
 	@if [ "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) tfa;\
@@ -228,10 +228,13 @@ kernel: check
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
-		$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
-		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		if [ "$(CHIP)" = "Q645" ]; then \
+			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
+			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 			cd $(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
+		else \
+			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
+			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		fi; \
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
@@ -377,8 +380,7 @@ isp: check tool_isp
 			$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
 			$(CROSS_COMPILE_FOR_LINUX)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
 			cd $(IPACK_PATH); \
-			./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin \
-			$(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
+			./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin $(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
 			cd $(PWD); \
 			if [ -f $(OUT_PATH)/$(KERNEL_BIN) ]; then \
 				$(ECHO) $(COLOR_YELLOW)"Add uhdr in "$(KERNEL_BIN)"."$(COLOR_ORIGIN); \
