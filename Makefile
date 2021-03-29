@@ -231,6 +231,9 @@ kernel: check
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		if [ "$(CHIP)" = "Q645" ]; then \
+			cd $(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/uImage $(ARCH) 0x0480000 0x0480000 kernel; \
+		fi; \
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
 
