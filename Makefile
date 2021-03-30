@@ -45,6 +45,8 @@ IS_ASSIGN_DTB ?= 0
 BOOT_CHIP ?= C_CHIP
 CHIP ?= Q628
 ZMEM ?= 0
+SECURE ?= 0
+ENCRYPTION ?= 0
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
@@ -543,6 +545,8 @@ info:
 	@$(ECHO) "ARCH =" $(ARCH)
 	@$(ECHO) "CHIP =" $(CHIP)
 	@$(ECHO) "ZMEM =" $(ZMEM)
+	@$(ECHO) "SECURE =" $(SECURE)
+	@$(ECHO) "ENCRYPTION =" $(ENCRYPTION)
 
 include ./build/qemu.mak
 
