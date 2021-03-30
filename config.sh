@@ -34,8 +34,6 @@ bootdev_lookup()
 		dev=romter
 	elif [ "$1" = "spi_nand" ];then
 		dev=nand
-	elif [ "$1" = "usb" ];then
-		dev=romter
 	elif [ "$1" = "tftp" ];then
 		dev=romter
 	fi
@@ -263,6 +261,9 @@ p_chip_config()
 	"emmc")
 		p_chip_emmc_config revB
 		;;
+	"sdcard")
+		p_chip_emmc_config revB
+		;;
 	"spi_nand")
 		p_chip_spi_nand_config revB
 		;;
@@ -395,6 +396,9 @@ c_chip_config()
 {
 	case "$1" in
 	"emmc")
+		c_chip_emmc_config revB
+		;;
+	"sdcard")
 		c_chip_emmc_config revB
 		;;
 	"spi_nand")
@@ -699,6 +703,9 @@ list_config()
 				;;
 			"5")
 				bootdev=emmc
+				if [ "$board" = "21" ];then
+					bootdev=sdcard
+				fi
 				BOOT_FROM=SDCARD
 				;;
 			"6")
@@ -948,6 +955,18 @@ set_config_directly=0
 
 if [ "$board" = "21" -o "$board" = "22" ];then
 	## board = q645
+	$ECHO $COLOR_YELLOW"[1] No secure (default)"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[3] Enable digital signature & Encryption"$COLOR_ORIGIN
+	read secure
+	
+	if [ "$secure" = "2" ];then
+		echo "SECURE=1" >> $BUILD_CONFIG
+	elif [ "$secure" = "3" ];then
+		echo "SECURE=1" >> $BUILD_CONFIG
+		echo "ENCRYPTION=1" >> $BUILD_CONFIG
+	fi
+
 	sel_chip=$(chip_lookup $chip)
 	sel_board=ev
 	if [ "$board" = "22" ];then
@@ -957,7 +976,11 @@ if [ "$board" = "21" -o "$board" = "22" ];then
 fi
 
 if [ "$set_config_directly" = "1" ]; then
-	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $bootdev $sel_chip $sel_board $zmem)
+	xboot_bootdev=$bootdev
+	if [ "$bootdev" = "sdcard" -o "$bootdev" = "usb" ];then
+		xboot_bootdev="emmc"
+	fi
+	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $xboot_bootdev $sel_chip $sel_board $zmem)
 	UBOOT_CONFIG=$(uboot_defconfig_combine q645 $bootdev $sel_chip $sel_board $zmem)
 	KERNEL_CONFIG=$(linux_defconfig_combine q645 $bootdev $sel_chip $sel_board)
 fi
