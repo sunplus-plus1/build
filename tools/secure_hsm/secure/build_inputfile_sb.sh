@@ -12,7 +12,7 @@ if [ ! -d hsm_keys ]; then
 fi
 #[ $? -ne 0 ] && echo "fail!" && exit 1
 
-echo "[secure] input file = $1"
+echo "[secure] input file = $1 sb_info = $2"
 
 # for each xboot build
 ./00_prepare.sh $1
@@ -23,7 +23,7 @@ echo "[secure] input file = $1"
 [ $? -ne 0 ] && echo "fail!" && exit 1
 ./03_ecies_encrypt_KAES.sh
 [ $? -ne 0 ] && echo "fail!" && exit 1
-./04_gen_sb_info.sh
+./04_gen_sb_info.sh $2
 [ $? -ne 0 ] && echo "fail!" && exit 1
 ./05_sign_inputfile_sb.sh $1
 [ $? -ne 0 ] && echo "fail!" && exit 1

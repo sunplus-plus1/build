@@ -122,6 +122,7 @@ if [ $((sb_flags & 2)) -ne 0 ];then
 	dd if=$BODY_AUTH of=$OUTPUT conv=notrunc bs=1 count=16 seek=$SB_BD_AUTH_OFF 2>/dev/null
 
 	# 4-byte body_cipher_len @ offset 192
+
 	if [ ! -f $BODY_EN ];then
 		echo "Error: missed $BODY_EN"
 		exit 1
@@ -129,6 +130,9 @@ if [ $((sb_flags & 2)) -ne 0 ];then
 	val=`stat -c%s $BODY_EN`
 	gen_bin_tmp $val
 	dd if=$OUT_TMP of=$OUTPUT conv=notrunc bs=1 count=4 seek=$SB_BD_LEN_OFF 2>/dev/null
+	echo -e  " \033[0;1;33;40m >>>>>signature + encrypt<<<< \033[0m "
+else
+	echo -e  " \033[0;1;33;40m >>>>>only signature<<<< \033[0m "
 fi
 
 # 4-byte reserved_188 @ offset 196

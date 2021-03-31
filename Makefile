@@ -47,6 +47,7 @@ CHIP ?= Q628
 ZMEM ?= 0
 SECURE ?= 0
 ENCRYPTION ?= 0
+SB_FLAG = `expr $(SECURE) + $(ENCRYPTION) \* 2 `
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
@@ -192,14 +193,12 @@ tfa: check
 		exit 1; \
 	fi;
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
-
 	@dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=uboot_temp  bs=1 skip=64 conv=notrunc 2>/dev/null
 	@img_sz=`du -sb uboot_temp | cut -f1` ; add_zero=$$((4-img_sz%4));\
 	dd if=/dev/zero of=uboot_temp  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null
 	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" uboot_temp $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > new_uboot.bin
-	@$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) new_uboot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@rm -rf uboot_temp new_uboot.bin
+	@rm -rf uboot_temp
+	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin
 	@$(MAKE) secure SECURE_PATH=uboot
 #uboot build
 uboot: check
@@ -235,12 +234,6 @@ kernel: check
 		if [ "$(CHIP)" = "Q645" ]; then \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
-			cd $(IPACK_PATH); \
-			if [ "$(BOOT_FROM)" = "SPINOR" ] || [ "$(BOOT_FROM)" = "NOR_JFFS2" ]; then  \
-				./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN) $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
-			else \
-				./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
-			fi; \
 		else \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
@@ -449,10 +442,12 @@ secure:
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645_1" ]; then \
-			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-			./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ;\
-			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ; \
+		if [ "$(CHIP)" = "Q645" ]; then \
+			if [ "$(SECURE)" = "1" ]; then \
+				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+				./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin $(SB_FLAG);\
+				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ; \
+			fi ;\
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
 			cd $(XBOOT_PATH); \
@@ -476,23 +471,35 @@ secure:
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645_1" ]; then \
-			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-			./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) ;\
-			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN); \
+		if [ "$(CHIP)" = "Q645" ]; then \
+			if [ "$(SECURE)" = "1" ]; then \
+				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(SB_FLAG);\
+				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
+			fi; \
+			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ; \
 		fi; \
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
-		if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
-			exit 1; \
-		fi; \
-		if [ "$(CHIP)" = "Q645_1" ]; then \
-			cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-			./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ;\
-			cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
+		if [ "$(CHIP)" = "Q645" ]; then \
+			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/Image ]; then \
+				exit 1; \
+			fi; \
+			if [ "$(ZEBU_RUN)" = "1" ] && [ "$(BOOT_FROM)" != "SPINOR" ] && [ "$(BOOT_FROM)" != "NOR_JFFS2" ]; then  \
+				cp -f $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
+			fi; \
+			if [ "$(SECURE)" = "1" ]; then \
+				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+				./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(SB_FLAG); \
+				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
+			fi;\
+			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
 		else \
+			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
+				exit 1; \
+			fi; \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(LINUX_PATH)/arch/$(ARCH)/boot $(KERNEL_BIN) 1 ;\
 		fi; \
 	fi
