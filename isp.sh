@@ -4,11 +4,7 @@ export PATH=$PATH:$TOP/build/tools/isp/
 
 X=xboot.img
 U=u-boot.img
-if [ "$2" = "Q645" ]; then
-	K=Image.gz
-else
-	K=uImage
-fi
+K=uImage
 ROOTFS=rootfs.img
 D=dtb
 N=a926.img
