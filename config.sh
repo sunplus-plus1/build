@@ -806,15 +806,10 @@ list_config()
 		runzebu=1
 		sel=1
 	elif [ "$board" = "22" ];then
-		$ECHO $COLOR_YELLOW"[1] Normal"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] ZMem"$COLOR_ORIGIN
-		read zram
-		if [ "$zram" == "2" ];then
-			zmem=1
-			echo "ZMEM=1" >> $BUILD_CONFIG
-		fi
+		zmem=1
 		runzebu=1
 		bootdev=nor
+		echo "ZMEM=1" >> $BUILD_CONFIG
 	else
 		if [ "$board" != "2" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -838,7 +833,7 @@ list_config()
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board      [21] Q645 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (zmem)   [22] Q645 Zebu"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (ZMem)   [22] Q645 Zebu (ZMem)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
