@@ -124,6 +124,13 @@ ifeq ($(CHIP),Q645)
 XBOOT_LPDDR4_MAX = $$((160 * 1024))
 endif
 
+SDCARD_BOOT_MODE ?= 0
+ifeq ($(CHIP),I143)
+SDCARD_BOOT_MODE = 1
+else ifeq ($(CHIP),Q645)
+SDCARD_BOOT_MODE = 2
+endif
+
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
 # and P-chip boot image. If name field has prefix "uboot_B", it boots from P chip.
 IS_P_CHIP ?= 0
@@ -429,7 +436,7 @@ isp: check tool_isp
 
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
-		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) $(IS_I143_RISCV); \
+		cd build/tools/sdcard_boot; ./$(SDCARD_BOOT_SHELL) $(SDCARD_BOOT_MODE); \
 	fi
 
 part:

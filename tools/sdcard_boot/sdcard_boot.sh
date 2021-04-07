@@ -26,6 +26,7 @@ OUT_FILE=$OUTPATH/ISP_SD_BOOOT.img
 FAT_IMG_OUT=fat.img
 EXT_ENV=uEnv.txt
 EXT_ENV_RISCV=uEnv_riscv.txt
+EXT_ENV_A64=uEnv_a64.txt
 NONOS_IMG=a926.img
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
@@ -59,6 +60,8 @@ fi
 # cp uEnv.txt to out/sdcardboot
 if [ $1 -eq "1" ]; then
 	cp $EXT_ENV_RISCV $OUTPATH/$EXT_ENV
+elif [ $1 -eq "2" ]; then
+	cp $EXT_ENV_A64 $OUTPATH/$EXT_ENV
 else
 	cp $EXT_ENV $OUTPATH
 fi
