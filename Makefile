@@ -346,7 +346,7 @@ spirom: check
 	else \
 		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP) NOR_JFFS2=$(NOR_JFFS2); \
 	fi
-	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) ]; then \
+	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) -a "$(ZEBU_RUN)" = "0" ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
 		$(CP) -f $(IPACK_PATH)/bin/$(SPI_BIN) $(OUT_PATH); \
 	fi
@@ -516,7 +516,9 @@ rom: check
 		$(MAKE) isp; \
 	else \
 		$(MAKE) spirom; \
-		$(MAKE) spirom_isp; \
+		if [ "$(ZEBU_RUN)" = "0" ]; then \
+			$(MAKE) spirom_isp; \
+		fi; \
 	fi
 
 mt: check
