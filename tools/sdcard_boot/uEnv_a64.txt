@@ -11,14 +11,14 @@ sRpi_args=setenv filesize 0; fatsize $isp_if $isp_dev /cmdline.txt; if test $fil
 sbootargs=setenv bootargs console=ttyS0,921600 earlycon root=/dev/mmcblk1p2 rw user_debug=255 rootwait $bootargs;
 
 ## load kernel
-sload_kernel=fatload $isp_if $isp_dev $addr_dst_kernel /$KERNEL_IMG;
+sload_kernel=echo \"fatload $isp_if $isp_dev $addr_dst_kernel /$KERNEL_IMG\"; fatload $isp_if $isp_dev $addr_dst_kernel /$KERNEL_IMG;
 
 ## load dtb
-sload_dtb=fatload $isp_if $isp_dev $addr_dst_dtb /$DTB;
+sload_dtb=echo \"fatload $isp_if $isp_dev $addr_dst_dtb /$DTB\"; fatload $isp_if $isp_dev $addr_dst_dtb /$DTB;
 
 ## load nonos
-sload_nonos=fatload $isp_if $isp_dev $addr_dst_nonos /$NONOS_IMG;
-snonos_run=echo \"## Booting M4 from image at ${addr_dst_nonos}\";
+sload_nonos=echo \"fatload $isp_if $isp_dev $addr_dst_kernel /$NONOS_IMG\"; fatload $isp_if $isp_dev $addr_dst_kernel /$NONOS_IMG; setexpr tmpval $filesize + 3; setexpr tmpval $tmpval / 4; echo \"cp.l $addr_dst_kernel $addr_dst_nonos $tmpval\"; cp.l $addr_dst_kernel $addr_dst_nonos $tmpval;
+snonos_run=echo \"## Booting M4 at ${addr_dst_nonos}\";
 sboot_nonos=setenv filesize 0; fatsize $isp_if $isp_dev /$NONOS_IMG; if itest.l ${filesize} != 0; then run sload_nonos; run snonos_run; fi;
 saddr=setexpr addr_dst_kernel ${addr_dst_kernel} + 0x40;
 
