@@ -191,20 +191,16 @@ freertos:
 	fi
 #xboot build
 xboot: check
-	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) all
+	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) SECURE=$(SECURE) all
 	@$(MAKE) secure SECURE_PATH=xboot
 #tfa build
 tfa: check
-	@if [ ! -f $(UBOOT_PATH)/u-boot.bin ]; then \
+	@if [ ! -f $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin ]; then \
 		$(ECHO) $(COLOR_YELLOW) "### make uboot first !!###"$(COLOR_ORIGIN) ;\
 		exit 1; \
 	fi;
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
-	@dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=uboot_temp  bs=1 skip=64 conv=notrunc 2>/dev/null
-	@img_sz=`du -sb uboot_temp | cut -f1` ; add_zero=$$((4-img_sz%4));\
-	dd if=/dev/zero of=uboot_temp  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null
-	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" uboot_temp $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@rm -rf uboot_temp
+	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
 	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin
 	@$(MAKE) secure SECURE_PATH=uboot
 #uboot build
@@ -215,13 +211,16 @@ uboot: check
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
 		$(MAKE) ARCH=$(ARCH_UBOOT) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
-			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2)"; \
+			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2) -DCOMPILE_WITH_SECURE=$(SECURE)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
 	@if [ "$(CHIP)" = "Q645" ]; then \
+		dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 skip=64 conv=notrunc 2>/dev/null ;\
+		img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin | cut -f1` ; add_zero=$$((4-img_sz%4));\
+		dd if=/dev/zero of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null ;\
 		$(MAKE) tfa;\
 	else \
 		$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
@@ -462,7 +461,7 @@ secure:
 		fi; \
 		if [ "$(CHIP)" = "Q645" ]; then \
 			cd $(TOPDIR)/$(XBOOT_PATH); \
-			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; \
+			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) $(SECURE) ; \
 			make size_check ; \
 			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ; \
 			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
@@ -481,7 +480,7 @@ secure:
 		if [ "$(CHIP)" = "Q645" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(SB_FLAG);\
+				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SB_FLAG);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 			fi; \
 			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
@@ -499,7 +498,7 @@ secure:
 			fi; \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-				./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(SB_FLAG); \
+				./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(SECURE); \
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
 			fi;\
 			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
