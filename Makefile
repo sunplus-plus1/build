@@ -73,6 +73,7 @@ OUT_PATH = out
 SECURE_HSM_PATH = $(TOPDIR)/$(BUILD_PATH)/tools/secure_hsm/secure
 FREERTOS_PATH = $(IPACK_PATH)
 TFA_PATH = boot/trusted-firmware-a
+KERNELRELEASE = $(shell cat $(LINUX_PATH)/include/config/kernel.release 2> /dev/null)
 
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
@@ -237,6 +238,8 @@ kernel: check
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
+		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
 		if [ "$(CHIP)" = "Q645" ]; then \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
@@ -526,6 +529,10 @@ mt: check
 	@$(MAKE) rootfs rom
 
 init:
+	@if ! [ -f $(CROSS_COMPILE_FOR_LINUX) ]; then \
+		pwd; \
+		./build/dlgcc.sh; \
+	fi
 	@$(RM) -f $(CONFIG_ROOT)
 	@./build/config.sh $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
 
@@ -569,4 +576,5 @@ info:
 	@$(ECHO) "ENCRYPTION =" $(ENCRYPTION)
 
 include ./build/qemu.mak
+
 
