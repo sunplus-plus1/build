@@ -529,6 +529,10 @@ mt: check
 	@$(MAKE) rootfs rom
 
 init:
+	@if ! [ -f $(CROSS_COMPILE_FOR_LINUX) ]; then \
+		pwd; \
+		./build/dlgcc.sh; \
+	fi
 	@$(RM) -f $(CONFIG_ROOT)
 	@./build/config.sh $(CROSS_V7_COMPILE) $(CROSS_RISCV_COMPILE)
 
