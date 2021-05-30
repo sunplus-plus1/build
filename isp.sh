@@ -34,18 +34,7 @@ do
 	cat ${TOP}boot/uboot/.config | grep --color -e ${ADDR}
 done
 
-if [ "$1" = "SDCARD" ]; then
-	isp pack_image ISPBOOOT.BIN \
-		xboot0 uboot0 \
-		xboot1 0x100000 \
-		uboot1 0x100000 \
-		uboot2 0x100000 \
-		env 0x80000 \
-		env_redund 0x80000 \
-		nonos 0x100000 \
-		dtb 0x40000 \
-		kernel 0x2000000
-elif [ "$1" = "EMMC" ]; then
+if [ "$1" = "EMMC" ]; then
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
 		xboot1 0x100000 \
@@ -96,11 +85,11 @@ if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
 	cp -rf $U $K $N ./boot2linux_SDcard
 	if [ "$2" = "Q645" ]; then
-		dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=160
+		dd if=$X of=boot2linux_SDcard/ISPBOOOT.BIN
 	else
-		dd if=ISPBOOOT.BIN of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 skip=0 count=64
+		dd if=/dev/zero of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 count=64
+		dd if=$X of=boot2linux_SDcard/ISPBOOOT.BIN conv=notrunc
 	fi
-	rm -f ISPBOOOT.BIN
 fi
 if [ "$1" = "USB" ]; then
 	mkdir -p boot2linux_usb
