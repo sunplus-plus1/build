@@ -555,6 +555,23 @@ uconfig:
 xconfig:
 	$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) menuconfig
 
+headers:
+	@KERNELRELEASE=$(shell cat $(LINUX_PATH)/include/config/kernel.release 2>/dev/null)
+	@if ! [ -f $(LINUX_PATH)/.config ]; then \
+		echo File \'$(LINUX_PATH)/.config\' does not exist!; \
+		exit 1; \
+	fi
+	@if ! [ -f $(LINUX_PATH)/Module.symvers ]; then \
+		echo File \'$(LINUX_PATH)/Module.symvers\' does not exist!; \
+		exit 1; \
+	fi
+	rm -rf linux-headers-$(KERNELRELEASE)
+	mkdir -p linux-headers-$(KERNELRELEASE)
+	cp -f $(LINUX_PATH)/.config linux-headers-$(KERNELRELEASE)
+	cp -f $(LINUX_PATH)/Module.symvers linux-headers-$(KERNELRELEASE)
+	$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) mrproper
+	$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) O=../../linux-headers-$(KERNELRELEASE) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) modules_prepare
+
 info:
 	@$(ECHO) "XBOOT =" $(XBOOT_CONFIG)
 	@$(ECHO) "UBOOT =" $(UBOOT_CONFIG)
