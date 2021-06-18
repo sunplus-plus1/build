@@ -16,7 +16,7 @@ TOP=../../..
 # 7. Copy root partition to output file 'ISP_SD_BOOOT.img'.
 # 8. Create partition table.
 
-MKFS=$TOP/linux/rootfs/tools/mke2fs
+MKFS="fakeroot -- mke2fs"
 RESIZE=$TOP/linux/rootfs/tools/resize2fs
 OUTPATH=$TOP/out/boot2linux_SDcard
 FAT_FILE_IN=$OUTPATH
