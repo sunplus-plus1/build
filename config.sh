@@ -673,6 +673,7 @@ bootdev=
 chip=1
 runzebu=0
 zmem=0
+rootfs_content=BUSYBOX
 
 list_config()
 {
@@ -829,6 +830,21 @@ list_config()
 			exit 1
 		esac
 	fi
+
+	if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
+		$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[1] Just BusyBox"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] Full"$COLOR_ORIGIN
+		read sel
+		case "$sel" in
+		"2")
+			rootfs_content=FULL
+			;;
+		*)
+			sel=1
+		esac
+		echo "select ${sel}"
+	fi
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
@@ -844,10 +860,11 @@ echo "CHIP=Q628" > $BUILD_CONFIG
 
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" >> $BUILD_CONFIG
-	$ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
-	$ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
-	read chip
+	# $ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
+	# $ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
+	# $ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
+	# read chip
+	chip=1
 elif [ "$board" = "2" ];then
 	echo "LINUX_DTB=sp7021-ltpp3g2revD" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2_defconfig
@@ -980,6 +997,8 @@ if [ "$set_config_directly" = "1" ]; then
 	KERNEL_CONFIG=$(linux_defconfig_combine q645 $bootdev $sel_chip $sel_board)
 fi
 
+echo "ROOTFS_CONTENT=${rootfs_content}" >> $BUILD_CONFIG
+
 ################################################################################
 
 if [ "$runzebu" = "1" ]; then
@@ -988,7 +1007,6 @@ fi
 
 echo "ARCH=$ARCH" >> $BUILD_CONFIG
 
-echo "select "$num
 echo "bootdev "$bootdev
 
 case "$num" in
