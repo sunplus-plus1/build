@@ -833,7 +833,7 @@ list_config()
 
 	if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
 		$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[1] Just BusyBox"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[1] BusyBox"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[2] Full"$COLOR_ORIGIN
 		read sel
 		case "$sel" in
