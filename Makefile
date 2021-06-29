@@ -20,7 +20,7 @@
 #  Hsinchu Science Park, Taiwan 30076                                    #
 #                                                                        #
 ##########################################################################
-TOPDIR = $(PWD)
+TOPDIR = $(abspath .)
 SHELL := sh
 include ./build/Makefile.tls
 include ./build/color.mak
@@ -389,8 +389,8 @@ isp: check tool_isp
 			$(ECHO) $(COLOR_YELLOW)"Copy "$(VMLINUX)" to out folder."$(COLOR_ORIGIN); \
 			$(CROSS_COMPILE_FOR_LINUX)objcopy -O binary -S $(OUT_PATH)/$(VMLINUX) $(OUT_PATH)/$(VMLINUX).bin; \
 			cd $(IPACK_PATH); \
-			./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(PWD)/$(OUT_PATH)/$(VMLINUX).bin $(PWD)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
-			cd $(PWD); \
+			./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(OUT_PATH)/$(VMLINUX).bin $(TOPDIR)/$(OUT_PATH)/$(KERNEL_BIN) 0x308000 0x308000; \
+			cd $(TOPDIR); \
 			if [ -f $(OUT_PATH)/$(KERNEL_BIN) ]; then \
 				$(ECHO) $(COLOR_YELLOW)"Add uhdr in "$(KERNEL_BIN)"."$(COLOR_ORIGIN); \
 			else \
