@@ -544,6 +544,11 @@ initramfs:
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) initramfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT)
 
 rootfs:
+ifneq ($(CHIP),Q645)
+	$(RM) -f $(ROOTFS_DIR)/lib/firmware/ethosn.bin
+	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNDriver.so
+	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNSupport.so
+endif	
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT)
 
 kconfig:
