@@ -831,19 +831,21 @@ list_config()
 		esac
 	fi
 
-	if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
-		$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[1] BusyBox"$COLOR_ORIGIN
-		$ECHO $COLOR_YELLOW"[2] Full"$COLOR_ORIGIN
-		read sel
-		case "$sel" in
-		"2")
-			rootfs_content=FULL
-			;;
-		*)
-			sel=1
-		esac
-		echo "select ${sel}"
+	if [ "$board" != "11" ];then
+		if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
+			$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] BusyBox"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] Full"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"2")
+				rootfs_content=FULL
+				;;
+			*)
+				sel=1
+			esac
+			echo "select ${sel}"
+		fi
 	fi
 }
 
