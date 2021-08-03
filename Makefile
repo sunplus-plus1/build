@@ -170,7 +170,7 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
+	@if [ "$(IS_I143_RISCV)" = "1" -o "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) freertos; \
 	else \
 		$(MAKE) nonos; \
@@ -180,12 +180,16 @@ all: check
 	@$(MAKE) rom
 
 freertos:
-	@$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT)
-	@if [ "$(NEED_ISP)" = '1' ]; then \
-		if [ "$(IS_P_CHIP)" = "1" ]; then \
-			$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
-			$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
-			cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		$(MAKE) -C freertos/q645; \
+	else \
+		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
+		if [ "$(NEED_ISP)" = '1' ]; then \
+			if [ "$(IS_P_CHIP)" = "1" ]; then \
+				$(CP) -f $(TOPDIR)/freertos/build/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin;\
+				$(CROSS_COMPILE_FOR_XBOOT)objcopy -O binary -S $(TOPDIR)/$(IPACK_PATH)/bin/FreeRTOS-simple.elf $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin;\
+				cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
+			fi; \
 		fi; \
 	fi
 #xboot build
@@ -265,6 +269,7 @@ hsm_init:
 
 clean:
 	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
+	@$(MAKE) -C freertos/q645 $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
