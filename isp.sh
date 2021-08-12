@@ -28,7 +28,6 @@ cp $D DTB
 #     If partitions' sizes listed before "kernel" are changed,
 #     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
 #     are changed accordingly.
-echo 'Unit in sector (512 bytes):'
 for ADDR in "CONFIG_ENV_OFFSET" "CONFIG_ENV_SIZE" "CONFIG_SRCADDR_DTB" "CONFIG_SRCADDR_KERNEL"
 do
 	cat ${TOP}boot/uboot/.config | grep --color -e ${ADDR}
