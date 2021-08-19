@@ -273,7 +273,7 @@ clean:
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
-	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
+	@$(MAKE_ARCH) -C $(LINUX_PATH) mrproper
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp $@
 	@$(RM) -rf $(OUT_PATH)
@@ -293,10 +293,10 @@ config: init hsm_init
 	$(eval ARCH=$(shell cat $(CONFIG_ROOT) | grep 'ARCH=' | sed 's/ARCH=//g'))
 	$(eval CHIP=$(shell cat $(CONFIG_ROOT) | grep 'CHIP=' | sed 's/CHIP=//g'))
 	@$(MAKE) -C $(XBOOT_PATH) ARCH=$(ARCH_XBOOT) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $(shell cat $(CONFIG_ROOT) | grep 'XBOOT_CONFIG=' | sed 's/XBOOT_CONFIG=//g')
-	@$(MAKE_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) clean
+	@$(MAKE_ARCH) -C $(UBOOT_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) $(shell cat $(CONFIG_ROOT) | grep 'UBOOT_CONFIG=' | sed 's/UBOOT_CONFIG=//g')
+	@$(MAKE_ARCH) -C $(LINUX_PATH) mrproper
 	@$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) $(shell cat $(CONFIG_ROOT) | grep 'KERNEL_CONFIG=' | sed 's/KERNEL_CONFIG=//g')
-	@$(MAKE_ARCH) -C $(LINUX_PATH) clean
 	@$(MAKE_ARCH) initramfs
 	@$(MKDIR) -p $(OUT_PATH)
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp clean
