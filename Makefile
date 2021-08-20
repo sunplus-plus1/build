@@ -285,7 +285,7 @@ distclean: clean
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -f $(HW_CONFIG_ROOT)
 
-config: init hsm_init
+__config: hsm_init
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
@@ -308,6 +308,9 @@ config: init hsm_init
 	@$(ECHO) $(COLOR_YELLOW)"platform info :"$(COLOR_ORIGIN)
 	$(eval ZMEM=$(shell cat $(CONFIG_ROOT) | grep 'ZMEM=' | sed 's/ZMEM=//g'))
 	@$(MAKE) info
+
+config: init
+	@$(MAKE) __config
 
 hconfig:
 	@./build/hconfig.sh $(CROSS_V7_COMPILE)
