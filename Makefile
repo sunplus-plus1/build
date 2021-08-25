@@ -463,12 +463,6 @@ secure:
 				./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin $(SB_FLAG);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin ; \
 			fi ;\
-		else \
-			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
-			cd $(XBOOT_PATH); \
-			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check || exit 1; \
-		fi; \
-		if [ "$(CHIP)" = "Q645" ]; then \
 			cd $(TOPDIR)/$(XBOOT_PATH); \
 			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) $(SECURE) ; \
 			make size_check || exit 1; \
@@ -480,6 +474,11 @@ secure:
 				echo "$(XBOOT_BIN) (+ lpddr4 fw) size limit is $(XBOOT_LPDDR4_MAX). Please reduce its size.\n" ; \
 				exit 1; \
 			fi; \
+		else \
+			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
+			cd $(XBOOT_PATH); \
+			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; \
+			make size_check || exit 1; \
 		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
