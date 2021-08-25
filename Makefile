@@ -196,7 +196,6 @@ freertos:
 xboot: check
 	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) SECURE=$(SECURE) all
 	@$(MAKE) secure SECURE_PATH=xboot
-	@$(MAKE) -C $(XBOOT_PATH) size_check;
 #tfa build
 tfa: check
 	@if [ ! -f $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin ]; then \
@@ -467,11 +466,12 @@ secure:
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(XBOOT_PATH)/bin xboot.bin 0 ;\
 			cd $(XBOOT_PATH); \
-			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; \
+			/bin/bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) 1 ; make size_check || exit 1; \
 		fi; \
 		if [ "$(CHIP)" = "Q645" ]; then \
 			cd $(TOPDIR)/$(XBOOT_PATH); \
 			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) $(SECURE) ; \
+			make size_check || exit 1; \
 			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ; \
 			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
 			sz=`du -sb ./bin/$(XBOOT_BIN) | cut -f1` ; \
