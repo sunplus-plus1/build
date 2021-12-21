@@ -29,10 +29,12 @@ sinclude ./.hwconfig
 
 TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
+TOOLCHAIN_NONOS_PATH = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin
 TOOLCHAIN_RISCV_PATH = $(TOPDIR)/crossgcc/riscv64-sifive-linux-gnu/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
+CROSS_NONOS_COMPILE = $(TOOLCHAIN_NONOS_PATH)/arm-none-eabi-
 CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
 CROSS_RISCV_UNKNOWN_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf-
 CROSS_ARM64_COMPILE = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
@@ -254,7 +256,7 @@ kernel: check
 	@$(MAKE) secure SECURE_PATH=kernel;
 
 nonos:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_V5_COMPILE) BOOT_NONOS_FROM_OPENAMP=$(BOOT_NONOS_FROM_OPENAMP)
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE) BOOT_NONOS_FROM_OPENAMP=$(BOOT_NONOS_FROM_OPENAMP)
 	@echo "Wrapping rom.bin -> rom.img..."
 # for A:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
@@ -262,11 +264,11 @@ nonos:
 	@if [ "$(BOOT_NONOS_FROM_OPENAMP)" = "0" ]; then \
 		$(RM) -f linux/rootfs/initramfs/disk/lib/firmware/rom ; \
 		$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x10040 0x10040; \
+		sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz; \
 	else \
 		echo "copy $(NONOS_B_PATH)/bin/rom to rootfs/lib/firmware " ; \
 		$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware ; \
 	fi
-	@sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz
 
 
 hsm_init:
