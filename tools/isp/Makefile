@@ -8,6 +8,10 @@ ifeq ($(CHIP),Q645)
 CFLAGS = -DQ645=1
 endif
 
+ifeq ($(CHIP),Q654)
+CFLAGS = -DQ654=1
+endif
+
 
 all: isp
 

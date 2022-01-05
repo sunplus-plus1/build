@@ -24,6 +24,7 @@ ARCH=arm
 # bootdev=nor
 # bootdev=tftp
 # bootdev=usb
+# bootdev=para_nand
 
 bootdev_lookup()
 {
@@ -36,6 +37,8 @@ bootdev_lookup()
 		dev=nand
 	elif [ "$1" = "tftp" ];then
 		dev=romter
+	elif [ "$1" = "para_nand" ];then
+		dev=pnand
 	fi
 	echo $dev
 }
@@ -277,7 +280,7 @@ p_chip_config()
 		p_chip_usb_config revB
 		;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 	esac
 }
@@ -292,6 +295,17 @@ c_chip_spi_nand_config()
 	set_uboot_config sp7021_nand_c_defconfig
 	set_kernel_config sp7021_chipC_emu_nand_defconfig
 	set_bootfrom_config NAND
+
+	NEED_ISP=1
+	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
+}
+
+c_chip_para_nand_config()
+{
+	set_xboot_config
+	set_uboot_config
+	set_kernel_config
+	set_bootfrom_config PNAND
 
 	NEED_ISP=1
 	echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
@@ -416,8 +430,11 @@ c_chip_config()
 	"usb")
 		c_chip_usb_config revB
 		;;
+	"para_nand")
+		c_chip_para_nand_config revB
+		;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 	esac
 }
@@ -451,7 +468,7 @@ i143_c_chip_config()
 		i143_c_chip_nor_config
 		;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 	esac
 }
@@ -536,7 +553,7 @@ i143_p_chip_config()
 		i143_p_chip_usb_config
 		;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 	esac
 }
@@ -567,7 +584,7 @@ i143_zmem_config()
 		i143_p_chip_zmem_config
 		;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 	esac
 }
@@ -582,7 +599,7 @@ others_config()
 	$ECHO ""
 	read XBOOT_CONFIG_NUM
 	if [ -z $XBOOT_CONFIG_NUM ];then
-		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
+		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
 	XBOOT_CONFIG=$(find $XBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f  -name "*_defconfig" | sort -i | sed "s,"$XBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $XBOOT_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
@@ -593,7 +610,7 @@ others_config()
 	$ECHO ""
 	read UBOOT_CONFIG_NUM
 	if [ -z $UBOOT_CONFIG_NUM ];then
-		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
+		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
 	UBOOT_CONFIG=$(find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $UBOOT_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
@@ -604,7 +621,7 @@ others_config()
 	$ECHO ""
 	read KERNEL_CONFIG_NUM
 	if [ -z $KERNEL_CONFIG_NUM ];then
-		$ECHO $COLOR_RED"Error: Unknow config num!!"$COLOR_ORIGIN
+		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
 	KERNEL_CONFIG=$(find $KERNEL_ARM_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_ARM_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t, ,g" | sed -n $KERNEL_CONFIG_NUM"p" | sed -r "s, +[0-9]* ,,g")
@@ -678,7 +695,7 @@ rootfs_content=BUSYBOX
 list_config()
 {
 	sel=1
-	if [ "$board" = "1" -o "$board" = "21" ];then
+	if [ "$board" = "1" -o "$board" = "21" -o "$board" = "31" ];then
 		# chip == C
 		if [ "$chip" = "1" ];then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
@@ -688,6 +705,9 @@ list_config()
 			$ECHO $COLOR_YELLOW"[5] SD Card"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[6] TFTP server"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
+			if [ "$board" = "31" ];then
+			$ECHO $COLOR_YELLOW"[8] Parallel NAND"$COLOR_ORIGIN
+			fi
 			read sel
 			case "$sel" in
 			"1")
@@ -704,7 +724,7 @@ list_config()
 				;;
 			"5")
 				bootdev=emmc
-				if [ "$board" = "21" ];then
+				if [ "$board" = "21" -o "$board" = "31" ];then
 					bootdev=sdcard
 				fi
 				BOOT_FROM=SDCARD
@@ -715,8 +735,11 @@ list_config()
 			"7")
 				bootdev=usb
 				;;
+			"8")
+				bootdev=para_nand
+				;;
 			*)
-				echo "Error: Unknow config!!"
+				echo "Error: Unknown config!"
 				exit 1
 			esac
 		elif [ "$chip" = "2" ];then
@@ -748,11 +771,11 @@ list_config()
 				bootdev=usb
 				;;
 			*)
-				echo "Error: Unknow config!!"
+				echo "Error: Unknown config!"
 				exit 1
 			esac
 		else
-			echo "Error: Unknow chip!!"
+			echo "Error: Unknown chip!"
 			exit 1
 		fi
 	elif [ "$board" = "11" ];then
@@ -768,7 +791,7 @@ list_config()
 				bootdev=nor
 				;;
 			*)
-				echo "Error: Unknow config!!"
+				echo "Error: Unknown config!"
 				exit 1
 			esac
 		elif [ "$chip" = "2" ];then
@@ -796,17 +819,17 @@ list_config()
 				bootdev=usb
 				;;
 			*)
-				echo "Error: Unknow config!!"
+				echo "Error: Unknown config!"
 				exit 1
 			esac
 		else
-			echo "Error: Unknow chip!!"
+			echo "Error: Unknown chip!"
 			exit 1
 		fi
 	elif [ "$board" = "12" ];then
 		runzebu=1
 		sel=1
-	elif [ "$board" = "22" ];then
+	elif [ "$board" = "22" -o "$board" = "32" ];then
 		zmem=1
 		runzebu=1
 		bootdev=nor
@@ -826,7 +849,7 @@ list_config()
 			BOOT_FROM=SDCARD
 			;;
 		*)
-			echo "Error: Unknow config!!"
+			echo "Error: Unknown config!"
 			exit 1
 		esac
 	fi
@@ -850,16 +873,16 @@ list_config()
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board             [11] I143 Ev Board      [21] Q645 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board               [12] I143 Zebu (ZMem)   [22] Q645 Zebu (ZMem)"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[3] SP7021 Demo Board (V1/V2)"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[4] SP7021 Demo Board (V3)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board     [11] I143 Ev Board      [21] Q645 Ev Board      [31] Q654 Ev Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board       [12] I143 Zebu (ZMem)   [22] Q645 Zebu (ZMem)   [32] Q654 Zebu (ZMem)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[3] SP7021 Demo Brd V2"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[4] SP7021 Demo Brd V3"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[6] BPI-F2P Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[7] LTPP3G2 Board (Sunplus)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[7] LTPP3G2 Board (S+)"$COLOR_ORIGIN
 read board
-echo "CHIP=Q628" > $BUILD_CONFIG
 
+echo "CHIP=Q628" > $BUILD_CONFIG
 if [ "$board" = "1" ];then
 	echo "LINUX_DTB=sp7021-ev" >> $BUILD_CONFIG
 	# $ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
@@ -901,8 +924,12 @@ elif [ "$board" = "21" -o "$board" = "22" ];then
 	ARCH=arm64
 	echo "CHIP=Q645" > $BUILD_CONFIG
 	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
+elif [ "$board" = "31" -o "$board" = "32" ];then
+	ARCH=arm64
+	echo "CHIP=Q654" > $BUILD_CONFIG
+	echo "LINUX_DTB=sunplus/q654-ev" >> $BUILD_CONFIG
 else
-	echo "Error: Unknow board!!"
+	echo "Error: Unknown board!"
 	exit 1
 fi
 
@@ -973,7 +1000,7 @@ if [ "$board" = "21" -o "$board" = "22" ];then
 	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[3] Enable digital signature & Encryption"$COLOR_ORIGIN
 	read secure
-	
+
 	if [ "$secure" = "2" ];then
 		echo "SECURE=1" >> $BUILD_CONFIG
 	elif [ "$secure" = "3" ];then
@@ -987,6 +1014,26 @@ if [ "$board" = "21" -o "$board" = "22" ];then
 		sel_board=zebu
 	fi
 	set_config_directly=1
+	chip_name="q645"
+fi
+
+if [ "$board" = "31" -o "$board" = "32" ];then
+	## board = q654
+	$ECHO $COLOR_YELLOW"[1] No secure (default)"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
+	read secure
+
+	if [ "$secure" = "2" ];then
+		echo "SECURE=1" >> $BUILD_CONFIG
+	fi
+
+	sel_chip=$(chip_lookup $chip)
+	sel_board=ev
+	if [ "$board" = "32" ];then
+		sel_board=zebu
+	fi
+	set_config_directly=1
+	chip_name="q654"
 fi
 
 if [ "$set_config_directly" = "1" ]; then
@@ -994,9 +1041,9 @@ if [ "$set_config_directly" = "1" ]; then
 	if [ "$bootdev" = "sdcard" -o "$bootdev" = "usb" ];then
 		xboot_bootdev="emmc"
 	fi
-	XBOOT_CONFIG=$(xboot_defconfig_combine q645 $xboot_bootdev $sel_chip $sel_board $zmem)
-	UBOOT_CONFIG=$(uboot_defconfig_combine q645 $bootdev $sel_chip $sel_board $zmem)
-	KERNEL_CONFIG=$(linux_defconfig_combine q645 $bootdev $sel_chip $sel_board)
+	XBOOT_CONFIG=$(xboot_defconfig_combine $chip_name $xboot_bootdev $sel_chip $sel_board $zmem)
+	UBOOT_CONFIG=$(uboot_defconfig_combine $chip_name $bootdev $sel_chip $sel_board $zmem)
+	KERNEL_CONFIG=$(linux_defconfig_combine $chip_name $bootdev $sel_chip $sel_board)
 fi
 
 echo "ROOTFS_CONTENT=${rootfs_content}" >> $BUILD_CONFIG
@@ -1031,6 +1078,6 @@ case "$num" in
 	# 	others_config $1 $2
 	# 	;;
 	*)
-		echo "Error: Unknow config!!"
+		echo "Error: Unknown config!"
 		exit 1
 esac

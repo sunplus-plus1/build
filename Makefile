@@ -126,10 +126,16 @@ ifeq ($(CHIP),Q645)
 XBOOT_LPDDR4_MAX = $$((160 * 1024))
 endif
 
+ifeq ($(CHIP),Q654)
+XBOOT_LPDDR4_MAX = $$((160 * 1024))
+endif
+
 SDCARD_BOOT_MODE ?= 0
 ifeq ($(CHIP),I143)
 SDCARD_BOOT_MODE = 1
 else ifeq ($(CHIP),Q645)
+SDCARD_BOOT_MODE = 2
+else ifeq ($(CHIP),Q654)
 SDCARD_BOOT_MODE = 2
 endif
 
@@ -173,7 +179,7 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@if [ "$(IS_I143_RISCV)" = "1" -o "$(CHIP)" = "Q645" ]; then \
+	@if [ "$(IS_I143_RISCV)" = "1" -o "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 		$(MAKE) freertos; \
 	else \
 		$(MAKE) nonos; \
@@ -185,6 +191,8 @@ all: check
 freertos:
 	@if [ "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) -C freertos/q645; \
+	elif [ "$(CHIP)" = "Q654" ]; then \
+		$(MAKE) -C freertos/q654; \
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		if [ "$(NEED_ISP)" = '1' ]; then \
@@ -223,7 +231,7 @@ uboot: check
 		$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
-	@if [ "$(CHIP)" = "Q645" ]; then \
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 		dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 skip=64 conv=notrunc 2>/dev/null ;\
 		img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin | cut -f1` ; add_zero=$$((4-img_sz%4));\
 		dd if=/dev/zero of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null ;\
@@ -245,7 +253,7 @@ kernel: check
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
 		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
-		if [ "$(CHIP)" = "Q645" ]; then \
+		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		else \
@@ -272,13 +280,17 @@ nonos:
 
 
 hsm_init:
-	@if [ "$(CHIP)" = "Q645" ]; then \
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 		cd $(SECURE_HSM_PATH); ./gen_HSM_keys.sh ; \
 	fi
 
 clean:
 	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
-	@$(MAKE) -C freertos/q645 $@
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		$(MAKE) -C freertos/q645 $@ \
+	else \
+		$(MAKE) -C freertos/q654 $@ \
+	fi
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
@@ -414,7 +426,7 @@ isp: check tool_isp
 				$(ECHO) $(COLOR_YELLOW)"Gen "$(KERNEL_BIN)" fail."$(COLOR_ORIGIN); \
 			fi; \
 		else \
-			if [ "$(CHIP)" = "Q645" ]; then \
+			if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 				if [ "$(ZEBU_RUN)" = "1" ]; then \
 					$(CP) -vf $(LINUX_PATH)/arch/$(ARCH)/boot/Image $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
 				fi; \
@@ -466,7 +478,7 @@ secure:
 		if [ ! -f $(XBOOT_PATH)/bin/xboot.bin ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645" ]; then \
+		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 				./build_inputfile_sb.sh $(TOPDIR)/$(XBOOT_PATH)/bin/xboot.bin $(SB_FLAG);\
@@ -494,7 +506,7 @@ secure:
 		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645" ]; then \
+		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SB_FLAG);\
@@ -506,7 +518,7 @@ secure:
 		fi; \
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
-		if [ "$(CHIP)" = "Q645" ]; then \
+		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "Q654" ]; then \
 			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/Image ]; then \
 				exit 1; \
 			fi; \
@@ -564,7 +576,7 @@ ifneq ($(CHIP),Q645)
 	$(RM) -f $(ROOTFS_DIR)/lib/firmware/ethosn.bin
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNDriver.so
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNSupport.so
-endif	
+endif
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT)
 
 kconfig:
