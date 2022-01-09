@@ -8,8 +8,8 @@ ifeq ($(CHIP),Q645)
 CFLAGS = -DQ645=1
 endif
 
-ifeq ($(CHIP),Q654)
-CFLAGS = -DQ654=1
+ifeq ($(CHIP),SP7350)
+CFLAGS = -DSP7350=1
 endif
 
 
