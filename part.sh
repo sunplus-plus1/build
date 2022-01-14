@@ -18,8 +18,8 @@ isp extract4update ISPBOOOT.BIN $OUT_FILE $PART
 
 if [ -f $OUT_FILE ]; then 
 	ls -la  
-	echo -e "\n" $COLOR_GREEN " Build FInish!!! see ./out/"$OUT_FILE $COLOR_ORIGIN "\n"
+	echo "\n" $COLOR_GREEN "Build Finish! Image: ./out/"$OUT_FILE $COLOR_ORIGIN "\n"
 else 
-	echo -e "\n" $COLOR_RED " [ISP] PART image fail. " $COLOR_ORIGIN "\n"
+	echo "\n" $COLOR_RED "[ISP] PART image failed! " $COLOR_ORIGIN "\n"
 	exit 1 
 fi 

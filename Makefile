@@ -469,7 +469,7 @@ isp: check tool_isp
 	fi
 
 part:
-	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME!!!" $(COLOR_ORIGIN)
+	@$(ECHO) $(COLOR_YELLOW) "Please enter the Partition NAME:" $(COLOR_ORIGIN)
 	@cd out; ./$(PART_SHELL)
 
 secure:
