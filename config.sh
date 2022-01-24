@@ -1021,10 +1021,14 @@ if [ "$board" = "31" -o "$board" = "32" ];then
 	## board = SP7350
 	$ECHO $COLOR_YELLOW"[1] No secure (default)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
+	$ECHO $COLOR_YELLOW"[3] Enable digital signature & Encryption"$COLOR_ORIGIN
 	read secure
 
 	if [ "$secure" = "2" ];then
 		echo "SECURE=1" >> $BUILD_CONFIG
+	elif [ "$secure" = "3" ];then
+		echo "SECURE=1" >> $BUILD_CONFIG
+		echo "ENCRYPTION=1" >> $BUILD_CONFIG
 	fi
 
 	sel_chip=$(chip_lookup $chip)
