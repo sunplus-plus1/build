@@ -51,7 +51,6 @@ SECURE ?= 0
 ENCRYPTION ?= 0
 SB_FLAG = `expr $(SECURE) + $(ENCRYPTION) \* 2 `
 
-BOOT_NONOS_FROM_OPENAMP ?= 1
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_IP ?=
 TFTP_SERVER_PATH ?=
@@ -191,6 +190,8 @@ all: check
 freertos:
 	@if [ "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) -C freertos/q645; \
+		$(ECHO) "copy m4 to rootfs/lib/firmware " ; \
+		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/rom; \
 	elif [ "$(CHIP)" = "SP7350" ]; then \
 		$(MAKE) -C freertos/sp7350; \
 	else \
@@ -225,7 +226,7 @@ uboot: check
 			-DBOARD_MAC_ADDR=$(BOARD_MAC_ADDR) -DUSER_NAME=$(USER_NAME)"; \
 	else \
 		$(MAKE) ARCH=$(ARCH_UBOOT) $(MAKE_JOBS) -C $(UBOOT_PATH) all CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) EXT_DTB=../../linux/kernel/dtb \
-			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2) -DCOMPILE_WITH_SECURE=$(SECURE) -DBOOT_NONOS_FROM_OPENAMP=$(BOOT_NONOS_FROM_OPENAMP)"; \
+			KCPPFLAGS="-DSPINOR=$(SPINOR) -DNOR_JFFS2=$(NOR_JFFS2) -DCOMPILE_WITH_SECURE=$(SECURE)"; \
 	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
@@ -264,20 +265,13 @@ kernel: check
 	@$(MAKE) secure SECURE_PATH=kernel;
 
 nonos:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE) BOOT_NONOS_FROM_OPENAMP=$(BOOT_NONOS_FROM_OPENAMP)
+	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE)
 	@echo "Wrapping rom.bin -> rom.img..."
 # for A:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
 # for B:
-	@if [ "$(BOOT_NONOS_FROM_OPENAMP)" = "0" ]; then \
-		$(RM) -f linux/rootfs/initramfs/disk/lib/firmware/rom ; \
-		$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x10040 0x10040; \
-		sz=`du -sb $(NONOS_B_PATH)/bin/rom.img|cut -f1`; printf "rom size = %d (hex %x)\n" $$sz $$sz; \
-	else \
-		echo "copy $(NONOS_B_PATH)/bin/rom to rootfs/lib/firmware " ; \
-		$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware ; \
-	fi
-
+	@echo "copy $(NONOS_B_PATH)/bin/rom to rootfs/lib/firmware "
+	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware 
 
 hsm_init:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
@@ -384,6 +378,7 @@ tool_isp:
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 
 isp: check tool_isp
+	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP)
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
 		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \

@@ -7,7 +7,7 @@ U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
 D=dtb
-N=a926.img
+
 
 # Partition name = file name
 cp $X xboot0
@@ -16,9 +16,9 @@ cp $X xboot1
 cp $U uboot1
 cp $U uboot2
 cp $K kernel
-if [ -f $N ]; then
-	cp $N nonos
-fi
+
+touch reserve
+
 if [ "$1" != "SDCARD" ]; then
 	cp $ROOTFS rootfs
 fi
@@ -41,7 +41,7 @@ if [ "$1" = "EMMC" ]; then
 		uboot2 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		nonos 0x100000 \
+		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x2000000 \
 		rootfs 0x1e0000000
@@ -53,7 +53,7 @@ elif [ "$1" = "NAND" ]; then
 		uboot2 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		nonos 0x100000 \
+		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x1900000 \
 		rootfs 0xe000000
@@ -65,7 +65,7 @@ elif [ "$1" = "PNAND" ]; then
 		uboot2 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		nonos 0x100000 \
+		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x1900000 \
 		rootfs 0xe000000
@@ -74,7 +74,7 @@ elif [ "$1" = "USB" ]; then
 		xboot0 uboot0 \
 		xboot1 0x100000 \
 		uboot1 0x100000 \
-		nonos 0x100000 \
+		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0xd80000
 fi
@@ -89,7 +89,7 @@ rm -rf DTB
 rm -rf env
 rm -rf env_redund
 rm -rf rootfs
-rm -rf nonos
+rm -rf reserve
 
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
