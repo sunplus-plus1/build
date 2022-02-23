@@ -23,7 +23,7 @@ sboot_nonos=setenv filesize 0; fatsize $isp_if $isp_dev /$NONOS_IMG; if itest.l 
 
 ##boot cmd
 sboot=bootm ${addr_dst_kernel} - ${fdtcontroladdr};
-uenvcmd=run sboot_nonos; run sload_kernel; run sbootargs sboot;
+uenvcmd=run sload_kernel; run sbootargs sboot;
 
 #
 ## END
