@@ -190,10 +190,12 @@ all: check
 freertos:
 	@if [ "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) -C freertos/q645; \
-		$(ECHO) "copy m4 to rootfs/lib/firmware " ; \
-		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/rom; \
+		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
+		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
 	elif [ "$(CHIP)" = "SP7350" ]; then \
 		$(MAKE) -C freertos/sp7350; \
+		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
+		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		if [ "$(NEED_ISP)" = '1' ]; then \
@@ -266,12 +268,11 @@ kernel: check
 
 nonos:
 	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE)
-	@echo "Wrapping rom.bin -> rom.img..."
 # for A:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
 # for B:
-	@echo "copy $(NONOS_B_PATH)/bin/rom to rootfs/lib/firmware "
-	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware 
+	@echo "copy a926.img to rootfs/lib/firmware  "
+	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img 
 
 hsm_init:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
@@ -378,7 +379,6 @@ tool_isp:
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
 
 isp: check tool_isp
-	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP)
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
 		$(CP) -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) $(OUT_PATH); \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(XBOOT_BIN)" to out folder."$(COLOR_ORIGIN); \
