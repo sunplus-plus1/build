@@ -195,7 +195,7 @@ freertos:
 	elif [ "$(CHIP)" = "SP7350" ]; then \
 		$(MAKE) -C freertos/sp7350; \
 		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
-		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
+		$(CP) freertos/sp7350/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		if [ "$(NEED_ISP)" = '1' ]; then \
