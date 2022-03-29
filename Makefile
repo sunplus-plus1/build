@@ -216,7 +216,11 @@ tfa: check
 		$(ECHO) $(COLOR_YELLOW) "### make uboot first !!###"$(COLOR_ORIGIN) ;\
 		exit 1; \
 	fi;
-	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build
+	@if [ "$(CHIP)" = "Q645" ]; then \
+		$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+	else \
+		$(MAKE) -f $(TFA_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+	fi
 	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
 	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin
 	@$(MAKE) secure SECURE_PATH=uboot
