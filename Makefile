@@ -275,7 +275,7 @@ nonos:
 # for A:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
 # for B:
-	@echo "copy a926.img to rootfs/lib/firmware  "
+	@$(ECHO) "copy a926.img to rootfs/lib/firmware  "
 	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img 
 
 hsm_init:
