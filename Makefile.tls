@@ -4,7 +4,7 @@ LOAD_LIMIT	= $(CPU_NUM)
 MAKE_JOBS	= -j $(JOB_LIMIT) -l $(LOAD_LIMIT)
 MAKE = make
 MAKE_ARCH	= $(MAKE) ARCH=$(ARCH)
-ECHO = echo -e
+ECHO		= /bin/echo -e
 CP = cp
 MKDIR = mkdir
 RM = rm
