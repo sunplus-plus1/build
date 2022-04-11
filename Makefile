@@ -258,8 +258,8 @@ kernel: check
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
-		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
-		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
+		$(RM) -f $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
+		$(RM) -f $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
 		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
