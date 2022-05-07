@@ -135,7 +135,7 @@ SDCARD_BOOT_MODE = 1
 else ifeq ($(CHIP),Q645)
 SDCARD_BOOT_MODE = 2
 else ifeq ($(CHIP),SP7350)
-SDCARD_BOOT_MODE = 2
+SDCARD_BOOT_MODE = 3
 endif
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
