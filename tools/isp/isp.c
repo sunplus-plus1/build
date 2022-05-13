@@ -2050,7 +2050,7 @@ int gen_nor_isp_script(const char *file_name_isp_script)
 
 	// Initialize NOR flash.
 	fprintf(fd, "echo \"\nInitialize NOR flash...\"\n");
-	fprintf(fd, "sf probe 0:0 25000000\n");
+	fprintf(fd, "sf probe 0:0 50000000\n");
 
 	// Erase flash.
 	size_file = isp_info.file_header.partition_info[0].partition_size;
