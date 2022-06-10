@@ -265,7 +265,7 @@ kernel: check
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		else \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
-			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) LOADADDR=0x308000; \
 		fi; \
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
@@ -340,10 +340,10 @@ dtb: check
 	$(eval LINUX_DTB=$(shell cat $(CONFIG_ROOT) | grep 'LINUX_DTB=' | sed 's/LINUX_DTB=//g').dtb)
 
 	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
-		$(MAKE_ARCH) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) W=1; \
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
 	else \
-		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) W=1; \
 		if [ $$? -ne 0 ]; then \
 			exit 1; \
 		fi; \
