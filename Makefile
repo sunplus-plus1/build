@@ -276,7 +276,7 @@ nonos:
 #	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
 # for B:
 	@$(ECHO) "copy a926.img to rootfs/lib/firmware  "
-	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img 
+	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img
 
 hsm_init:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
@@ -299,6 +299,7 @@ clean:
 	@$(RM) -rf $(OUT_PATH)
 
 distclean: clean
+	@$(MAKE) -C $(IPACK_PATH) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
