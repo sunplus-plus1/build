@@ -126,7 +126,13 @@ XBOOT_LPDDR4_MAX = $$((160 * 1024))
 endif
 
 ifeq ($(CHIP),SP7350)
-XBOOT_LPDDR4_MAX = $$((160 * 1024))
+ifeq ($(BOOT_FROM),SPINOR)
+	XBOOT_LPDDR4_MAX = $$((160 * 1024))
+else ifeq ($(BOOT_FROM),NOR_JFFS2)
+	XBOOT_LPDDR4_MAX = $$((160 * 1024))
+else
+	XBOOT_LPDDR4_MAX = $$((192 * 1024))
+endif
 endif
 
 SDCARD_BOOT_MODE ?= 0
