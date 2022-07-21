@@ -105,7 +105,7 @@
 
 
 #if defined(Q645) && (Q645 == 1)
-#define FILE_SIZE_IMAGE_XBOOT0                      (160 << 10)
+#define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
 #elif defined(SP7350) && (SP7350 == 1)
 #define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
 #else
