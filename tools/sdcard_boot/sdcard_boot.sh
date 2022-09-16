@@ -33,7 +33,7 @@ RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
 
 # Size of FAT32 partition size (unit: M)
-FAT_IMG_SIZE_M=128
+FAT_IMG_SIZE_M=256
 
 # Block size is 512 bytes for sfdisk and FAT32 sector is 1024 bytes
 BLOCK_SIZE=512
@@ -84,14 +84,14 @@ fi
 
 if [ -x "$(command -v mkfs.fat)" ]; then
 	echo '###### do mkfs.fat cmd ########'
-	mkfs.fat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))"
+	mkfs.fat -F 32 -C -s 4 "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))"
 	if [ $? -ne 0 ]; then
 		exit
 	fi
 else
 	if [ -x "$(command -v mkfs.vfat)" ]; then
 		echo '###### do mkfs.vfat cmd ########'
-		mkfs.vfat -F 32 -C "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))"
+		mkfs.vfat -F 32 -C -s 4 "$FAT_IMG_OUT" "$(($partition_size_1/$FAT_SECTOR))"
 		if [ $? -ne 0 ]; then
 			exit
 		fi
