@@ -29,12 +29,10 @@ sinclude ./.hwconfig
 
 TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
-TOOLCHAIN_NONOS_PATH = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin
 TOOLCHAIN_RISCV_PATH = $(TOPDIR)/crossgcc/riscv64-sifive-linux-gnu/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
-CROSS_NONOS_COMPILE = $(TOOLCHAIN_NONOS_PATH)/arm-none-eabi-
 CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
 CROSS_RISCV_UNKNOWN_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf-
 CROSS_ARM64_COMPILE = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
@@ -69,7 +67,7 @@ XBOOT_PATH = boot/xboot
 UBOOT_PATH = boot/uboot
 LINUX_PATH = linux/kernel
 ROOTFS_PATH = linux/rootfs
-NONOS_B_PATH = nonos/Bchip-non-os
+FIRMWARE_PATH = firmware/arduino_core_sunplus
 IPACK_PATH = ipack
 OUT_PATH = out
 SECURE_HSM_PATH = $(TOPDIR)/$(BUILD_PATH)/tools/secure_hsm/secure
@@ -84,7 +82,6 @@ DTB = dtb
 VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
 ROOTFS_IMG = rootfs.img
-NONOS_B_IMG = rom.img
 FREERTOS_IMG = freertos.img
 
 CROSS_COMPILE_FOR_XBOOT =$(CROSS_V5_COMPILE)
@@ -167,7 +164,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL = down_32M.exe
 SECURE_PATH ?=
 
-.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos freertos toolchain
+.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info firmware freertos toolchain
 .PHONY: dtb spirom isp tool_isp kconfig uconfig xconfig
 
 # rootfs image is created by :
@@ -178,24 +175,16 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@if [ "$(IS_I143_RISCV)" = "1" -o "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
-		$(MAKE) freertos; \
-	else \
-		$(MAKE) nonos; \
-	fi
+	@$(MAKE) firmware
 	@$(MAKE) kernel
 	@$(MAKE) rootfs
 	@$(MAKE) rom
 
-freertos:
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -C freertos/q645; \
-		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
-		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
-	elif [ "$(CHIP)" = "SP7350" ]; then \
-		$(MAKE) -C freertos/sp7350; \
-		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
-		$(CP) freertos/sp7350/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
+firmware:
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" -o "$(CHIP)" = "Q628" ]; then \
+		$(ECHO) "[arduino] make $(CHIP) firmware" ;\
+		$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) ;\
+		$(CP) $(FIRMWARE_PATH)/bin/firmware linux/rootfs/initramfs/disk/lib/firmware ;\
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		if [ "$(NEED_ISP)" = '1' ]; then \
@@ -205,6 +194,13 @@ freertos:
 				cd $(IPACK_PATH); ./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(IPACK_PATH)/bin/freertos.bin $(TOPDIR)/$(IPACK_PATH)/bin/freertos.img riscv;\
 			fi; \
 		fi; \
+	fi
+#Q645/SP7350 CM4 with freertos
+freertos:
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		$(ECHO) "[freertos] make $(CHIP) firmware" ;\
+		$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) FREERTOS=1 ;\
+		$(CP) $(FIRMWARE_PATH)/bin/firmware linux/rootfs/initramfs/disk/lib/firmware ;\
 	fi
 #xboot build
 xboot: check
@@ -270,26 +266,13 @@ kernel: check
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
 
-nonos:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE)
-# for A:
-#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
-# for B:
-	@$(ECHO) "copy a926.img to rootfs/lib/firmware  "
-	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img
-
 hsm_init:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 		cd $(SECURE_HSM_PATH); ./gen_HSM_keys.sh ; \
 	fi
 
 clean:
-	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -C freertos/q645 $@ ; \
-	else \
-		$(MAKE) -C freertos/sp7350 $@ ; \
-	fi
+	@$(MAKE_ARCH) -C $(FIRMWARE_PATH) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
@@ -405,11 +388,6 @@ isp: check tool_isp
 				$(CP) -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) $(OUT_PATH)/a926.img; \
 				$(ECHO) $(COLOR_YELLOW)"Copy freertos.img to out folder."$(COLOR_ORIGIN); \
 			fi; \
-		fi; \
-	else \
-		if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
-			$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
-			$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
 		fi; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
