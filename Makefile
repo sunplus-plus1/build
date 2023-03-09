@@ -206,6 +206,15 @@ freertos:
 xboot: check
 	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) SECURE=$(SECURE) all
 	@$(MAKE) secure SECURE_PATH=xboot
+	@$(MAKE) warmboot
+
+#warmboot build
+warmboot:
+	@if [ "$(CHIP)" = "SP7350" ]; then \
+		$(MAKE) -C $(XBOOT_PATH)/warmboot XBOOT_CROSS=$(CROSS_COMPILE_FOR_XBOOT);\
+		$(CP) $(XBOOT_PATH)/warmboot/warmboot linux/rootfs/initramfs/disk/lib/firmware ;\
+	fi;
+
 #tfa build
 tfa: check
 	@if [ ! -f $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin ]; then \
