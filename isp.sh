@@ -7,6 +7,7 @@ U=u-boot.img
 K=uImage
 ROOTFS=rootfs.img
 D=dtb
+F=fip.img
 
 
 # Partition name = file name
@@ -15,6 +16,7 @@ cp $U uboot0
 cp $X xboot1
 cp $U uboot1
 cp $U uboot2
+cp $F fip
 cp $K kernel
 
 touch reserve
@@ -39,9 +41,9 @@ if [ "$1" = "EMMC" ]; then
 		xboot1 0x100000 \
 		uboot1 0x100000 \
 		uboot2 0x100000 \
+		fip 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x2000000 \
 		rootfs 0x1e0000000
@@ -51,9 +53,9 @@ elif [ "$1" = "NAND" ]; then
 		xboot1 0x100000 \
 		uboot1 0x100000 \
 		uboot2 0x100000 \
+		fip 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x1900000 \
 		rootfs 0xe000000
@@ -63,9 +65,9 @@ elif [ "$1" = "PNAND" ]; then
 		xboot1 0x100000 \
 		uboot1 0x100000 \
 		uboot2 0x100000 \
+		fip 0x100000 \
 		env 0x80000 \
 		env_redund 0x80000 \
-		reserve 0x100000 \
 		dtb 0x40000 \
 		kernel 0x1900000 \
 		rootfs 0xe000000
@@ -74,7 +76,7 @@ elif [ "$1" = "USB" ]; then
 		xboot0 uboot0 \
 		xboot1 0x100000 \
 		uboot1 0x100000 \
-		reserve 0x100000 \
+		fip 0x100000 \
 		dtb 0x40000 \
 		kernel 0xd80000
 fi
@@ -90,11 +92,12 @@ rm -rf env
 rm -rf env_redund
 rm -rf rootfs
 rm -rf reserve
+rm -rf fip
 
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
-	cp -rf $U $K $N ./boot2linux_SDcard
+	cp -rf $U $K $N $F ./boot2linux_SDcard
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
 		dd if=$X of=boot2linux_SDcard/ISPBOOOT.BIN
 	else

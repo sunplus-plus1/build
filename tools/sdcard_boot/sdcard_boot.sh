@@ -31,6 +31,7 @@ EXT_ENV_A64_SP7350=uEnv_a64_sp7350.txt
 NONOS_IMG=a926.img
 RC_SDCARDBOOTDIR=$ROOT_DIR_IN/etc/init.d
 RC_SDCARDBOOTFILE=rc.sdcardboot
+FIP_IMG=fip.img
 
 # Size of FAT32 partition size (unit: M)
 FAT_IMG_SIZE_M=256
@@ -103,7 +104,12 @@ fi
 
 if [ -x "$(command -v mcopy)" ]; then
 	echo '###### do the mcopy cmd ########'
+	# q645 & q654 add fip.img in sdcard
+	if [[ $1 -eq "2" ]]||[[ $1 -eq "3" ]]; then
+		mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$OUTPATH/$EXT_ENV"  "$OUTPATH/$FIP_IMG"  "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+	else
 	mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/ISPBOOOT.BIN" "$OUTPATH/$EXT_ENV" "$FAT_FILE_IN/uImage" "$FAT_FILE_IN/u-boot.img" ::
+	fi
 	if [ -f $FAT_FILE_IN/$NONOS_IMG ]; then
 		mcopy -i "$FAT_IMG_OUT" -s "$FAT_FILE_IN/$NONOS_IMG" ::
 	fi
