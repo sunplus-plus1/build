@@ -16,14 +16,18 @@ cp $U uboot0
 cp $X xboot1
 cp $U uboot1
 cp $U uboot2
-cp $F fip
 cp $K kernel
 
-touch reserve
+if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+	cp $F fip
+else
+	touch reserve
+fi
 
 if [ "$1" != "SDCARD" ]; then
 	cp $ROOTFS rootfs
 fi
+
 cp $D DTB
 
 # Note:
@@ -36,29 +40,58 @@ do
 done
 
 if [ "$1" = "EMMC" ]; then
-	isp pack_image ISPBOOOT.BIN \
-		xboot0 uboot0 \
-		xboot1 0x100000 \
-		uboot1 0x100000 \
-		uboot2 0x100000 \
-		fip 0x100000 \
-		env 0x80000 \
-		env_redund 0x80000 \
-		dtb 0x40000 \
-		kernel 0x2000000 \
-		rootfs 0x1e0000000
+	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			uboot2 0x100000 \
+			fip 0x100000 \
+			env 0x80000 \
+			env_redund 0x80000 \
+			dtb 0x40000 \
+			kernel 0x2000000 \
+			rootfs 0x1e0000000
+	else
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			uboot2 0x100000 \
+			env 0x80000 \
+			env_redund 0x80000 \
+			reserve 0x100000 \
+			dtb 0x40000 \
+			kernel 0x2000000 \
+			rootfs 0x1e0000000
+	fi
 elif [ "$1" = "NAND" ]; then
-	isp pack_image ISPBOOOT.BIN \
-		xboot0 uboot0 \
-		xboot1 0x100000 \
-		uboot1 0x100000 \
-		uboot2 0x100000 \
-		fip 0x100000 \
-		env 0x80000 \
-		env_redund 0x80000 \
-		dtb 0x40000 \
-		kernel 0x1900000 \
-		rootfs 0xe000000
+	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			uboot2 0x100000 \
+			fip 0x100000 \
+			env 0x80000 \
+			env_redund 0x80000 \
+			dtb 0x40000 \
+			kernel 0x1900000 \
+			rootfs 0xe000000
+	else
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			uboot2 0x100000 \
+			env 0x80000 \
+			env_redund 0x80000 \
+			reserve 0x100000 \
+			dtb 0x40000 \
+			kernel 0x1900000 \
+			rootfs 0xe000000
+	fi
+
 elif [ "$1" = "PNAND" ]; then
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
