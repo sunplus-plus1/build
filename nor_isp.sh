@@ -16,11 +16,11 @@ cp $S spi_all
 # uboot (64k)
 # spi_all (size of SPI-NOR)
 
-if [ "$1" == "Q645" -o "$1" = "SP7350" ]; then
+if [ "$1" = "Q645" -o "$1" = "SP7350" ]; then
 	cp $F fip
 	isp pack_image4nor_isp ISPBOOOT.BIN xboot uboot spi_all 0x1000000 fip 0x100000
 	rm -f fip
-elif [ "$1" == "Q628" ]; then
+elif [ "$1" = "Q628" ]; then
 	isp pack_image4nor_isp ISPBOOOT.BIN xboot uboot spi_all 0x1000000
 fi
 
