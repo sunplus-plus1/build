@@ -105,13 +105,23 @@ elif [ "$1" = "PNAND" ]; then
 		kernel 0x1900000 \
 		rootfs 0xe000000
 elif [ "$1" = "USB" ]; then
-	isp pack_image ISPBOOOT.BIN \
-		xboot0 uboot0 \
-		xboot1 0x100000 \
-		uboot1 0x100000 \
-		fip 0x100000 \
-		dtb 0x40000 \
-		kernel 0xd80000
+	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			fip 0x100000 \
+			dtb 0x40000 \
+			kernel 0xd80000
+	else
+		isp pack_image ISPBOOOT.BIN \
+			xboot0 uboot0 \
+			xboot1 0x100000 \
+			uboot1 0x100000 \
+			reserve 0x100000 \
+			dtb 0x40000 \
+			kernel 0xd80000
+	fi
 fi
 
 rm -rf xboot0
