@@ -219,14 +219,15 @@ warmboot:
 
 #tfa build
 fip: check
-	@cd optee; ./optee_build.sh $(CHIP) $(CROSS_ARM64_COMPILE); cd ..;
-
-	@if [ "$(CHIP)" = "Q645" ]; then \
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		cd optee; ./optee_build.sh $(CHIP) $(CROSS_ARM64_COMPILE); cd .. ;\
+		if [ "$(CHIP)" = "Q645" ]; then \
 		$(MAKE) -f $(FIP_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
 	else \
 		$(MAKE) -f $(FIP_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+		fi; \
+		$(MAKE) secure SECURE_PATH=fip ;\
 	fi
-	@$(MAKE) secure SECURE_PATH=fip
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -359,7 +360,7 @@ spirom_isp: check tool_isp
 			exit 1; \
 		fi \
 	fi
-	@cd out/; ./$(NOR_ISP_SHELL)
+	@cd out/; ./$(NOR_ISP_SHELL) $(CHIP)
 	@$(RM) -f $(OUT_PATH)/$(XBOOT_BIN)
 	@$(RM) -f $(OUT_PATH)/$(UBOOT_BIN)
 
