@@ -61,6 +61,10 @@
 #define MESSAGE_OUT  " 1> /dev/null 2>&1 "
 #endif
 
+#if ((defined(Q645) && (Q645 == 1)) || (defined(SP7350) && (SP7350 == 1)))
+#define FIP     // For FIP partition, it includes BL31 and OPTEE images
+#endif
+
 #define SUPPORT_MAIN_STORAGE_IS_EMMC
 #define XBOOT1_IN_EMMC_BOOTPART
 
@@ -81,12 +85,23 @@
 #define ARGC_PACK_IMAGE_XBOOT1_PARTITION_SIZE        (6)
 #define ARGC_PACK_IMAGE_UBOOT1_FILE                  (7)    // UBOOT-1 (factory default) programmed in NAND/eMMC
 #define ARGC_PACK_IMAGE_UBOOT1_PARTITION_SIZE        (8)
+#ifndef FIP
 #define ARGC_PACK_IMAGE_UBOOT2_FILE                  (9)    // UBOOT-2 (latest update) programmed in NAND/eMMC
 #define ARGC_PACK_IMAGE_UBOOT2_PARTITION_SIZE       (10)
 #define ARGC_PACK_IMAGE_BINARY_PARTITION1_FILE      (11)
 #define ARGC_PACK_IMAGE_BINARY_PARTITION1_SIZE      (12)
 #define ARGC_PACK_IMAGE_BINARY_PARTITION2_FILE      (13)
 #define ARGC_PACK_IMAGE_BINARY_PARTITION2_SIZE      (14)
+#else
+#define ARGC_PACK_IMAGE_UBOOT2_FILE                  (9)    // UBOOT-2 programmed in NAND/eMMC
+#define ARGC_PACK_IMAGE_UBOOT2_PARTITION_SIZE       (10)
+#define ARGC_PACK_IMAGE_FIP_FILE                    (11)    // FIP (latest update) programmed in NAND/eMMC
+#define ARGC_PACK_IMAGE_FIP_PARTITION_SIZE          (12)
+#define ARGC_PACK_IMAGE_BINARY_PARTITION1_FILE      (13)
+#define ARGC_PACK_IMAGE_BINARY_PARTITION1_SIZE      (14)
+#define ARGC_PACK_IMAGE_BINARY_PARTITION2_FILE      (15)
+#define ARGC_PACK_IMAGE_BINARY_PARTITION2_SIZE      (16)
+#endif
 
 // For command "isp extract4update ..."
 #define ARGC_EXTRACT4UPDATE_MAINCMD                  (0)    // isp
@@ -119,11 +134,11 @@
 // NAND 1st partition address will affect env and env_redund partition address.
 // If it is changed, env address (CONFIG_ENV_OFFSET) and env_redund (CONFIG_ENV_OFFSET_REDUND)
 // in pentagram_common.h also need to be changed.
-#if ((defined(Q645) && (Q645 == 1)) || (defined(SP7350) && (SP7350 == 1)))
-#define ADDRESS_NAND_1ST_PARTITION                  0x500000
-#define ADDRESS_NAND_FIP_PARTITION                  0x400000
-#else
+#ifndef FIP
 #define ADDRESS_NAND_1ST_PARTITION                  0x400000
+#else
+#define ADDRESS_NAND_FIP_PARTITION                  0x400000
+#define ADDRESS_NAND_1ST_PARTITION                  0x500000
 #endif
 
 #define MAX_MEM_SIZE_FOR_ISP                        (2 << 20)       // Must be N*(block size), where N=1, 2, ...
@@ -162,10 +177,11 @@ struct partition_info_s {
 #define IDX_PARTITION_XBOOT1            (0)
 #define IDX_PARTITION_UBOOT1            (1)
 #define IDX_PARTITION_UBOOT2            (2)
-#if ((defined(Q645) && (Q645 == 1)) || (defined(SP7350) && (SP7350 == 1)))
+#ifndef FIP
+#define IDX_PARTITION_LAST              IDX_PARTITION_UBOOT2
+#else
 #define IDX_PARTITION_FIP               (3)
-#else /* */
-#define IDX_PARTITION_FIP               IDX_PARTITION_UBOOT2
+#define IDX_PARTITION_LAST              IDX_PARTITION_FIP
 #endif
 #define SIZE_INIT_SCRIPT                (2048)
 #define NUM_OF_PARTITION                (111)
@@ -566,11 +582,9 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 
 			if (nand_or_emmc == IDX_NAND) {
 				if (!(isp_info.file_header.partition_info[i].flags & FLAGS_BCH1K60_LAST_ONE)) {
-#ifdef ADDRESS_NAND_FIP_PARTITION
-					if(i == IDX_PARTITION_UBOOT2)
-					{
+#ifdef FIP
+					if (i == IDX_PARTITION_UBOOT2)
 						fprintf(fd, "setenv isp_addr_next %x\n\n", ADDRESS_NAND_FIP_PARTITION);
-					}
 #endif
 					fprintf(fd, "setexpr isp_mtdpart_size ${isp_addr_next} - ${isp_nand_addr} && ");
 					fprintf(fd, "setenv isp_mtdpart_size 0x${isp_mtdpart_size}\n");
@@ -1115,15 +1129,16 @@ int pack_image(int argc, char **argv)
 				md5sum(isp_info.full_file_name[i], 0, 0, isp_info.file_header.partition_info[i].md5sum);
 
 				isp_info.file_header.partition_info[i].partition_start_addr = next_partition_start_address;
-				if (i <= IDX_PARTITION_FIP) { // IDX_PARTITION_XBOOT1, IDX_PARTITION_UBOOT1, IDX_PARTITION_UBOOT2, IDX_PARTITION_FIP
+
+				if (i <= IDX_PARTITION_LAST) { // IDX_PARTITION_XBOOT1, IDX_PARTITION_UBOOT1, IDX_PARTITION_UBOOT2
 					// Don't change next_partition_start_address,
 					// The start address of these partitions are dynamically calculated.
 
 					isp_info.file_header.partition_info[i].flags |= FLAGS_BCH1K60;
 
-					if (i == IDX_PARTITION_FIP)
+					if (i == IDX_PARTITION_LAST)
 						isp_info.file_header.partition_info[i].flags |= FLAGS_BCH1K60_LAST_ONE;
-					else if (i < IDX_PARTITION_UBOOT2)
+					if (i != IDX_PARTITION_UBOOT2)
 						isp_info.file_header.partition_info[i].flags |= FLAGS_NOT_ALLOWED_TO_UPDATE;
 				} else {
 					next_partition_start_address += isp_info.file_header.partition_info[i].partition_size;
