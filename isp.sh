@@ -77,7 +77,7 @@ elif [ "$1" = "NAND" ]; then
 			env_redund 0x80000 \
 			dtb 0x40000 \
 			kernel 0x1900000 \
-			rootfs 0xe000000
+			rootfs 0xdfc0000
 	else
 		isp pack_image ISPBOOOT.BIN \
 			xboot0 uboot0 \
