@@ -138,7 +138,7 @@
 #define ADDRESS_NAND_1ST_PARTITION                  0x400000
 #else
 #define ADDRESS_NAND_FIP_PARTITION                  0x400000
-#define ADDRESS_NAND_1ST_PARTITION                  0x500000
+#define ADDRESS_NAND_1ST_PARTITION                  0x600000
 #endif
 
 #define MAX_MEM_SIZE_FOR_ISP                        (2 << 20)       // Must be N*(block size), where N=1, 2, ...

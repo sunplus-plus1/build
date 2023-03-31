@@ -72,7 +72,7 @@ elif [ "$1" = "NAND" ]; then
 			xboot1 0x100000 \
 			uboot1 0x100000 \
 			uboot2 0x100000 \
-			fip 0x100000 \
+			fip 0x200000 \
 			env 0x80000 \
 			env_redund 0x80000 \
 			dtb 0x40000 \
