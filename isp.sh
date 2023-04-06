@@ -98,12 +98,12 @@ elif [ "$1" = "PNAND" ]; then
 		xboot1 0x100000 \
 		uboot1 0x100000 \
 		uboot2 0x100000 \
-		fip 0x100000 \
+		fip 0x200000 \
 		env 0x80000 \
 		env_redund 0x80000 \
 		dtb 0x40000 \
 		kernel 0x1900000 \
-		rootfs 0xe000000
+		rootfs 0xdfc0000
 elif [ "$1" = "USB" ]; then
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
 		isp pack_image ISPBOOOT.BIN \
