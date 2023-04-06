@@ -222,9 +222,9 @@ fip: check
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 		cd optee; ./optee_build.sh $(CHIP) $(CROSS_ARM64_COMPILE); cd .. ;\
 		if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -f $(FIP_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
-	else \
-		$(MAKE) -f $(FIP_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+			$(MAKE) -f $(FIP_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+		else \
+			$(MAKE) -f $(FIP_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
 		fi; \
 		$(MAKE) secure SECURE_PATH=fip ;\
 	fi
