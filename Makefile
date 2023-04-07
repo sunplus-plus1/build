@@ -186,6 +186,7 @@ firmware:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" -o "$(CHIP)" = "Q628" ]; then \
 		$(ECHO) "[arduino] make $(CHIP) firmware" ;\
 		$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) ;\
+		$(CHMOD) -x $(FIRMWARE_PATH)/bin/firmware ;\
 		$(CP) $(FIRMWARE_PATH)/bin/firmware linux/rootfs/initramfs/disk/lib/firmware ;\
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
@@ -214,6 +215,7 @@ xboot: check
 warmboot:
 	@if [ "$(CHIP)" = "SP7350" ]; then \
 		$(MAKE) -C $(XBOOT_PATH)/warmboot XBOOT_CROSS=$(CROSS_COMPILE_FOR_XBOOT);\
+		$(CHMOD) -x $(XBOOT_PATH)/warmboot/warmboot ;\
 		$(CP) $(XBOOT_PATH)/warmboot/warmboot linux/rootfs/initramfs/disk/lib/firmware ;\
 	fi;
 

@@ -9,4 +9,5 @@ CP = cp
 MKDIR = mkdir
 RM = rm
 LN = ln
+CHMOD = chmod
 
