@@ -511,7 +511,7 @@ secure:
 		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SB_FLAG);\
+				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SECURE);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 			fi; \
 			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
