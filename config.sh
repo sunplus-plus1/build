@@ -703,8 +703,12 @@ list_config()
 			$ECHO $COLOR_YELLOW"[3] SPI-NOR (jffs2)"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[4] NOR/Romter (initramfs)"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[5] SD Card"$COLOR_ORIGIN
+			if [ "$board" = "1" -o "$board" = "31" ];then
 			$ECHO $COLOR_YELLOW"[6] TFTP server"$COLOR_ORIGIN
+			fi
+			if [ "$board" = "1" ];then
 			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
+			fi
 			if [ "$board" = "31" ];then
 			$ECHO $COLOR_YELLOW"[8] Parallel NAND"$COLOR_ORIGIN
 			fi

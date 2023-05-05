@@ -29,12 +29,10 @@ sinclude ./.hwconfig
 
 TOOLCHAIN_V7_PATH = $(TOPDIR)/crossgcc/arm-linux-gnueabihf/bin
 TOOLCHAIN_V5_PATH = $(TOPDIR)/crossgcc/armv5-eabi--glibc--stable/bin
-TOOLCHAIN_NONOS_PATH = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-arm-none-eabi/bin
 TOOLCHAIN_RISCV_PATH = $(TOPDIR)/crossgcc/riscv64-sifive-linux-gnu/bin
 
 CROSS_V7_COMPILE = $(TOOLCHAIN_V7_PATH)/arm-linux-gnueabihf-
 CROSS_V5_COMPILE = $(TOOLCHAIN_V5_PATH)/armv5-glibc-linux-
-CROSS_NONOS_COMPILE = $(TOOLCHAIN_NONOS_PATH)/arm-none-eabi-
 CROSS_RISCV_COMPILE = $(TOOLCHAIN_RISCV_PATH)/riscv64-sifive-linux-gnu-
 CROSS_RISCV_UNKNOWN_COMPILE = $(TOPDIR)/crossgcc/riscv64-unknown-elf/bin/riscv64-unknown-elf-
 CROSS_ARM64_COMPILE = $(TOPDIR)/crossgcc/gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
@@ -69,22 +67,22 @@ XBOOT_PATH = boot/xboot
 UBOOT_PATH = boot/uboot
 LINUX_PATH = linux/kernel
 ROOTFS_PATH = linux/rootfs
-NONOS_B_PATH = nonos/Bchip-non-os
+FIRMWARE_PATH = firmware/arduino_core_sunplus
 IPACK_PATH = ipack
 OUT_PATH = out
 SECURE_HSM_PATH = $(TOPDIR)/$(BUILD_PATH)/tools/secure_hsm/secure
 FREERTOS_PATH = $(IPACK_PATH)
-TFA_PATH = boot/trusted-firmware-a
+FIP_PATH = boot/trusted-firmware-a
 KERNELRELEASE = $(shell cat $(LINUX_PATH)/include/config/kernel.release 2> /dev/null)
 
 XBOOT_BIN = xboot.img
 UBOOT_BIN = u-boot.img
+FIP_BIN = fip.img
 KERNEL_BIN = uImage
 DTB = dtb
 VMLINUX = vmlinux
 ROOTFS_DIR = $(ROOTFS_PATH)/initramfs/disk
 ROOTFS_IMG = rootfs.img
-NONOS_B_IMG = rom.img
 FREERTOS_IMG = freertos.img
 
 CROSS_COMPILE_FOR_XBOOT =$(CROSS_V5_COMPILE)
@@ -122,11 +120,11 @@ endif
 endif
 
 ifeq ($(CHIP),Q645)
-XBOOT_LPDDR4_MAX = $$((160 * 1024))
+XBOOT_LPDDR4_MAX = $$((192 * 1024))
 endif
 
 ifeq ($(CHIP),SP7350)
-XBOOT_LPDDR4_MAX = $$((160 * 1024))
+XBOOT_LPDDR4_MAX = $$((192 * 1024))
 endif
 
 SDCARD_BOOT_MODE ?= 0
@@ -135,7 +133,7 @@ SDCARD_BOOT_MODE = 1
 else ifeq ($(CHIP),Q645)
 SDCARD_BOOT_MODE = 2
 else ifeq ($(CHIP),SP7350)
-SDCARD_BOOT_MODE = 2
+SDCARD_BOOT_MODE = 3
 endif
 
 # xboot uses name field of u-boot header to differeciate between C-chip boot image
@@ -167,7 +165,7 @@ SPI_BIN = spi_all.bin
 DOWN_TOOL = down_32M.exe
 SECURE_PATH ?=
 
-.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info nonos freertos toolchain
+.PHONY: all xboot uboot kenel rom clean distclean config init check rootfs info firmware freertos toolchain
 .PHONY: dtb spirom isp tool_isp kconfig uconfig xconfig
 
 # rootfs image is created by :
@@ -178,24 +176,18 @@ all: check
 	@$(MAKE) xboot
 	@$(MAKE) dtb
 	@$(MAKE) uboot
-	@if [ "$(IS_I143_RISCV)" = "1" -o "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
-		$(MAKE) freertos; \
-	else \
-		$(MAKE) nonos; \
-	fi
+	@$(MAKE) fip
+	@$(MAKE) firmware
 	@$(MAKE) kernel
 	@$(MAKE) rootfs
 	@$(MAKE) rom
 
-freertos:
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -C freertos/q645; \
-		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
-		$(CP) freertos/q645/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
-	elif [ "$(CHIP)" = "SP7350" ]; then \
-		$(MAKE) -C freertos/sp7350; \
-		$(ECHO) "copy cm4.img to rootfs/lib/firmware " ; \
-		$(CP) freertos/sp7350/build/m4 linux/rootfs/initramfs/disk/lib/firmware/cm4.img; \
+firmware:
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" -o "$(CHIP)" = "Q628" ]; then \
+		$(ECHO) "[arduino] make $(CHIP) firmware" ;\
+		$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) ;\
+		$(CHMOD) -x $(FIRMWARE_PATH)/bin/firmware ;\
+		$(CP) $(FIRMWARE_PATH)/bin/firmware linux/rootfs/initramfs/disk/lib/firmware ;\
 	else \
 		$(MAKE) -C freertos CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		if [ "$(NEED_ISP)" = '1' ]; then \
@@ -206,24 +198,38 @@ freertos:
 			fi; \
 		fi; \
 	fi
+#Q645/SP7350 CM4 with freertos
+freertos:
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		$(ECHO) "[freertos] make $(CHIP) firmware" ;\
+		$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) FREERTOS=1 ;\
+		$(CP) $(FIRMWARE_PATH)/bin/firmware linux/rootfs/initramfs/disk/lib/firmware ;\
+	fi
 #xboot build
 xboot: check
 	@$(MAKE) ARCH=$(ARCH_XBOOT) $(MAKE_JOBS) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) SECURE=$(SECURE) all
 	@$(MAKE) secure SECURE_PATH=xboot
-#tfa build
-tfa: check
-	@if [ ! -f $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin ]; then \
-		$(ECHO) $(COLOR_YELLOW) "### make uboot first !!###"$(COLOR_ORIGIN) ;\
-		exit 1; \
+	@$(MAKE) warmboot
+
+#warmboot build
+warmboot:
+	@if [ "$(CHIP)" = "SP7350" ]; then \
+		$(MAKE) -C $(XBOOT_PATH)/warmboot XBOOT_CROSS=$(CROSS_COMPILE_FOR_XBOOT);\
+		$(CHMOD) -x $(XBOOT_PATH)/warmboot/warmboot ;\
+		$(CP) $(XBOOT_PATH)/warmboot/warmboot linux/rootfs/initramfs/disk/lib/firmware ;\
 	fi;
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
-	else \
-		$(MAKE) -f $(TFA_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+
+#tfa build
+fip: check
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		cd optee; ./optee_build.sh $(CHIP) $(CROSS_ARM64_COMPILE); cd .. ;\
+		if [ "$(CHIP)" = "Q645" ]; then \
+			$(MAKE) -f $(FIP_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+		else \
+			$(MAKE) -f $(FIP_PATH)/sp7350.mk CROSS=$(CROSS_ARM64_COMPILE) build ; \
+		fi; \
+		$(MAKE) secure SECURE_PATH=fip ;\
 	fi
-	@$(TOPDIR)/build/tools/add_uhdr.sh "u_boot" $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH)
-	@cat $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(TFA_PATH)/build/bl31.img > $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin
-	@$(MAKE) secure SECURE_PATH=uboot
 #uboot build
 uboot: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
@@ -238,17 +244,14 @@ uboot: check
 		$(MAKE) -C $(TOPDIR)/boot/opensbi distclean && $(MAKE) -C $(TOPDIR)/boot/opensbi FW_PAYLOAD_PATH=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin CROSS_COMPILE=$(CROSS_COMPILE_FOR_XBOOT); \
 		$(CP) -f $(TOPDIR)/boot/opensbi/out/fw_payload.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 	fi
-	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
-		dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 skip=64 conv=notrunc 2>/dev/null ;\
-		img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin | cut -f1` ; add_zero=$$((4-img_sz%4));\
-		dd if=/dev/zero of=$(TOPDIR)/$(UBOOT_PATH)/uboot_temp.bin  bs=1 seek=$$((img_sz)) count=$$((add_zero)) conv=notrunc 2>/dev/null ;\
-		$(MAKE) tfa;\
-	else \
+	@if [ "$(CHIP)" = "Q628" ]; then \
 		$(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
-		img_sz=`du -sb $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) | cut -f1` ; \
+		img_sz=`du -sb $(TOPDIR)/boot/uboot/u-boot.img | cut -f1` ; \
 		printf "size: %d (hex %x)\n" $$img_sz $$img_sz ;\
-		$(MAKE) secure SECURE_PATH=uboot ;\
+	else \
+		dd if=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin of=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  bs=1 skip=64 conv=notrunc 2>/dev/null ;\
 	fi
+	@$(MAKE) secure SECURE_PATH=uboot
 
 #kernel build
 kernel: check
@@ -258,25 +261,17 @@ kernel: check
 	else \
 		$(RM) -rf $(ROOTFS_DIR)/lib/modules/; \
 		$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) modules_install INSTALL_MOD_PATH=../../$(ROOTFS_DIR) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
-		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
-		$(RM) $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
+		$(RM) -f $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/build; \
+		$(RM) -f $(ROOTFS_DIR)/lib/modules/$(KERNELRELEASE)/source; \
 		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_ARM64_BIN); \
 			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_ARM64_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
 		else \
 			$(RM) -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
-			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+			$(MAKE_ARCH) $(MAKE_JOBS) -C $(LINUX_PATH) $(KERNEL_BIN) V=0 CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) LOADADDR=0x308000; \
 		fi; \
 	fi
 	@$(MAKE) secure SECURE_PATH=kernel;
-
-nonos:
-	@$(MAKE) -C $(NONOS_B_PATH) CROSS=$(CROSS_NONOS_COMPILE)
-# for A:
-#	$(TOPDIR)/build/tools/add_uhdr.sh uboot $(NONOS_B_PATH)/bin/rom.bin $(NONOS_B_PATH)/bin/rom.img arm 0x200040 0x200040
-# for B:
-	@$(ECHO) "copy a926.img to rootfs/lib/firmware  "
-	@$(CP) $(NONOS_B_PATH)/bin/rom linux/rootfs/initramfs/disk/lib/firmware/a926.img 
 
 hsm_init:
 	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
@@ -284,28 +279,24 @@ hsm_init:
 	fi
 
 clean:
-	@$(MAKE_ARCH) -C $(NONOS_B_PATH) $@
-	@if [ "$(CHIP)" = "Q645" ]; then \
-		$(MAKE) -C freertos/q645 $@ ; \
-	else \
-		$(MAKE) -C freertos/sp7350 $@ ; \
-	fi
+	@$(MAKE) -C $(FIRMWARE_PATH) CHIP=$(CHIP) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
-	@$(MAKE) -f $(TFA_PATH)/q645.mk CROSS=$(CROSS_ARM64_COMPILE) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) mrproper
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) $@
 	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp $@
 	@$(RM) -rf $(OUT_PATH)
+	@cd optee; ./optee_clean.sh;cd ..;
 
 distclean: clean
+	@$(MAKE) -C $(IPACK_PATH) $@
 	@$(MAKE) ARCH=$(ARCH_XBOOT) -C $(XBOOT_PATH) CROSS=$(CROSS_COMPILE_FOR_XBOOT) $@
 	@$(MAKE_ARCH) -C $(UBOOT_PATH) $@
 	@$(MAKE_ARCH) -C $(LINUX_PATH) $@
 	@$(RM) -f $(CONFIG_ROOT)
 	@$(RM) -f $(HW_CONFIG_ROOT)
 
-__config: hsm_init
+__config: hsm_init clean
 	@if [ -z $(HCONFIG) ]; then \
 		$(RM) -f $(HW_CONFIG_ROOT); \
 	fi
@@ -340,10 +331,10 @@ dtb: check
 	$(eval LINUX_DTB=$(shell cat $(CONFIG_ROOT) | grep 'LINUX_DTB=' | sed 's/LINUX_DTB=//g').dtb)
 
 	@if [ $(IS_ASSIGN_DTB) -eq 1 ]; then \
-		$(MAKE_ARCH) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(HW_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) W=1; \
 		$(LN) -fs arch/$(ARCH)/boot/dts/$(HW_DTB) $(LINUX_PATH)/dtb; \
 	else \
-		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX); \
+		$(MAKE_ARCH) -C $(LINUX_PATH) $(LINUX_DTB) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) W=1; \
 		if [ $$? -ne 0 ]; then \
 			exit 1; \
 		fi; \
@@ -363,7 +354,15 @@ spirom_isp: check tool_isp
 		$(ECHO) $(COLOR_YELLOW)$(UBOOT_BIN)" doesn't exist."$(COLOR_ORIGIN); \
 		exit 1; \
 	fi
-	@cd out/; ./$(NOR_ISP_SHELL)
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		if [ -f $(FIP_PATH)/build/$(FIP_BIN) ]; then \
+			$(CP) -f $(FIP_PATH)/build/$(FIP_BIN) $(OUT_PATH); \
+		else \
+			$(ECHO) $(COLOR_YELLOW) $(FIP_PATH)/build/$(FIP_BIN)" doesn't exist."$(COLOR_ORIGIN); \
+			exit 1; \
+		fi \
+	fi
+	@cd out/; ./$(NOR_ISP_SHELL) $(CHIP)
 	@$(RM) -f $(OUT_PATH)/$(XBOOT_BIN)
 	@$(RM) -f $(OUT_PATH)/$(UBOOT_BIN)
 
@@ -398,17 +397,21 @@ isp: check tool_isp
 		exit 1; \
 	fi
 
+	@if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		if [ -f $(FIP_PATH)/build/$(FIP_BIN) ]; then \
+			$(CP) -f $(FIP_PATH)/build/$(FIP_BIN) $(OUT_PATH); \
+			$(ECHO) $(COLOR_YELLOW)"Copy "$(FIP_BIN)" to out folder."$(COLOR_ORIGIN); \
+		else \
+			$(ECHO) $(COLOR_YELLOW) $(FIP_PATH)/build/$(FIP_BIN)" doesn't exist."$(COLOR_ORIGIN); \
+			exit 1; \
+		fi \
+	fi
 	@if [ "$(IS_I143_RISCV)" = "1" ]; then \
 		if [ "$(IS_P_CHIP)" = "1" ]; then \
 			if [ -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) ]; then \
 				$(CP) -f $(FREERTOS_PATH)/bin/$(FREERTOS_IMG) $(OUT_PATH)/a926.img; \
 				$(ECHO) $(COLOR_YELLOW)"Copy freertos.img to out folder."$(COLOR_ORIGIN); \
 			fi; \
-		fi; \
-	else \
-		if [ -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) ]; then \
-			$(CP) -f $(NONOS_B_PATH)/bin/$(NONOS_B_IMG) $(OUT_PATH)/a926.img; \
-			$(ECHO) $(COLOR_YELLOW)"Copy nonos img to out folder."$(COLOR_ORIGIN); \
 		fi; \
 	fi
 	@if [ -f $(LINUX_PATH)/$(VMLINUX) ]; then \
@@ -487,7 +490,7 @@ secure:
 			bash ./add_xhdr.sh ./bin/xboot.bin ./bin/$(XBOOT_BIN) $(SECURE) ; \
 			make size_check || exit 1; \
 			mv ./bin/$(XBOOT_BIN) ./bin/$(XBOOT_BIN).orig ; \
-			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img > ./bin/$(XBOOT_BIN) ; \
+			cat ./bin/$(XBOOT_BIN).orig ./bin/lpddr4_pmu_train_imem.img ./bin/lpddr4_pmu_train_dmem.img ./bin/lpddr4_2d_pmu_train_imem.img ./bin/lpddr4_2d_pmu_train_dmem.img ./bin/lpddr4_diags_imem.img ./bin/lpddr4_diags_dmem.img > ./bin/$(XBOOT_BIN) ; \
 			sz=`du -sb ./bin/$(XBOOT_BIN) | cut -f1` ; \
 			printf "$(XBOOT_BIN) (+ lpddr4 fw) size = %d (hex %x)\n" $$sz $$sz ; \
 			if [ $$sz -gt $(XBOOT_LPDDR4_MAX) ]; then \
@@ -502,34 +505,55 @@ secure:
 		fi; \
 	elif [ "$(SECURE_PATH)" = "uboot" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###uboot add sign data ####!!!" $(COLOR_ORIGIN) ;\
-		if [ ! -f $(UBOOT_PATH)/$(UBOOT_BIN) ]; then \
+		if [ ! -f $(UBOOT_PATH)/u-boot.bin ]; then \
 			exit 1; \
 		fi; \
 		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
-				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SB_FLAG);\
+				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SECURE);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 			fi; \
 			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ; \
 		fi; \
+	elif [ "$(SECURE_PATH)" = "fip" ]; then \
+		$(ECHO) $(COLOR_YELLOW) "###fip add sign data ####!!!" $(COLOR_ORIGIN) ;\
+		if [ ! -f $(FIP_PATH)/build/fip.bin ]; then \
+			exit 1; \
+		fi; \
+		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+			if [ "$(SECURE)" = "1" ]; then \
+				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
+				./build_inputfile_sb.sh $(TOPDIR)/$(FIP_PATH)/build/fip.bin  $(SB_FLAG);\
+				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(FIP_PATH)/build/fip.bin; \
+			fi; \
+			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh fip_image $(TOPDIR)/$(FIP_PATH)/build/fip.bin $(TOPDIR)/$(FIP_PATH)/build/$(FIP_BIN) $(ARCH) ;\
+		fi; \
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
 		$(ECHO) $(COLOR_YELLOW) "###kernel add sign data ####!!!" $(COLOR_ORIGIN);\
-		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		if [ "$(CHIP)" = "Q645" ]; then \
 			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/Image ]; then \
 				exit 1; \
-			fi; \
-			if [ "$(BOOT_FROM)" != "SPINOR" ] && [ "$(BOOT_FROM)" != "NOR_JFFS2" ]; then  \
-				cp -f $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
 			fi; \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 				./build_inputfile_sb.sh $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(SECURE); \
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
 			fi;\
-			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0x0480000 0x0480000 kernel; \
+			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0 0 kernel; \
+		elif [ "$(CHIP)" = "SP7350" ]; then \
+			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/Image ]; then \
+				exit 1; \
+			fi; \
+			if [ "$(BOOT_FROM)" != "SPINOR" ] && [ "$(BOOT_FROM)" != "NOR_JFFS2" ]; then  \
+				cp -f $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
+			fi; \
+			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0 0 kernel; \
+			if [ "$(SECURE)" = "1" ]; then \
+				make -C $(TOPDIR)/boot/uboot/board/sunplus/common/secure_sp7350 sign IMG=$(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
+			fi; \
 		else \
 			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
 				exit 1; \
@@ -624,4 +648,3 @@ info:
 	@$(ECHO) "ROOTFS_CONTENT =" $(ROOTFS_CONTENT)
 
 include ./build/qemu.mak
-
