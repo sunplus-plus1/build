@@ -151,14 +151,11 @@ $RESIZE $ROOT_IMG $partition_sz_2
 dd if="$ROOT_IMG" of="$OUT_FILE" bs="$seek_bs" seek="$(($seek_offset+$partition_size_1/$seek_bs))"
 
 # Create the partition info
-partition_size_2=`du -sb $ROOT_IMG | cut -f1`
-partition_size_2=$(((partition_size_2+65535)/65536))
-partition_size_2=$((partition_size_2*65536))
 echo '###### do sfdisk cmd (sfdisk version need to bigger than 2.27.1) ########'
 if [ -x "$(command -v sfdisk)" ]; then
 	sfdisk -v
 	printf "type=b, size=$(($partition_size_1/$BLOCK_SIZE))
-		type=83, size=$(($partition_size_2/$BLOCK_SIZE))" |
+		type=83," |
 	sfdisk "$OUT_FILE"
 else
 	echo "no sfdisk cmd, please install it"
