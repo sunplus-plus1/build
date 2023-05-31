@@ -140,10 +140,11 @@ rm -rf fip
 # Create image for booting from SD card or USB storage.
 if [ "$1" = "SDCARD" ]; then
 	mkdir -p boot2linux_SDcard
-	cp -rf $U $K $N $F ./boot2linux_SDcard
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+		cp -rf $U $K $N $F ./boot2linux_SDcard
 		dd if=$X of=boot2linux_SDcard/ISPBOOOT.BIN
 	else
+		cp -rf $U $K $N ./boot2linux_SDcard
 		dd if=/dev/zero of=boot2linux_SDcard/ISPBOOOT.BIN bs=1024 count=64
 		dd if=$X of=boot2linux_SDcard/ISPBOOOT.BIN conv=notrunc
 	fi
