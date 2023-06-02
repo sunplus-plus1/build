@@ -916,6 +916,9 @@ int gen_script_main(char *file_name_isp_script, int nand_or_emmc)
 	fprintf(fd, "setenv isp_nand_addr_write_bblk_0\n");
 	fprintf(fd, "setenv isp_nand_addr_write_bblk_1\n");
 	fprintf(fd, "setenv isp_nand_addr_write_bblk_2\n");
+#ifdef FIP
+	fprintf(fd, "setenv isp_nand_addr_write_bblk_3\n");
+#endif
 	fprintf(fd, "setenv isp_size_total\n");
 	fprintf(fd, "setenv md5sum_value\n");
 	fprintf(fd, "setenv script_addr\n");
