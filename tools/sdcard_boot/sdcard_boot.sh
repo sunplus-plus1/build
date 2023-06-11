@@ -152,8 +152,8 @@ dd if="$ROOT_IMG" of="$OUT_FILE" bs="$seek_bs" seek="$(($seek_offset+$partition_
 
 # Create the partition info
 partition_size_2=`du -sb $ROOT_IMG | cut -f1`
-partition_size_2=$(((partition_size_2+65535)/65536))
-partition_size_2=$((partition_size_2*65536))
+#partition_size_2=$(((partition_size_2+65535)/65536))
+#partition_size_2=$((partition_size_2*65536))
 echo '###### do sfdisk cmd (sfdisk version need to bigger than 2.27.1) ########'
 if [ -x "$(command -v sfdisk)" ]; then
 	sfdisk -v
