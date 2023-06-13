@@ -24,5 +24,5 @@ sboot_kernel=echo "booti ${addr_dst_kernel} - ${fdtcontroladdr}"; booti ${addr_d
 uenvcmd=run sload_kernel; run sbootargs; run sverify; run sunzip_kernel; run sboot_kernel;
 
 #
-## END
+# END
 #
