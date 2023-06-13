@@ -6,7 +6,7 @@ KERNEL_IMG=uImage
 sRpi_args=setenv filesize 0; fatsize $isp_if $isp_dev /cmdline.txt; if test $filesize != 0; then fatload $isp_if $isp_dev $addr_dst_dtb /cmdline.txt; raspb init $fileaddr $filesize; fi;
 
 # bootargs
-sbootargs=setenv bootargs console=ttyS0,921600 earlycon root=/dev/mmcblk1p2 rw user_debug=255 rootwait $bootargs;
+sbootargs=setenv bootargs console=ttyS0,115200 earlycon root=/dev/mmcblk1p2 rw user_debug=255 rootwait $bootargs;
 
 # load kernel
 sload_kernel=echo "fatload $isp_if $isp_dev $addr_temp_kernel /$KERNEL_IMG"; fatload $isp_if $isp_dev $addr_temp_kernel /$KERNEL_IMG;
