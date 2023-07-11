@@ -1,5 +1,6 @@
 *~
 *.bak
+*.pem
 
 # toolchains have prebuilt .o
 #*.o

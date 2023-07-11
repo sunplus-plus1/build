@@ -508,12 +508,15 @@ secure:
 		if [ ! -f $(UBOOT_PATH)/u-boot.bin ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		if [ "$(CHIP)" = "Q645" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 				./build_inputfile_sb.sh $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin  $(SECURE);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin; \
 			fi; \
+			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
+		elif [ "$(CHIP)" = "SP7350" ]; then \
+			[ "$(SECURE)" = "1" ] && make -C $(TOPDIR)/build/tools/secure_sp7350 sign IMG=$(TOPDIR)/$(UBOOT_PATH)/u-boot.bin SB=$(SB_FLAG); \
 			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh $(img_name) $(TOPDIR)/$(UBOOT_PATH)/u-boot.bin $(TOPDIR)/$(UBOOT_PATH)/$(UBOOT_BIN) $(ARCH) ;\
 		else \
 			$(SHELL) ./build/tools/secure_sign/gen_signature.sh $(UBOOT_PATH) $(UBOOT_BIN) 1 ; \
@@ -523,12 +526,15 @@ secure:
 		if [ ! -f $(FIP_PATH)/build/fip.bin ]; then \
 			exit 1; \
 		fi; \
-		if [ "$(CHIP)" = "Q645" -o "$(CHIP)" = "SP7350" ]; then \
+		if [ "$(CHIP)" = "Q645" ]; then \
 			if [ "$(SECURE)" = "1" ]; then \
 				cd $(SECURE_HSM_PATH); ./clr_out.sh ; \
 				./build_inputfile_sb.sh $(TOPDIR)/$(FIP_PATH)/build/fip.bin  $(SB_FLAG);\
 				cp -f $(SECURE_HSM_PATH)/out/outfile_sb.bin $(TOPDIR)/$(FIP_PATH)/build/fip.bin; \
 			fi; \
+			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh fip_image $(TOPDIR)/$(FIP_PATH)/build/fip.bin $(TOPDIR)/$(FIP_PATH)/build/$(FIP_BIN) $(ARCH) ;\
+		else \
+			[ "$(SECURE)" = "1" ] && make -C $(TOPDIR)/build/tools/secure_sp7350 sign IMG=$(TOPDIR)/$(FIP_PATH)/build/fip.bin SB=$(SB_FLAG); \
 			cd $(TOPDIR) ; $(TOPDIR)/build/tools/add_uhdr.sh fip_image $(TOPDIR)/$(FIP_PATH)/build/fip.bin $(TOPDIR)/$(FIP_PATH)/build/$(FIP_BIN) $(ARCH) ;\
 		fi; \
 	elif [ "$(SECURE_PATH)" = "kernel" ]; then \
@@ -547,10 +553,8 @@ secure:
 			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/Image ]; then \
 				exit 1; \
 			fi; \
+			[ "$(SECURE)" = "1" ] && make -C $(TOPDIR)/build/tools/secure_sp7350 sign IMG=$(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz; \
 			cd $(TOPDIR)/$(IPACK_PATH); ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/Image.gz $(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) $(ARCH) 0 0 kernel; \
-			if [ "$(SECURE)" = "1" ]; then \
-				make -C $(TOPDIR)/boot/uboot/board/sunplus/common/secure_sp7350 sign IMG=$(TOPDIR)/$(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN); \
-			fi; \
 		else \
 			if [ ! -f $(LINUX_PATH)/arch/$(ARCH)/boot/$(KERNEL_BIN) ]; then \
 				exit 1; \
