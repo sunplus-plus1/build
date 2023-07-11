@@ -12,7 +12,7 @@ SZ:=$(shell echo "(16 - ($(SZ) % 16)) % 16" | bc)
 KEY1_BIN=../secure_hsm/secure/otp_Device_keys/x_priv_0.bin
 KEY1=$(shell cat ../secure_hsm/secure/otp_Device_keys/x_priv_0.hex)
 KEY2=$(shell cat ../secure_hsm/secure/otp_Sb_keys/ed_pub_0.hex)
-KEY3=$(shell $(OPENSSL) enc -aes-256-ctr -K $(KEY2) -iv $(KEY2) -nosalt -in $(KEY1_BIN) | xxd -ps -c 32)
+KEY3=$(shell $(OPENSSL) enc -aes-256-ctr -K $(KEY2) -iv $(KEY2) -nosalt -in $(KEY1_BIN) | xxd -ps -c32)
 
 pk.pem:
 	$(OPENSSL) genrsa -out pk.pem 2048
@@ -26,8 +26,8 @@ padding:
 sign: pk.pem padding
 	@echo SB=$(SB) $(KEY3)
 	@[ "$(SB)" = "3" ] && $(OPENSSL) enc -aes-256-ctr -K $(KEY3) -iv $(KEY1) -nosalt -in $(IMG) -out ~t && mv ~t $(IMG) || true
-	@$(OPENSSL) sha3-512 -binary $(IMG) | $(OPENSSL) pkeyutl -sign -inkey pk.pem | xxd -p -c1 | tac | xxd -p -r >> $(IMG)
-	@$(OPENSSL) rsa -in pk.pem -modulus -noout | cut -c 9- | xxd -ps -r | xxd -p -c1 | tac | xxd -p -r >> $(IMG)
+	@$(OPENSSL) sha3-512 -binary $(IMG) | $(OPENSSL) pkeyutl -sign -inkey pk.pem | xxd -ps -c1 | tac | xxd -ps -r >> $(IMG)
+	@$(OPENSSL) rsa -in pk.pem -modulus -noout | cut -c 9- | xxd -ps -r | xxd -ps -c1 | tac | xxd -ps -r >> $(IMG)
 
 clean:
 	rm -f pk.pem rsakey_N.h
