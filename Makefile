@@ -178,8 +178,8 @@ all: check
 	@$(MAKE) uboot
 	@$(MAKE) fip
 	@$(MAKE) firmware
-	@$(MAKE) kernel
 	@$(MAKE) rootfs
+	@$(MAKE) kernel
 	@$(MAKE) rom
 
 firmware:
