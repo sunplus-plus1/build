@@ -381,6 +381,7 @@ c_chip_tftp_config()
 	fi
 	set_uboot_config sp7021_romter_c_defconfig
 	set_kernel_config sp7021_chipC_emu_initramfs_defconfig
+	set_bootfrom_config TFTP
 
 	USER_NAME=$(whoami)
 	echo "Your USER_NAME is ${USER_NAME}"
