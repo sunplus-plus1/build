@@ -859,6 +859,27 @@ list_config()
 		esac
 	fi
 
+	echo "PNAND_FLASH=0" >> $BUILD_CONFIG
+	if [ "$board" = "31" ];then
+		if [ "$bootdev" = "para_nand" ];then
+			$ECHO $COLOR_GREEN"Select nand:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] GD9AU4G8F3AMGI 512MiB 3.3V 8-bit PageSize 2K"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] GD9FU4G8F4BMGI 512MiB 3.3V 8-bit PageSize 4K"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "PNAND_FLASH=1" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "PNAND_FLASH=2" >> $BUILD_CONFIG
+				;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+		fi
+	fi
+
 	if [ "$board" != "11" ];then
 		if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
 			$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN

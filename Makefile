@@ -379,7 +379,7 @@ spirom: check
 	fi
 
 tool_isp:
-	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP)
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP) PNAND_FLASH=$(PNAND_FLASH)
 
 isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
@@ -601,7 +601,8 @@ ifneq ($(CHIP),Q645)
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNDriver.so
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNSupport.so
 endif
-	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT)
+	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT) \
+	PNAND_FLASH=$(PNAND_FLASH)
 
 kconfig:
 	$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) menuconfig

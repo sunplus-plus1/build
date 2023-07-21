@@ -10,6 +10,11 @@ endif
 
 ifeq ($(CHIP),SP7350)
 CFLAGS = -DSP7350=1
+ifeq ($(PNAND_FLASH),1)
+CFLAGS += -DPNAND_PAGE_SIZE=2048
+else ifeq ($(PNAND_FLASH),2)
+CFLAGS += -DPNAND_PAGE_SIZE=4096
+endif
 endif
 
 
