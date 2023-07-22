@@ -145,9 +145,10 @@
 #define GPT_HEADER_SIZE                             (17 << 10)      // GUID Partition header size: (512-byte MBR) + (512-byte header) + (128 bytes * 128 partitions)
 
 #ifndef PNAND_PAGE_SIZE
-#define PNAND_PAGE_SIZE                             2048
-#endif
+#define NAND_UBI_VID_HEAD_OFFSET                    2048
+#else
 #define NAND_UBI_VID_HEAD_OFFSET                    (PNAND_PAGE_SIZE)
+#endif
 
 typedef unsigned char u08;
 typedef uint32_t      u32;

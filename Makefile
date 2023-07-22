@@ -641,6 +641,9 @@ info:
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
+	@if [ -n "$(PNAND_NAME)" ]; then \
+		echo -e "PNAND_FLASH =" $(PNAND_NAME); \
+	fi
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)
 	@$(ECHO) "CHIP =" $(CHIP)

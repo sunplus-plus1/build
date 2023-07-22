@@ -863,16 +863,28 @@ list_config()
 	if [ "$board" = "31" ];then
 		if [ "$bootdev" = "para_nand" ];then
 			$ECHO $COLOR_GREEN"Select nand:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] GD9AU4G8F3AMGI 512MiB 3.3V 8-bit PageSize 2K"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[2] GD9FU4G8F4BMGI 512MiB 3.3V 8-bit PageSize 4K"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] GD9AU4G8F3A 512MiB 3.3V 8-bit PageSize 2K"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] GD9FU4G8F4B 512MiB 3.3V 8-bit PageSize 4K"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] GD9FS2G8F2A 256MiB 1.8V 8-bit PageSize 2K"$COLOR_ORIGIN
+			#$ECHO $COLOR_YELLOW"[4] W29N08GZSIBA  1GiB 1.8V 8-bit PageSize 2K"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
 				echo "PNAND_FLASH=1" >> $BUILD_CONFIG
+				echo "PNAND_NAME=GD9AU4G8F3A 512MiB 3.3V 8-bit Page2K" >> $BUILD_CONFIG
 				;;
 			"2")
 				echo "PNAND_FLASH=2" >> $BUILD_CONFIG
+				echo "PNAND_NAME=GD9FU4G8F4B 512MiB 3.3V 8-bit Page4K" >> $BUILD_CONFIG
 				;;
+			"3")
+				echo "PNAND_FLASH=3" >> $BUILD_CONFIG
+				echo "PNAND_NAME=GD9FS2G8F2A 256MiB 1.8V 8-bit Page2K" >> $BUILD_CONFIG
+				;;
+			#"4")
+				#echo "PNAND_FLASH=4" >> $BUILD_CONFIG
+				#echo "PNAND_NAME=W29N08GZSIBA  1GiB 1.8V 8-bit Page2K" >> $BUILD_CONFIG
+				#;;
 			*)
 				echo "Error: Unknown config!"
 				exit 1
