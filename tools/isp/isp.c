@@ -144,6 +144,9 @@
 #define MAX_MEM_SIZE_FOR_ISP                        (2 << 20)       // Must be N*(block size), where N=1, 2, ...
 #define GPT_HEADER_SIZE                             (17 << 10)      // GUID Partition header size: (512-byte MBR) + (512-byte header) + (128 bytes * 128 partitions)
 
+#ifndef PNAND_PAGE_SIZE
+#define PNAND_PAGE_SIZE                             2048
+#endif
 #define NAND_UBI_VID_HEAD_OFFSET                    (PNAND_PAGE_SIZE)
 
 typedef unsigned char u08;
