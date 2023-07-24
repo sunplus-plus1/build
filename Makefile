@@ -379,7 +379,7 @@ spirom: check
 	fi
 
 tool_isp:
-	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP) PNAND_FLASH=$(PNAND_FLASH)
+	@$(MAKE) -C $(TOPDIR)/$(BUILD_PATH)/tools/isp FREERTOS=$(IS_I143_RISCV) CHIP=$(CHIP) NAND_PAGE_SIZE=$(NAND_PAGE_SIZE)
 
 isp: check tool_isp
 	@if [ -f $(XBOOT_PATH)/bin/$(XBOOT_BIN) ]; then \
@@ -602,7 +602,7 @@ ifneq ($(CHIP),Q645)
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNSupport.so
 endif
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT) \
-	PNAND_FLASH=$(PNAND_FLASH)
+	NAND_SIZE=$(NAND_SIZE) NAND_PAGE_SIZE=$(NAND_PAGE_SIZE) NAND_PAGE_CNT=$(NAND_PAGE_CNT)
 
 kconfig:
 	$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) menuconfig
@@ -641,8 +641,10 @@ info:
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
-	@if [ -n "$(PNAND_NAME)" ]; then \
-		echo -e "PNAND_FLASH =" $(PNAND_NAME); \
+	@if [ -n "$(NAND_SIZE)" ]; then \
+		echo -e "NAND_SIZE =" $(NAND_SIZE)"MiB"; \
+		echo -e "NAND_PAGE_SIZE =" $(NAND_PAGE_SIZE)"KiB"; \
+		echo -e "NAND_PAGE_CNT =" $(NAND_PAGE_CNT); \
 	fi
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)

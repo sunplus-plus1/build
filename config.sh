@@ -862,28 +862,60 @@ list_config()
 	echo "PNAND_FLASH=0" >> $BUILD_CONFIG
 	if [ "$board" = "31" ];then
 		if [ "$bootdev" = "para_nand" ];then
-			$ECHO $COLOR_GREEN"Select nand:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] GD9AU4G8F3A 512MiB 3.3V 8-bit PageSize 2K"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[2] GD9FU4G8F4B 512MiB 3.3V 8-bit PageSize 4K"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[3] GD9FS2G8F2A 256MiB 1.8V 8-bit PageSize 2K"$COLOR_ORIGIN
-			#$ECHO $COLOR_YELLOW"[4] W29N08GZSIBA  1GiB 1.8V 8-bit PageSize 2K"$COLOR_ORIGIN
+			$ECHO $COLOR_GREEN"Select nand size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 256 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 512 MiB"$COLOR_ORIGIN
+			#$ECHO $COLOR_YELLOW"[3] 1 GiB"$COLOR_ORIGIN
+			#$ECHO $COLOR_YELLOW"[4] 4 GiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
-				echo "PNAND_FLASH=1" >> $BUILD_CONFIG
-				echo "PNAND_NAME=GD9AU4G8F3A 512MiB 3.3V 8-bit Page2K" >> $BUILD_CONFIG
+				echo "NAND_SIZE=256" >> $BUILD_CONFIG
 				;;
 			"2")
-				echo "PNAND_FLASH=2" >> $BUILD_CONFIG
-				echo "PNAND_NAME=GD9FU4G8F4B 512MiB 3.3V 8-bit Page4K" >> $BUILD_CONFIG
+				echo "NAND_SIZE=512" >> $BUILD_CONFIG
 				;;
-			"3")
-				echo "PNAND_FLASH=3" >> $BUILD_CONFIG
-				echo "PNAND_NAME=GD9FS2G8F2A 256MiB 1.8V 8-bit Page2K" >> $BUILD_CONFIG
-				;;
+			#"3")
+				#echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				#;;
 			#"4")
-				#echo "PNAND_FLASH=4" >> $BUILD_CONFIG
-				#echo "PNAND_NAME=W29N08GZSIBA  1GiB 1.8V 8-bit Page2K" >> $BUILD_CONFIG
+				#echo "NAND_SIZE=4096" >> $BUILD_CONFIG
+				#;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+
+			$ECHO $COLOR_GREEN"Select nand page size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 4 KiB"$COLOR_ORIGIN
+			#$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
+				;;
+			#"3")
+				#echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
+				#;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+
+			$ECHO $COLOR_GREEN"Select nand page cnt per block:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
+			#$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_PAGE_CNT=64" >> $BUILD_CONFIG
+				;;
+			#"2")
+				#echo "NAND_PAGE_CNT=128" >> $BUILD_CONFIG
 				#;;
 			*)
 				echo "Error: Unknown config!"
