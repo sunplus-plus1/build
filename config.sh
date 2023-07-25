@@ -865,7 +865,7 @@ list_config()
 			$ECHO $COLOR_GREEN"Select nand size:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 256 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 512 MiB"$COLOR_ORIGIN
-			#$ECHO $COLOR_YELLOW"[3] 1 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] 1 GiB"$COLOR_ORIGIN
 			#$ECHO $COLOR_YELLOW"[4] 4 GiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
@@ -875,9 +875,9 @@ list_config()
 			"2")
 				echo "NAND_SIZE=512" >> $BUILD_CONFIG
 				;;
-			#"3")
-				#echo "NAND_SIZE=1024" >> $BUILD_CONFIG
-				#;;
+			"3")
+				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				;;
 			#"4")
 				#echo "NAND_SIZE=4096" >> $BUILD_CONFIG
 				#;;
