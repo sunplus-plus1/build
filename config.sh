@@ -711,7 +711,7 @@ list_config()
 			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
 			fi
 			if [ "$board" = "31" ];then
-			$ECHO $COLOR_YELLOW"[8] Parallel NAND"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[8] 8-bit NAND"$COLOR_ORIGIN
 			fi
 			read sel
 			case "$sel" in
