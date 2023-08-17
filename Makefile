@@ -178,8 +178,13 @@ all: check
 	@$(MAKE) uboot
 	@$(MAKE) fip
 	@$(MAKE) firmware
-	@$(MAKE) rootfs
+	@if [ "$(BOOT_FROM)" = "SPINOR" ]; then \
+		$(MAKE) rootfs ; \
+	fi
 	@$(MAKE) kernel
+	@if [ "$(BOOT_FROM)" != "SPINOR" ]; then \
+		$(MAKE) rootfs ; \
+	fi
 	@$(MAKE) rom
 
 firmware:
