@@ -30,6 +30,21 @@ fi
 
 cp $D DTB
 
+if [ -n "$3" ] && [ -n "$4" ]; then
+	BLOCK_SIZE=$(($3*$4*1024))
+fi
+
+partition=(xboot1 uboot1 uboot2 fip env env_redund dtb kernel rootfs)
+size=(0x100000 0x100000 0x100000 0x200000 0x80000 0x80000 0x40000 0x1900000 0xdfc0000)
+
+for i in ${!size[@]}; do
+	if [ "${BLOCK_SIZE}" -gt "$((size[$i]))" ]; then
+		size[$i]=${BLOCK_SIZE}
+		echo ">>>" ${partition[$i]} "up to" ${BLOCK_SIZE}
+	fi
+	printf "%x\n" $((size[$i]))
+done
+
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
 #     please make sure U-Boot settings of CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, CONFIG_SRCADDR_KERNEL and CONFIG_SRCADDR_DTB
@@ -95,15 +110,16 @@ elif [ "$1" = "NAND" ]; then
 elif [ "$1" = "PNAND" ]; then
 	isp pack_image ISPBOOOT.BIN \
 		xboot0 uboot0 \
-		xboot1 0x100000 \
-		uboot1 0x100000 \
-		uboot2 0x100000 \
-		fip 0x200000 \
-		env 0x80000 \
-		env_redund 0x80000 \
-		dtb 0x40000 \
-		kernel 0x1900000 \
-		rootfs 0xdfc0000
+		${partition[0]} ${size[0]} \
+		${partition[1]} ${size[1]} \
+		${partition[2]} ${size[2]} \
+		${partition[3]} ${size[3]} \
+		${partition[4]} ${size[4]} \
+		${partition[5]} ${size[5]} \
+		${partition[6]} ${size[6]} \
+		${partition[7]} ${size[7]} \
+		${partition[8]} ${size[8]}
+
 elif [ "$1" = "USB" ]; then
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
 		isp pack_image ISPBOOOT.BIN \

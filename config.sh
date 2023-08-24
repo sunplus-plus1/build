@@ -866,7 +866,7 @@ list_config()
 			$ECHO $COLOR_YELLOW"[1] 256 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 512 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] 1 GiB"$COLOR_ORIGIN
-			#$ECHO $COLOR_YELLOW"[4] 4 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] 4 GiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -878,9 +878,9 @@ list_config()
 			"3")
 				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
 				;;
-			#"4")
-				#echo "NAND_SIZE=4096" >> $BUILD_CONFIG
-				#;;
+			"4")
+				echo "NAND_SIZE=4096" >> $BUILD_CONFIG
+				;;
 			*)
 				echo "Error: Unknown config!"
 				exit 1
@@ -889,7 +889,7 @@ list_config()
 			$ECHO $COLOR_GREEN"Select nand page size:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 4 KiB"$COLOR_ORIGIN
-			#$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -898,9 +898,9 @@ list_config()
 			"2")
 				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
 				;;
-			#"3")
-				#echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
-				#;;
+			"3")
+				echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
+				;;
 			*)
 				echo "Error: Unknown config!"
 				exit 1
@@ -908,15 +908,15 @@ list_config()
 
 			$ECHO $COLOR_GREEN"Select nand page cnt per block:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
-			#$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
 				echo "NAND_PAGE_CNT=64" >> $BUILD_CONFIG
 				;;
-			#"2")
-				#echo "NAND_PAGE_CNT=128" >> $BUILD_CONFIG
-				#;;
+			"2")
+				echo "NAND_PAGE_CNT=128" >> $BUILD_CONFIG
+				;;
 			*)
 				echo "Error: Unknown config!"
 				exit 1

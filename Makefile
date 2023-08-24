@@ -468,7 +468,7 @@ isp: check tool_isp
 			exit 1; \
 		fi \
 	fi
-	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP)
+	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP) $(NAND_PAGE_SIZE) $(NAND_PAGE_CNT)
 
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
