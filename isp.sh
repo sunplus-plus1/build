@@ -1,3 +1,4 @@
+#!/bin/bash
 TOP=../
 
 export PATH=$PATH:$TOP/build/tools/isp/
