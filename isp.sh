@@ -30,20 +30,19 @@ fi
 
 cp $D DTB
 
-if [ -n "$3" ] && [ -n "$4" ]; then
-	BLOCK_SIZE=$(($3*$4*1024))
-fi
-
 partition=(xboot1 uboot1 uboot2 fip env env_redund dtb kernel rootfs)
 size=(0x100000 0x100000 0x100000 0x200000 0x80000 0x80000 0x40000 0x1900000 0xdfc0000)
 
-for i in ${!size[@]}; do
-	if [ "${BLOCK_SIZE}" -gt "$((size[$i]))" ]; then
-		size[$i]=${BLOCK_SIZE}
-		echo ">>>" ${partition[$i]} "up to" ${BLOCK_SIZE}
-	fi
-	printf "%x\n" $((size[$i]))
-done
+if [ -n "$3" ] && [ -n "$4" ]; then
+	BLOCK_SIZE=$(($3*$4*1024))
+	for i in ${!size[@]}; do
+		if [ "${BLOCK_SIZE}" -gt "$((size[$i]))" ]; then
+			size[$i]=${BLOCK_SIZE}
+			echo ">>>" ${partition[$i]} "up to" ${BLOCK_SIZE}
+		fi
+		printf "%x\n" $((size[$i]))
+	done
+fi
 
 # Note:
 #     If partitions' sizes listed before "kernel" are changed,
