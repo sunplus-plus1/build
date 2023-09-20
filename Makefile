@@ -647,9 +647,9 @@ info:
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
 	@if [ -n "$(NAND_SIZE)" ]; then \
-		echo -e "NAND_SIZE =" $(NAND_SIZE)"MiB"; \
-		echo -e "NAND_PAGE_SIZE =" $(NAND_PAGE_SIZE)"KiB"; \
-		echo -e "NAND_PAGE_CNT =" $(NAND_PAGE_CNT); \
+		$(ECHO) "NAND_SIZE =" $(NAND_SIZE)"MiB"; \
+		$(ECHO) "NAND_PAGE_SIZE =" $(NAND_PAGE_SIZE)"KiB"; \
+		$(ECHO) "NAND_PAGE_CNT =" $(NAND_PAGE_CNT); \
 	fi
 	@$(ECHO) "BOOT CHIP =" $(BOOT_CHIP)
 	@$(ECHO) "ARCH =" $(ARCH)
