@@ -31,13 +31,13 @@ bootdev_lookup()
 	dev=$1
 	if [ "$1" = "spi_nor" ]; then
 		dev=nor
-	elif [ "$1" = "nor" ];then
+	elif [ "$1" = "nor" ]; then
 		dev=romter
-	elif [ "$1" = "spi_nand" ];then
+	elif [ "$1" = "spi_nand" ]; then
 		dev=nand
-	elif [ "$1" = "tftp" ];then
+	elif [ "$1" = "tftp" ]; then
 		dev=romter
-	elif [ "$1" = "para_nand" ];then
+	elif [ "$1" = "para_nand" ]; then
 		dev=pnand
 	fi
 	echo $dev
@@ -48,7 +48,7 @@ chip_lookup()
 	chip=$1
 	if [ "$1" = "1" ]; then
 		chip=c
-	elif [ "$1" = "2" ];then
+	elif [ "$1" = "2" ]; then
 		chip=p
 	fi
 	echo $chip
@@ -133,7 +133,7 @@ linux_defconfig_combine()
 
 set_uboot_config()
 {
-	if [ "$UBOOT_CONFIG" = "" ];then
+	if [ "$UBOOT_CONFIG" = "" ]; then
 		UBOOT_CONFIG=$1
 	fi
 	echo "UBOOT_CONFIG=${UBOOT_CONFIG}" >> $BUILD_CONFIG
@@ -141,7 +141,7 @@ set_uboot_config()
 
 set_kernel_config()
 {
-	if [ "$KERNEL_CONFIG" = "" ];then
+	if [ "$KERNEL_CONFIG" = "" ]; then
 		KERNEL_CONFIG=$1
 	fi
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
@@ -149,7 +149,7 @@ set_kernel_config()
 
 set_bootfrom_config()
 {
-	if [ "$BOOT_FROM" = "" ];then
+	if [ "$BOOT_FROM" = "" ]; then
 		BOOT_FROM=$1
 	fi
 	echo "BOOT_FROM="$BOOT_FROM >> $BUILD_CONFIG
@@ -157,7 +157,7 @@ set_bootfrom_config()
 
 set_xboot_config()
 {
-	if [ "$XBOOT_CONFIG" = "" ];then
+	if [ "$XBOOT_CONFIG" = "" ]; then
 		XBOOT_CONFIG=$1
 	fi
 	echo "XBOOT_CONFIG="$XBOOT_CONFIG >> $BUILD_CONFIG
@@ -165,7 +165,7 @@ set_xboot_config()
 
 p_chip_spi_nand_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -180,7 +180,7 @@ p_chip_spi_nand_config()
 
 p_chip_emmc_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -195,7 +195,7 @@ p_chip_emmc_config()
 
 p_chip_nor_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -207,7 +207,7 @@ p_chip_nor_config()
 
 p_chip_tftp_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -245,7 +245,7 @@ p_chip_tftp_config()
 
 p_chip_usb_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -287,7 +287,7 @@ p_chip_config()
 
 c_chip_spi_nand_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -313,7 +313,7 @@ c_chip_para_nand_config()
 
 c_chip_spi_nor_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -325,7 +325,7 @@ c_chip_spi_nor_config()
 
 c_chip_emmc_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -340,7 +340,7 @@ c_chip_emmc_config()
 
 c_chip_nor_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -352,7 +352,7 @@ c_chip_nor_config()
 
 c_chip_tftp_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -394,7 +394,7 @@ c_chip_tftp_config()
 
 c_chip_usb_config()
 {
-	if [ "$1" = "revA" ];then
+	if [ "$1" = "revA" ]; then
 		XBOOT_CONFIG=q628_defconfig
 	fi
 
@@ -599,7 +599,7 @@ others_config()
 	find $XBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*_defconfig" | sort -i | sed "s,"$XBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read XBOOT_CONFIG_NUM
-	if [ -z $XBOOT_CONFIG_NUM ];then
+	if [ -z $XBOOT_CONFIG_NUM ]; then
 		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
@@ -610,7 +610,7 @@ others_config()
 	find $UBOOT_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$UBOOT_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read UBOOT_CONFIG_NUM
-	if [ -z $UBOOT_CONFIG_NUM ];then
+	if [ -z $UBOOT_CONFIG_NUM ]; then
 		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
@@ -621,7 +621,7 @@ others_config()
 	find $KERNEL_ARM_CONFIG_ROOT -maxdepth 1 -mindepth 1 -type f -name "*" | sort -i | sed "s,"$KERNEL_ARM_CONFIG_ROOT"/,,g" | nl -b an -w 3 | sed "s,\t,] ,g" | sed "s,^ , [,g"
 	$ECHO ""
 	read KERNEL_CONFIG_NUM
-	if [ -z $KERNEL_CONFIG_NUM ];then
+	if [ -z $KERNEL_CONFIG_NUM ]; then
 		$ECHO $COLOR_RED"Error: Unknown config num!"$COLOR_ORIGIN
 		exit 1;
 	fi
@@ -633,9 +633,9 @@ others_config()
 	$ECHO " [2] v7"
 	$ECHO " ==============================================="
 	read ROOTFS_CONFIG_NUM
-	if [ $ROOTFS_CONFIG_NUM = '1' ];then
+	if [ $ROOTFS_CONFIG_NUM = '1' ]; then
 		ROOTFS_CONFIG=v5
-	elif [ $ROOTFS_CONFIG_NUM = '2' ];then
+	elif [ $ROOTFS_CONFIG_NUM = '2' ]; then
 		ROOTFS_CONFIG=v7
 	fi
 
@@ -645,9 +645,9 @@ others_config()
 	$ECHO " [2] v7"
 	$ECHO " ==============================================="
 	read COMPILER_CONFIG_NUM
-	if [ $COMPILER_CONFIG_NUM = '1' ];then
+	if [ $COMPILER_CONFIG_NUM = '1' ]; then
 		CROSS_COMPILE=$1
-	elif [ $COMPILER_CONFIG_NUM = '2' ];then
+	elif [ $COMPILER_CONFIG_NUM = '2' ]; then
 		CROSS_COMPILE=$2
 	fi
 
@@ -656,9 +656,9 @@ others_config()
 	$ECHO " y/n"
 	$ECHO " ==============================================="
 	read NEED_ISP_CONFIG
-	if [ $NEED_ISP_CONFIG = 'y' ];then
+	if [ $NEED_ISP_CONFIG = 'y' ]; then
 		NEED_ISP=1
-	elif [ $NEED_ISP_CONFIG = 'n' ];then
+	elif [ $NEED_ISP_CONFIG = 'n' ]; then
 		NEED_ISP=0
 	fi
 
@@ -667,9 +667,9 @@ others_config()
 	$ECHO " y/n"
 	$ECHO " ==============================================="
 	read NEED_ZEBU_RUN
-	if [ $NEED_ZEBU_RUN = 'y' ];then
+	if [ $NEED_ZEBU_RUN = 'y' ]; then
 		ZEBU_RUN=1
-	elif [ $NEED_ZEBU_RUN = 'n' ];then
+	elif [ $NEED_ZEBU_RUN = 'n' ]; then
 		ZEBU_RUN=0
 	fi
 
@@ -678,10 +678,10 @@ others_config()
 	echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> $BUILD_CONFIG
 	echo "ROOTFS_CONFIG=${ROOTFS_CONFIG}" >> $BUILD_CONFIG
 	echo "CROSS_COMPILE="$CROSS_COMPILE >> $BUILD_CONFIG
-	if [ $NEED_ISP = '1' ];then
+	if [ $NEED_ISP = '1' ]; then
 		echo "NEED_ISP="$NEED_ISP >> $BUILD_CONFIG
 	fi
-	if [ $ZEBU_RUN = '1' ];then
+	if [ $ZEBU_RUN = '1' ]; then
 		echo "ZEBU_RUN="$ZEBU_RUN >> $BUILD_CONFIG
 	fi
 }
@@ -696,21 +696,21 @@ rootfs_content=BUSYBOX
 list_config()
 {
 	sel=1
-	if [ "$board" = "1" -o "$board" = "21" -o "$board" = "31" ];then
+	if [ "$board" = "1" -o "$board" = "21" -o "$board" = "31" ]; then
 		# chip == C
-		if [ "$chip" = "1" ];then # board == ev
+		if [ "$chip" = "1" ]; then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] SPI-NOR (jffs2)"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[4] NOR/Romter (initramfs)"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[5] SD Card"$COLOR_ORIGIN
-			if [ "$board" = "1" -o "$board" = "31" ];then
+			if [ "$board" = "1" -o "$board" = "31" ]; then
 			$ECHO $COLOR_YELLOW"[6] TFTP server"$COLOR_ORIGIN
 			fi
-			if [ "$board" = "1" ];then
+			if [ "$board" = "1" ]; then
 			$ECHO $COLOR_YELLOW"[7] USB"$COLOR_ORIGIN
 			fi
-			if [ "$board" = "31" ];then
+			if [ "$board" = "31" ]; then
 			$ECHO $COLOR_YELLOW"[8] 8-bit NAND"$COLOR_ORIGIN
 			fi
 			read sel
@@ -729,7 +729,7 @@ list_config()
 				;;
 			"5")
 				bootdev=emmc
-				if [ "$board" = "21" -o "$board" = "31" ];then
+				if [ "$board" = "21" -o "$board" = "31" ]; then
 					bootdev=sdcard
 				fi
 				BOOT_FROM=SDCARD
@@ -747,7 +747,7 @@ list_config()
 				echo "Error: Unknown config!"
 				exit 1
 			esac
-		elif [ "$chip" = "2" ];then
+		elif [ "$chip" = "2" ]; then
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] SPI-NAND"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] NOR/Romter"$COLOR_ORIGIN
@@ -783,8 +783,8 @@ list_config()
 			echo "Error: Unknown chip!"
 			exit 1
 		fi
-	elif [ "$board" = "11" ];then
-		if [ "$chip" = "1" ];then
+	elif [ "$board" = "11" ]; then
+		if [ "$chip" = "1" ]; then
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
 			read sel
@@ -799,7 +799,7 @@ list_config()
 				echo "Error: Unknown config!"
 				exit 1
 			esac
-		elif [ "$chip" = "2" ];then
+		elif [ "$chip" = "2" ]; then
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] NOR/Romter"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] SD Card"$COLOR_ORIGIN
@@ -831,16 +831,16 @@ list_config()
 			echo "Error: Unknown chip!"
 			exit 1
 		fi
-	elif [ "$board" = "12" ];then
+	elif [ "$board" = "12" ]; then
 		runzebu=1
 		sel=1
-	elif [ "$board" = "22" -o "$board" = "32" ];then
+	elif [ "$board" = "22" -o "$board" = "32" ]; then
 		zmem=1
 		runzebu=1
 		bootdev=nor
 		echo "ZMEM=1" >> $BUILD_CONFIG
 	else
-		if [ "$board" != "2" ];then # board == ev
+		if [ "$board" != "2" ]; then # board == ev
 			$ECHO $COLOR_YELLOW"[1] eMMC"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] SD Card"$COLOR_ORIGIN
 			read sel
@@ -860,25 +860,55 @@ list_config()
 	fi
 
 	echo "PNAND_FLASH=0" >> $BUILD_CONFIG
-	if [ "$board" = "31" ];then
-		if [ "$bootdev" = "para_nand" ];then
-			$ECHO $COLOR_GREEN"Select nand size:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] 256 MiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[2] 512 MiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[3] 1 GiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[4] 4 GiB"$COLOR_ORIGIN
+	if [ "$board" = "1" ]; then
+		if [ "$bootdev" = "spi_nand" ]; then
+			$ECHO $COLOR_GREEN"Select NAND size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 128 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 256 MiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
-				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				echo "NAND_SIZE=128" >> $BUILD_CONFIG
 				;;
 			"2")
-				echo "NAND_SIZE=512" >> $BUILD_CONFIG
+				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+
+			$ECHO $COLOR_GREEN"Select NAND page size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
+			echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
+
+			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
+			echo "NAND_PAGE_CNT=64" >> $BUILD_CONFIG
+		fi
+	elif [ "$board" = "21" -o "$board" = "31" ]; then
+		if [ "$bootdev" = "spi_nand" ]; then
+			$ECHO $COLOR_GREEN"Select NAND size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 128 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 256 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] 512 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] 1 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] 4 GiB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_SIZE=128" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "NAND_SIZE=256" >> $BUILD_CONFIG
 				;;
 			"3")
-				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				echo "NAND_SIZE=512" >> $BUILD_CONFIG
 				;;
 			"4")
+				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				;;
+			"5")
 				echo "NAND_SIZE=4096" >> $BUILD_CONFIG
 				;;
 			*)
@@ -886,7 +916,7 @@ list_config()
 				exit 1
 			esac
 
-			$ECHO $COLOR_GREEN"Select nand page size:"$COLOR_ORIGIN
+			$ECHO $COLOR_GREEN"Select NAND page size:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 4 KiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
@@ -906,7 +936,71 @@ list_config()
 				exit 1
 			esac
 
-			$ECHO $COLOR_GREEN"Select nand page cnt per block:"$COLOR_ORIGIN
+			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_PAGE_CNT=64" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "NAND_PAGE_CNT=128" >> $BUILD_CONFIG
+				;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+		elif [ "$bootdev" = "para_nand" ]; then
+			$ECHO $COLOR_GREEN"Select NAND size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 128 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 256 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] 512 MiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[4] 1 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] 4 GiB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_SIZE=128" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				;;
+			"3")
+				echo "NAND_SIZE=512" >> $BUILD_CONFIG
+				;;
+			"4")
+				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				;;
+			"5")
+				echo "NAND_SIZE=4096" >> $BUILD_CONFIG
+				;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+
+			$ECHO $COLOR_GREEN"Select NAND page size:"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[2] 4 KiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
+			read sel
+			case "$sel" in
+			"1")
+				echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
+				;;
+			"2")
+				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
+				;;
+			"3")
+				echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
+				;;
+			*)
+				echo "Error: Unknown config!"
+				exit 1
+			esac
+
+			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
 			read sel
@@ -924,8 +1018,8 @@ list_config()
 		fi
 	fi
 
-	if [ "$board" != "11" ];then
-		if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ];then
+	if [ "$board" != "11" ]; then
+		if [ "$bootdev" = "emmc" -o "$bootdev" = "usb" -o "$bootdev" = "sdcard"  ]; then
 			$ECHO $COLOR_GREEN"Select rootfs:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] BusyBox"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] Full"$COLOR_ORIGIN
@@ -937,7 +1031,6 @@ list_config()
 			*)
 				sel=1
 			esac
-			echo "select ${sel}"
 		fi
 	fi
 }
@@ -953,48 +1046,48 @@ $ECHO $COLOR_YELLOW"[7] LTPP3G2 Board (S+)"$COLOR_ORIGIN
 read board
 
 echo "CHIP=Q628" > $BUILD_CONFIG
-if [ "$board" = "1" ];then
+if [ "$board" = "1" ]; then
 	echo "LINUX_DTB=sp7021-ev" >> $BUILD_CONFIG
 	# $ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
 	# $ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	# $ECHO $COLOR_YELLOW"[2] Chip P (ARM A926)"$COLOR_ORIGIN
 	# read chip
 	chip=1
-elif [ "$board" = "2" ];then
+elif [ "$board" = "2" ]; then
 	echo "LINUX_DTB=sp7021-ltpp3g2revD" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2_defconfig
-elif [ "$board" = "3" ];then
+elif [ "$board" = "3" ]; then
 	echo "LINUX_DTB=sp7021-demov2" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_demov2_defconfig
 	KERNEL_CONFIG=sp7021_chipC_demov2_defconfig
-elif [ "$board" = "4" ];then
+elif [ "$board" = "4" ]; then
 	echo "LINUX_DTB=sp7021-demov3" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_demov3_defconfig
 	KERNEL_CONFIG=sp7021_chipC_demov3_defconfig
-elif [ "$board" = "5" ];then
+elif [ "$board" = "5" ]; then
 	echo "LINUX_DTB=sp7021-bpi-f2s" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2s_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2s_defconfig
-elif [ "$board" = "6" ];then
+elif [ "$board" = "6" ]; then
 	echo "LINUX_DTB=sp7021-bpi-f2p" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_bpi_f2p_defconfig
 	KERNEL_CONFIG=sp7021_chipC_bpi-f2p_defconfig
-elif [ "$board" = "7" ];then
+elif [ "$board" = "7" ]; then
 	echo "LINUX_DTB=sp7021-ltpp3g2-sunplus" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2sunplus_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig
-elif [ "$board" = "11" -o "$board" = "12" ];then
+elif [ "$board" = "11" -o "$board" = "12" ]; then
 	echo "CHIP=I143" > $BUILD_CONFIG
 	$ECHO $COLOR_GREEN"Select chip:"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] Chip C (ARM Cortex-A7 x4)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Chip P (Sifive U54MC x4)"$COLOR_ORIGIN
 	read chip
-elif [ "$board" = "21" -o "$board" = "22" ];then
+elif [ "$board" = "21" -o "$board" = "22" ]; then
 	ARCH=arm64
 	echo "CHIP=Q645" > $BUILD_CONFIG
 	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
-elif [ "$board" = "31" -o "$board" = "32" ];then
+elif [ "$board" = "31" -o "$board" = "32" ]; then
 	ARCH=arm64
 	echo "CHIP=SP7350" > $BUILD_CONFIG
 	echo "LINUX_DTB=sunplus/sp7350-ev" >> $BUILD_CONFIG
@@ -1003,13 +1096,13 @@ else
 	exit 1
 fi
 
-if [ "$chip" = "1" ];then
-	$ECHO $COLOR_GREEN"Select configs (C chip):"$COLOR_ORIGIN
-	if [ "$board" = "11" -o "$board" = "12" ];then
+if [ "$chip" = "1" ]; then
+	$ECHO $COLOR_GREEN"Select boot devices:"$COLOR_ORIGIN
+	if [ "$board" = "11" -o "$board" = "12" ]; then
 		echo "LINUX_DTB=i143_ChipC_ev" >> $BUILD_CONFIG
-		if [ "$board" = "11" ];then
+		if [ "$board" = "11" ]; then
 			num=3
-		elif [ "$board" = "12" ];then
+		elif [ "$board" = "12" ]; then
 			bootdev=c
 			num=5
 		fi
@@ -1020,16 +1113,16 @@ if [ "$chip" = "1" ];then
 	echo "ROOTFS_CONFIG=v7" >> $BUILD_CONFIG
 	echo "BOOT_CHIP=C_CHIP" >> $BUILD_CONFIG
 
-elif [ "$chip" = "2" ];then
-	$ECHO $COLOR_GREEN"Select configs (P chip):"$COLOR_ORIGIN
-	if [ "$board" = "11" -o "$board" = "12" ];then
+elif [ "$chip" = "2" ]; then
+	$ECHO $COLOR_GREEN"Select boot devices (P chip):"$COLOR_ORIGIN
+	if [ "$board" = "11" -o "$board" = "12" ]; then
 		ARCH=riscv
 		echo "LINUX_DTB=sunplus/i143-ev" >> $BUILD_CONFIG
 		echo "CROSS_COMPILE="$2 >> $BUILD_CONFIG
 		echo "ROOTFS_CONFIG=riscv" >> $BUILD_CONFIG
-		if [ "$board" = "11" ];then
+		if [ "$board" = "11" ]; then
 			num=4
-		elif [ "$board" = "12" ];then
+		elif [ "$board" = "12" ]; then
 			bootdev=p
 			num=5
 		fi
@@ -1064,46 +1157,48 @@ list_config
 
 set_config_directly=0
 
-if [ "$board" = "21" -o "$board" = "22" ];then
+if [ "$board" = "21" -o "$board" = "22" ]; then
 	## board = q645
+	$ECHO $COLOR_GREEN"Select secure modes:"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] No secure (default)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[3] Enable digital signature & Encryption"$COLOR_ORIGIN
 	read secure
 
-	if [ "$secure" = "2" ];then
+	if [ "$secure" = "2" ]; then
 		echo "SECURE=1" >> $BUILD_CONFIG
-	elif [ "$secure" = "3" ];then
+	elif [ "$secure" = "3" ]; then
 		echo "SECURE=1" >> $BUILD_CONFIG
 		echo "ENCRYPTION=1" >> $BUILD_CONFIG
 	fi
 
 	sel_chip=$(chip_lookup $chip)
 	sel_board=ev
-	if [ "$board" = "22" ];then
+	if [ "$board" = "22" ]; then
 		sel_board=zebu
 	fi
 	set_config_directly=1
 	chip_name="q645"
 fi
 
-if [ "$board" = "31" -o "$board" = "32" ];then
+if [ "$board" = "31" -o "$board" = "32" ]; then
 	## board = SP7350
+	$ECHO $COLOR_GREEN"Select secure modes:"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[1] No secure (default)"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[2] Enable digital signature"$COLOR_ORIGIN
 	$ECHO $COLOR_YELLOW"[3] Enable digital signature & Encryption"$COLOR_ORIGIN
 	read secure
 
-	if [ "$secure" = "2" ];then
+	if [ "$secure" = "2" ]; then
 		echo "SECURE=1" >> $BUILD_CONFIG
-	elif [ "$secure" = "3" ];then
+	elif [ "$secure" = "3" ]; then
 		echo "SECURE=1" >> $BUILD_CONFIG
 		echo "ENCRYPTION=1" >> $BUILD_CONFIG
 	fi
 
 	sel_chip=$(chip_lookup $chip)
 	sel_board=ev
-	if [ "$board" = "32" ];then
+	if [ "$board" = "32" ]; then
 		sel_board=zebu
 	fi
 	set_config_directly=1
@@ -1112,7 +1207,7 @@ fi
 
 if [ "$set_config_directly" = "1" ]; then
 	xboot_bootdev=$bootdev
-	if [ "$bootdev" = "sdcard" -o "$bootdev" = "usb" ];then
+	if [ "$bootdev" = "sdcard" -o "$bootdev" = "usb" ]; then
 		xboot_bootdev="emmc"
 	fi
 	XBOOT_CONFIG=$(xboot_defconfig_combine $chip_name $xboot_bootdev $sel_chip $sel_board $zmem)
