@@ -859,6 +859,58 @@ list_config()
 		esac
 	fi
 
+	if [ "$bootdev" = "nor" -o "$bootdev" = "spi_nor" ]; then
+		$ECHO $COLOR_GREEN"Select SPI-NOR size:"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[1] 16 MiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] 32 MiB"$COLOR_ORIGIN
+		read sel
+		case "$sel" in
+		"1")
+			echo "FLASH_SIZE=16" >> $BUILD_CONFIG
+			;;
+		"2")
+			echo "FLASH_SIZE=32" >> $BUILD_CONFIG
+			;;
+		*)
+			echo "Error: Unknown config!"
+			exit 1
+		esac
+	fi
+
+	if [ "$bootdev" = "emmc" ]; then
+		$ECHO $COLOR_GREEN"Select eMMC size:"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[1] 1 GiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[2] 2 GiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[3] 4 GiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[4] 8 GiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[5] 16 GiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[6] 32 GiB"$COLOR_ORIGIN
+		read sel
+		case "$sel" in
+		"1")
+			echo "FLASH_SIZE=1024" >> $BUILD_CONFIG
+			;;
+		"2")
+			echo "FLASH_SIZE=2048" >> $BUILD_CONFIG
+			;;
+		"3")
+			echo "FLASH_SIZE=4096" >> $BUILD_CONFIG
+			;;
+		"4")
+			echo "FLASH_SIZE=8192" >> $BUILD_CONFIG
+			;;
+		"5")
+			echo "FLASH_SIZE=16384" >> $BUILD_CONFIG
+			;;
+		"6")
+			echo "FLASH_SIZE=32768" >> $BUILD_CONFIG
+			;;
+		*)
+			echo "Error: Unknown config!"
+			exit 1
+		esac
+	fi
+
 	echo "PNAND_FLASH=0" >> $BUILD_CONFIG
 	if [ "$board" = "1" ]; then
 		if [ "$bootdev" = "spi_nand" ]; then
@@ -868,10 +920,10 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
-				echo "NAND_SIZE=128" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=128" >> $BUILD_CONFIG
 				;;
 			"2")
-				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=256" >> $BUILD_CONFIG
 				;;
 			*)
 				echo "Error: Unknown config!"
@@ -897,19 +949,19 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
-				echo "NAND_SIZE=128" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=128" >> $BUILD_CONFIG
 				;;
 			"2")
-				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=256" >> $BUILD_CONFIG
 				;;
 			"3")
-				echo "NAND_SIZE=512" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=512" >> $BUILD_CONFIG
 				;;
 			"4")
-				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=1024" >> $BUILD_CONFIG
 				;;
 			"5")
-				echo "NAND_SIZE=4096" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=4096" >> $BUILD_CONFIG
 				;;
 			*)
 				echo "Error: Unknown config!"
@@ -961,19 +1013,19 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
-				echo "NAND_SIZE=128" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=128" >> $BUILD_CONFIG
 				;;
 			"2")
-				echo "NAND_SIZE=256" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=256" >> $BUILD_CONFIG
 				;;
 			"3")
-				echo "NAND_SIZE=512" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=512" >> $BUILD_CONFIG
 				;;
 			"4")
-				echo "NAND_SIZE=1024" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=1024" >> $BUILD_CONFIG
 				;;
 			"5")
-				echo "NAND_SIZE=4096" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=4096" >> $BUILD_CONFIG
 				;;
 			*)
 				echo "Error: Unknown config!"

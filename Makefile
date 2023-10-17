@@ -367,16 +367,16 @@ spirom_isp: check tool_isp
 			exit 1; \
 		fi \
 	fi
-	@cd out/; ./$(NOR_ISP_SHELL) $(CHIP)
+	@cd out/; ./$(NOR_ISP_SHELL) $(CHIP) $(FLASH_SIZE)
 	@$(RM) -f $(OUT_PATH)/$(XBOOT_BIN)
 	@$(RM) -f $(OUT_PATH)/$(UBOOT_BIN)
 
 spirom: check
 	@if [ $(BOOT_KERNEL_FROM_TFTP) -eq 1 ]; then \
 		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) BOOT_KERNEL_FROM_TFTP=$(BOOT_KERNEL_FROM_TFTP) \
-		TFTP_SERVER_PATH=$(TFTP_SERVER_PATH) CHIP=$(CHIP); \
+		TFTP_SERVER_PATH=$(TFTP_SERVER_PATH) CHIP=$(CHIP) FLASH_SIZE=$(FLASH_SIZE); \
 	else \
-		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP) NOR_JFFS2=$(NOR_JFFS2); \
+		$(MAKE_ARCH) -C $(IPACK_PATH) all ZEBU_RUN=$(ZEBU_RUN) CHIP=$(CHIP) FLASH_SIZE=$(FLASH_SIZE) NOR_JFFS2=$(NOR_JFFS2); \
 	fi
 	@if [ -f $(IPACK_PATH)/bin/$(SPI_BIN) -a "$(ZEBU_RUN)" = "0" ]; then \
 		$(ECHO) $(COLOR_YELLOW)"Copy "$(SPI_BIN)" to out folder."$(COLOR_ORIGIN); \
@@ -468,7 +468,7 @@ isp: check tool_isp
 			exit 1; \
 		fi \
 	fi
-	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP) $(NAND_PAGE_SIZE) $(NAND_PAGE_CNT)
+	@cd out/; ./$(ISP_SHELL) $(BOOT_FROM) $(CHIP) $(FLASH_SIZE) $(NAND_PAGE_SIZE) $(NAND_PAGE_CNT)
 
 	@if [ "$(BOOT_FROM)" = "SDCARD" ]; then  \
 		$(ECHO) $(COLOR_YELLOW) "Generating image for SD card..." $(COLOR_ORIGIN); \
@@ -607,7 +607,7 @@ ifneq ($(CHIP),Q645)
 	$(RM) -f $(ROOTFS_DIR)/lib64/libEthosNSupport.so
 endif
 	@$(MAKE_ARCH) -C $(ROOTFS_PATH) CROSS=$(CROSS_COMPILE_FOR_ROOTFS) rootfs rootfs_cfg=$(ROOTFS_CONFIG) boot_from=$(BOOT_FROM) ROOTFS_CONTENT=$(ROOTFS_CONTENT) \
-	NAND_SIZE=$(NAND_SIZE) NAND_PAGE_SIZE=$(NAND_PAGE_SIZE) NAND_PAGE_CNT=$(NAND_PAGE_CNT)
+	FLASH_SIZE=$(FLASH_SIZE) NAND_PAGE_SIZE=$(NAND_PAGE_SIZE) NAND_PAGE_CNT=$(NAND_PAGE_CNT)
 
 kconfig:
 	$(MAKE_ARCH) -C $(LINUX_PATH) CROSS_COMPILE=$(CROSS_COMPILE_FOR_LINUX) menuconfig
@@ -646,8 +646,10 @@ info:
 	@$(ECHO) "NEED ISP =" $(NEED_ISP)
 	@$(ECHO) "ZEBU RUN =" $(ZEBU_RUN)
 	@$(ECHO) "BOOT FROM =" $(BOOT_FROM)
-	@if [ -n "$(NAND_SIZE)" ]; then \
-		$(ECHO) "NAND_SIZE =" $(NAND_SIZE)"MiB"; \
+	@if [ -n "$(FLASH_SIZE)" ]; then \
+		$(ECHO) "FLASH_SIZE =" $(FLASH_SIZE)"MiB"; \
+	fi
+	@if [ -n "$(NAND_PAGE_SIZE)" ]; then \
 		$(ECHO) "NAND_PAGE_SIZE =" $(NAND_PAGE_SIZE)"KiB"; \
 		$(ECHO) "NAND_PAGE_CNT =" $(NAND_PAGE_CNT); \
 	fi

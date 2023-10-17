@@ -31,11 +31,20 @@ fi
 
 cp $D DTB
 
-partition=(xboot1 uboot1 uboot2 fip env env_redund dtb kernel rootfs)
-size=(0x100000 0x100000 0x100000 0x200000 0x80000 0x80000 0x40000 0x1900000 0xdfc0000)
+if [ "$1" = "PNAND" ]; then
+	if [ -n "$3" ]; then
+		NAND_SIZE=$(($3*0x100000))
+	else
+		NAND_SIZE=0x10000000	# default size = 256 MiB
+	fi
+	NAND_SIZE=$(($NAND_SIZE-0x2040000))
+fi
 
-if [ -n "$3" ] && [ -n "$4" ]; then
-	BLOCK_SIZE=$(($3*$4*1024))
+partition=(xboot1 uboot1 uboot2 fip env env_redund dtb kernel rootfs)
+size=(0x100000 0x100000 0x100000 0x200000 0x80000 0x80000 0x40000 0x1900000 $NAND_SIZE)
+
+if [ -n "$4" ] && [ -n "$5" ]; then
+	BLOCK_SIZE=$(($4*$5*1024))
 	for i in ${!size[@]}; do
 		if [ "${BLOCK_SIZE}" -gt "$((size[$i]))" ]; then
 			size[$i]=${BLOCK_SIZE}
@@ -55,6 +64,12 @@ do
 done
 
 if [ "$1" = "EMMC" ]; then
+	if [ -n "$3" ]; then
+		EMMC_SIZE=$(($3*0x100000))
+	else
+		EMMC_SIZE=0x100000000	# default size = 4GiB
+	fi
+	EMMC_SIZE=$(($EMMC_SIZE-0x2000000))
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
 		isp pack_image ISPBOOOT.BIN \
 			xboot0 uboot0 \
@@ -66,7 +81,7 @@ if [ "$1" = "EMMC" ]; then
 			env_redund 0x80000 \
 			dtb 0x40000 \
 			kernel 0x2000000 \
-			rootfs 0x1e0000000
+			rootfs $EMMC_SIZE
 	else
 		isp pack_image ISPBOOOT.BIN \
 			xboot0 uboot0 \
@@ -78,10 +93,17 @@ if [ "$1" = "EMMC" ]; then
 			reserve 0x100000 \
 			dtb 0x40000 \
 			kernel 0x2000000 \
-			rootfs 0x1e0000000
+			rootfs $EMMC_SIZE
 	fi
 elif [ "$1" = "NAND" ]; then
+	if [ -n "$3" ]; then
+		NAND_SIZE=$(($3*0x100000))
+	else
+		NAND_SIZE=0x10000000	# default size = 256 MiB
+	fi
+
 	if [ "$2" = "Q645" -o "$2" = "SP7350" ]; then
+		NAND_SIZE=$(($NAND_SIZE-0x2100000))
 		isp pack_image ISPBOOOT.BIN \
 			xboot0 uboot0 \
 			xboot1 0x100000 \
@@ -92,8 +114,9 @@ elif [ "$1" = "NAND" ]; then
 			env_redund 0x80000 \
 			dtb 0x40000 \
 			kernel 0x1900000 \
-			rootfs 0xdfc0000
+			rootfs $NAND_SIZE
 	else
+		NAND_SIZE=$(($NAND_SIZE-0x2000000))
 		isp pack_image ISPBOOOT.BIN \
 			xboot0 uboot0 \
 			xboot1 0x100000 \
@@ -104,7 +127,7 @@ elif [ "$1" = "NAND" ]; then
 			reserve 0x100000 \
 			dtb 0x40000 \
 			kernel 0x1900000 \
-			rootfs 0xe000000
+			rootfs $NAND_SIZE
 	fi
 
 elif [ "$1" = "PNAND" ]; then
