@@ -2087,7 +2087,7 @@ int gen_nor_isp_script(const char *file_name_isp_script)
 
 	// Erase flash.
 	size_file = isp_info.file_header.partition_info[0].partition_size;
-	fprintf(fd, "echo \"\nErase whole chip (%d MiB)...\"\n", size_file / NOR_ISP_PARTITION_SIZE);
+	fprintf(fd, "echo \"\nErase whole chip (%d MiB)...\"\n", size_file / 0x100000);
 	size_erased = 0;
 	while (size_file) {
 		if (size_file > NOR_ISP_PARTITION_SIZE) {
