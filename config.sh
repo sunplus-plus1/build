@@ -863,6 +863,7 @@ list_config()
 		$ECHO $COLOR_GREEN"Select SPI-NOR size:"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[1] 16 MiB"$COLOR_ORIGIN
 		$ECHO $COLOR_YELLOW"[2] 32 MiB"$COLOR_ORIGIN
+		$ECHO $COLOR_YELLOW"[3] 64 MiB"$COLOR_ORIGIN
 		read sel
 		case "$sel" in
 		"1")
@@ -870,6 +871,9 @@ list_config()
 			;;
 		"2")
 			echo "FLASH_SIZE=32" >> $BUILD_CONFIG
+			;;
+		"3")
+			echo "FLASH_SIZE=64" >> $BUILD_CONFIG
 			;;
 		*)
 			echo "Error: Unknown config!"
