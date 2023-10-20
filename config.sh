@@ -936,10 +936,12 @@ list_config()
 
 			$ECHO $COLOR_GREEN"Select NAND page size:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
+			NAND_PAGE_SIZE=2
 			echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
 
 			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
+			BLOCK_SIZE=$(($NAND_PAGE_SIZE*64))
+			$ECHO $COLOR_YELLOW"[1] 64 (block size = $BLOCK_SIZE KiB)"$COLOR_ORIGIN
 			echo "NAND_PAGE_CNT=64" >> $BUILD_CONFIG
 		fi
 	elif [ "$board" = "21" -o "$board" = "31" ]; then
@@ -978,9 +980,11 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
+				NAND_PAGE_SIZE=2
 				echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
 				;;
 			"2")
+				NAND_PAGE_SIZE=4
 				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
 				;;
 			*)
@@ -989,8 +993,10 @@ list_config()
 			esac
 
 			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
+			BLOCK_SIZE=$(($NAND_PAGE_SIZE*64))
+			$ECHO $COLOR_YELLOW"[1] 64 (block size = $BLOCK_SIZE KiB)"$COLOR_ORIGIN
+			BLOCK_SIZE=$(($NAND_PAGE_SIZE*128))
+			$ECHO $COLOR_YELLOW"[2] 128 (block size = $BLOCK_SIZE KiB)"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -1043,12 +1049,15 @@ list_config()
 			read sel
 			case "$sel" in
 			"1")
+				NAND_PAGE_SIZE=2
 				echo "NAND_PAGE_SIZE=2" >> $BUILD_CONFIG
 				;;
 			"2")
+				NAND_PAGE_SIZE=4
 				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
 				;;
 			"3")
+				NAND_PAGE_SIZE=8
 				echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
 				;;
 			*)
@@ -1057,8 +1066,10 @@ list_config()
 			esac
 
 			$ECHO $COLOR_GREEN"Select NAND page count per block:"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[1] 64"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[2] 128"$COLOR_ORIGIN
+			BLOCK_SIZE=$(($NAND_PAGE_SIZE*64))
+			$ECHO $COLOR_YELLOW"[1] 64 (block size = $BLOCK_SIZE KiB)"$COLOR_ORIGIN
+			BLOCK_SIZE=$(($NAND_PAGE_SIZE*128))
+			$ECHO $COLOR_YELLOW"[2] 128 (block size = $BLOCK_SIZE KiB)"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
