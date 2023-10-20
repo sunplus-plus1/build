@@ -118,15 +118,19 @@
 #define ARGC_EXTRACT4BOOT2LINUX_OUTPUT               (3)    // Should be ISPBOOOT.BIN, but in different folder
 
 
-
-#if defined(Q645) && (Q645 == 1)
+#if (defined(Q645) && (Q645 == 1)) || (defined(SP7350) && (SP7350 == 1))
 #define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
-#elif defined(SP7350) && (SP7350 == 1)
-#define FILE_SIZE_IMAGE_XBOOT0                      (192 << 10)
+#if (NAND_PAGE_SIZE == 2048)
+#define FILE_SIZE_IMAGE_UBOOT0                      (((4 << 20) - (512 << 10)) / 4)		// (4M - header - xboot) / 4 = (4M - 128k - 384k) / 4 = 3584 / 4 = 896k
+#elif (NAND_PAGE_SIZE == 4096)
+#define FILE_SIZE_IMAGE_UBOOT0                      ((((4 << 20) - (512 << 10)) * 3) / 8)	// ((4M - header - xboot) * 3) / 8 = ((4M - 256k - 256k) * 3) / 8 = (3584 * 3) / 8 = 1344k
+#else // (NAND_PAGE_SIZE == 8192)
+#define FILE_SIZE_IMAGE_UBOOT0                      ((((4 << 20) - (2 << 20)) * 7) / 16)	// ((4M - header - xboot) * 7) / 16 = ((4M - 1M - 1M) * 7) / 16 =  (2048 * 7) / 16 = 896k
+#endif
 #else
 #define FILE_SIZE_IMAGE_XBOOT0                      (64 << 10)
+#define FILE_SIZE_IMAGE_UBOOT0                      ((1 << 20) - FILE_SIZE_IMAGE_XBOOT0)	// 1M - xboot = 1M - 64k = 960k
 #endif
-#define FILE_SIZE_IMAGE_UBOOT0                      ((1 << 20) - FILE_SIZE_IMAGE_XBOOT0)
 
 #define NAND_READ_BY_PARTITION_NAME                         // if not defined, it's by NAND address
 // #define PARTITION_SIZE_BAD_BLOCK_DOES_NOT_COUNT

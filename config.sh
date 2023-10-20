@@ -949,7 +949,7 @@ list_config()
 			$ECHO $COLOR_YELLOW"[2] 256 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] 512 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[4] 1 GiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[5] 4 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] 2 GiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -965,7 +965,7 @@ list_config()
 				echo "FLASH_SIZE=1024" >> $BUILD_CONFIG
 				;;
 			"5")
-				echo "FLASH_SIZE=4096" >> $BUILD_CONFIG
+				echo "FLASH_SIZE=2048" >> $BUILD_CONFIG
 				;;
 			*)
 				echo "Error: Unknown config!"
@@ -975,7 +975,6 @@ list_config()
 			$ECHO $COLOR_GREEN"Select NAND page size:"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[1] 2 KiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[2] 4 KiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[3] 8 KiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -983,9 +982,6 @@ list_config()
 				;;
 			"2")
 				echo "NAND_PAGE_SIZE=4" >> $BUILD_CONFIG
-				;;
-			"3")
-				echo "NAND_PAGE_SIZE=8" >> $BUILD_CONFIG
 				;;
 			*)
 				echo "Error: Unknown config!"
@@ -1013,7 +1009,8 @@ list_config()
 			$ECHO $COLOR_YELLOW"[2] 256 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[3] 512 MiB"$COLOR_ORIGIN
 			$ECHO $COLOR_YELLOW"[4] 1 GiB"$COLOR_ORIGIN
-			$ECHO $COLOR_YELLOW"[5] 4 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[5] 2 GiB"$COLOR_ORIGIN
+			$ECHO $COLOR_YELLOW"[6] 4 GiB"$COLOR_ORIGIN
 			read sel
 			case "$sel" in
 			"1")
@@ -1029,6 +1026,9 @@ list_config()
 				echo "FLASH_SIZE=1024" >> $BUILD_CONFIG
 				;;
 			"5")
+				echo "FLASH_SIZE=2048" >> $BUILD_CONFIG
+				;;
+			"6")
 				echo "FLASH_SIZE=4096" >> $BUILD_CONFIG
 				;;
 			*)
