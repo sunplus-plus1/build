@@ -900,8 +900,8 @@ list_config()
 }
 
 $ECHO $COLOR_GREEN"Select boards:"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board     [21] Q645 Ev Board      [31] SP7350 Ev Board"$COLOR_ORIGIN
-$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board       [22] Q645 Zebu (ZMem)   [32] SP7350 Zebu (ZMem)"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[1] SP7021 Ev Board"$COLOR_ORIGIN
+$ECHO $COLOR_YELLOW"[2] LTPP3G2 Board"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[3] SP7021 Demo Brd V2"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[4] SP7021 Demo Brd V3"$COLOR_ORIGIN
 $ECHO $COLOR_YELLOW"[5] BPI-F2S Board"$COLOR_ORIGIN
@@ -941,14 +941,14 @@ elif [ "$board" = "7" ]; then
 	echo "LINUX_DTB=sp7021-ltpp3g2-sunplus" >> $BUILD_CONFIG
 	UBOOT_CONFIG=sp7021_tppg2sunplus_defconfig
 	KERNEL_CONFIG=sp7021_chipC_ltpp3g2sunplus_defconfig
-elif [ "$board" = "21" -o "$board" = "22" ]; then
-	ARCH=arm64
-	echo "CHIP=Q645" > $BUILD_CONFIG
-	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
-elif [ "$board" = "31" -o "$board" = "32" ]; then
-	ARCH=arm64
-	echo "CHIP=SP7350" > $BUILD_CONFIG
-	echo "LINUX_DTB=sunplus/sp7350-ev" >> $BUILD_CONFIG
+#elif [ "$board" = "21" -o "$board" = "22" ]; then:
+#	ARCH=arm64
+#	echo "CHIP=Q645" > $BUILD_CONFIG
+#	echo "LINUX_DTB=sunplus/q645-ev" >> $BUILD_CONFIG
+#elif [ "$board" = "31" -o "$board" = "32" ]; then
+#	ARCH=arm64
+#	echo "CHIP=SP7350" > $BUILD_CONFIG
+#	echo "LINUX_DTB=sunplus/sp7350-ev" >> $BUILD_CONFIG
 else
 	echo "Error: Unknown board!"
 	exit 1
